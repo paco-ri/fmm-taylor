@@ -1,5 +1,3 @@
-clear
-
 % define surface 
 n = 4; % polynomial order 
 nu = 6; 
