@@ -1,7 +1,13 @@
 % define surface 
-n = 4; % polynomial order 
-nu = 6; 
+% n = 4; % polynomial order 
+% nu = 6; 
+% nv = nu*3;
+
+% small problem
+n = 3;
+nu = 3;
 nv = nu*3;
+
 % dom = surfacemesh.torus(n, nu, nv);
 dom = circulartorus(n,nu,nv);
 
@@ -19,7 +25,8 @@ f = -cross(vn, vn, V);
 
 % set wavenumber and zpars for single-layer potential eval.
 lambda = 1e-8;
-zpars = complex([lambda, 1.0, 0.0]);
+%zpars = complex([lambda, 1.0, 0.0]);
+zpars = complex([1.0,0.0]); % only two arguments for Laplace
 
 % compute reference Taylor state
 rmaj = 5.0;
@@ -58,30 +65,30 @@ nB0 = dot(vn,B0);
 eps = 1e-8;
 opts_quad = [];
 opts_quad.format='rsc';
-Q = helm3d.dirichlet.get_quadrature_correction(S,zpars,eps,S,opts_quad);
+Q = lap3d.dirichlet.get_quadrature_correction(S,zpars,eps,S,opts_quad);
 
 % do GMRES to solve A11*W = nB0
 b = surfacefun_to_array(nB0,dom,S); 
 b = -b;
 disp('start gmres 1')
-[W, flag1, relres1, iter1] = gmres(@(s) A(s,dom,S,zpars,eps,Q),b,[],1e-12,50);
+[W, flag1, relres1, iter1] = gmres(@(s) A(s,dom,S,eps,Q),b,[],1e-12,50);
 disp('end gmres 1')
 wfunc = array_to_surfacefun(W,dom,S);
 
 % do GMRES to solve A11*D = A12
-Balpha = mtxBalpha(S,dom,zpars,mH,eps,Q);
+Balpha = mtxBalpha(S,dom,mH,eps,Q);
 b = surfacefun_to_array(Balpha,dom,S);
 b = -b; 
 disp('start gmres 2')
-[D, flag2, relres2, iter2] = gmres(@(s) A(s,dom,S,zpars,eps,Q),b,[],1e-12,50);
+[D, flag2, relres2, iter2] = gmres(@(s) A(s,dom,S,eps,Q),b,[],1e-12,50);
 disp('end gmres 2')
 dfunc = array_to_surfacefun(D,dom,S);
 
 % compute flux 
 flux = intacyc(B0,n,nu,nv)/lambda;
-fluxsigmaD = mtxfluxsigma(S,dom,n,nu,nv,zpars,dfunc,eps,Q);
-fluxsigmaW = mtxfluxsigma(S,dom,n,nu,nv,zpars,wfunc,eps,Q);
-fluxalpha = mtxfluxalpha(S,dom,n,nu,nv,zpars,mH,eps,Q);
+fluxsigmaD = mtxfluxsigma(S,dom,n,nu,nv,dfunc,eps,Q);
+fluxsigmaW = mtxfluxsigma(S,dom,n,nu,nv,wfunc,eps,Q);
+fluxalpha = mtxfluxalpha(S,dom,n,nu,nv,mH,eps,Q);
 
 % compute alpha and sigma
 % alpha = flux/(fluxsigmaD + fluxalpha);
@@ -96,14 +103,14 @@ m0 = debyem0(sigma,lambda);
 m = m0 + mH./(1/alpha); 
 
 mvals = surfacefun_to_array(m,dom,S);
-Skm1 = helm3d.dirichlet.eval(S,zpars,mvals(:,1),eps,S,Q);
-Skm2 = helm3d.dirichlet.eval(S,zpars,mvals(:,2),eps,S,Q);
-Skm3 = helm3d.dirichlet.eval(S,zpars,mvals(:,3),eps,S,Q);
+Skm1 = lap3d.dirichlet.eval(S,zpars,mvals(:,1),eps,S,Q);
+Skm2 = lap3d.dirichlet.eval(S,zpars,mvals(:,2),eps,S,Q);
+Skm3 = lap3d.dirichlet.eval(S,zpars,mvals(:,3),eps,S,Q);
 Skm = [Skm1 Skm2 Skm3];
 Skm = array_to_surfacefun(Skm,dom,S);
 
 sigmavals = surfacefun_to_array(sigma,dom,S);
-Sksigma = helm3d.dirichlet.eval(S,zpars,sigmavals,eps,S,Q);
+Sksigma = lap3d.dirichlet.eval(S,zpars,sigmavals,eps,S,Q);
 Sksigma = array_to_surfacefun(Sksigma,dom,S);
 
 % NEED TO OVERRIDE times()
@@ -122,9 +129,9 @@ hold on
 colorbar
 
 % function in solve for D
-function A = A(s,dom,S,zpars,eps,Q)
+function A = A(s,dom,S,eps,Q)
 sigma = array_to_surfacefun(s,dom,S);
-Bsigma = mtxBsigma(S,dom,zpars,sigma,eps,Q);
+Bsigma = mtxBsigma(S,dom,sigma,eps,Q);
 A = surfacefun_to_array(Bsigma,dom,S);
 end
 

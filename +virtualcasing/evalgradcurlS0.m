@@ -94,7 +94,7 @@ function [curlj,gradrho] = evalgradcurlS0(S,rjvec,rho,eps,varargin)
 %  if nkernel is >1
 %
 
-        [Q] = helm3d.dirichlet.get_quadrature_correction(S,zpars,eps,targinfo,opts_quad);
+        [Q] = lap3d.dirichlet.get_quadrature_correction(S,zpars,eps,targinfo,opts_quad);
       else
         opts_qcorr = [];
 %        opts_qcorr.type = 'complex';

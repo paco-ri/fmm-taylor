@@ -1,31 +1,27 @@
-function fluxsigma = mtxfluxsigma(S,dom,n,nu,nv,zpars,sigma,eps,Q)
+function fluxsigma = mtxfluxsigma(S,dom,n,nu,nv,sigma,eps,Q)
 %MTXFLUXSIGMA compute sigma-dep. terms of flux condition
 %   Detailed explanation goes here
 
-lambda = zpars(1);
-m0 = debyem0(sigma,lambda);
-m0vals = surfacefun_to_array(m0,dom,S);
-m0vals = m0vals';
-
-% single layer potential evals
-S0m01 = helm3d.dirichlet.eval(S,zpars,m0vals(1,:),eps,S,Q);
-S0m02 = helm3d.dirichlet.eval(S,zpars,m0vals(2,:),eps,S,Q);
-S0m03 = helm3d.dirichlet.eval(S,zpars,m0vals(3,:),eps,S,Q);
-S0m0 = [S0m01 S0m02 S0m03];
-S0m0 = array_to_surfacefun(S0m0,dom,S);
-
-vn = normal(dom);
-nxm0 = cross(vn,m0);
+sigmavals = surfacefun_to_array(sigma,dom,S);
+sigmavals = sigmavals';
 
 % derivatives of layer potentials
-[curlS0m0,~] = virtualcasing.evalgradcurlS0(S,m0vals,m0vals(1,:),eps,S,Q);
-curlS0m0 = array_to_surfacefun(curlS0m0',dom,S); % note transpose
+dummyvals = repmat(sigmavals,3,1);
+[~,gradS0sigma] = virtualcasing.evalgradcurlS0(S,dummyvals,sigma,eps,S,Q);
+gradS0sigma = array_to_surfacefun(gradS0sigma',dom,S); % note transpose
+vn = normal(dom);
+nxgradS0sigma = cross(vn,gradS0sigma);
+nxvals = surfacefun_to_array(nxgradS0sigma,dom,S);
 
-integrand = surfacefunv(dom);
-for j = 1:3
-    integrand.components{j} = 1i*(S0m0.components{j} ...
-        + (nxm0.components{j}/2 + curlS0m0.components{j})/lambda);
-end
-fluxsigma = intacyc(integrand,n,nu,nv);
+% single layer potential evals
+zpars = complex([1.0,0.0]);
+S0nx1 = lap3d.dirichlet.eval(S,zpars,nxvals(1,:),eps,S,Q);
+S0nx2 = lap3d.dirichlet.eval(S,zpars,nxvals(2,:),eps,S,Q);
+S0nx3 = lap3d.dirichlet.eval(S,zpars,nxvals(3,:),eps,S,Q);
+S0nx = [S0nx1 S0nx2 S0nx3];
+S0nx = array_to_surfacefun(S0nx,dom,S);
+
+fluxsigma = intacyc(S0nx,n,nu,nv);
+fluxsigma = -fluxsigma;
 
 end
