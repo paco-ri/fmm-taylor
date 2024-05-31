@@ -1,167 +1,3 @@
-%-------------------------------------------------
-%
-%%
-%%   Laplace Dirichlet routines
-%%   (written by Paco on 26/4/24)
-%
-%
-%-------------------------------------------------
-
-@ +lap3d/+dirichlet/eval.m 
-function p = eval(S,zpars,sigma,eps,varargin)
-%
-%  lap3d.dirichlet.eval
-%    Evaluates the Laplace Dirichlet layer potential at a collection 
-%    of targets
-%
-%  Syntax
-%   pot = lap3d.dirichlet.eval(S,zpars,sigma,eps)
-%   pot = lap3d.dirichlet.eval(S,zpars,sigma,eps,targinfo)
-%   pot = lap3d.dirichlet.eval(S,zpars,sigma,eps,targinfo,Q)
-%   pot = lap3d.dirichlet.eval(S,zpars,sigma,eps,targinfo,Q,opts)
-%
-%  Integral representation
-%     pot = \alpha S_{0} [\sigma] + \beta D_{0} [\sigma]
-%
-%  S_{0}, D_{0}: Laplace single- and double-layer potential
-%  
-%  alpha, beta = zpars(1:2)
-%
-%  Note: for targets on surface, only principal value part of the
-%    layer potential is returned
-%
-%  Input arguments:
-%    * S: surfer object, see README.md in matlab for details
-%    * zpars: kernel parameters
-%        zpars(1) - single layer strength
-%        zpars(2) - double layer strength
-%    * sigma: layer potential density
-%    * eps: precision requested
-%    * targinfo: target info (optional)
-%       targinfo.r = (3,nt) target locations
-%       targinfo.du = u tangential derivative info
-%       targinfo.dv = v tangential derivative info
-%       targinfo.n = normal info
-%       targinfo.patch_id (nt,) patch id of target, = -1, if target
-%          is off-surface (optional)
-%       targinfo.uvs_targ (2,nt) local uv ccordinates of target on
-%          patch if on-surface (optional)
-%    * Q: precomputed quadrature corrections struct (optional)
-%           currently only supports quadrature corrections
-%           computed in rsc format 
-%    * opts: options struct
-%        opts.nonsmoothonly - use smooth quadrature rule for evaluating
-%           layer potential (false)
-%    
-
-%
-%
-% Todo: Fix varargin
-%
-    if(nargin < 7) 
-      opts = [];
-    else
-      opts = varargin{3};
-    end
-
-    isprecompq = true;
-    if(nargin < 6)
-       Q = [];
-       isprecompq = false;
-    else
-       Q = varargin{2}; 
-    end
-    
-    if(isprecompq)
-      if ~(strcmpi(Q.format,'rsc'))
-        fprintf('Invalid precomputed quadrature format\n');
-        fprintf('Ignoring quadrature corrections\n');
-        opts_qcorr = [];
-        Q = init_empty_quadrature_correction(targinfo,opts_qcorr);
-      end
-    end
-
-    nonsmoothonly = false;
-    if(isfield(opts,'nonsmoothonly'))
-      nonsmoothonly = opts.nonsmoothonly;
-    end
-
-% Extract arrays
-    [srcvals,srccoefs,norders,ixyzs,iptype,wts] = extract_arrays(S);
-    [n12,npts] = size(srcvals);
-    [n9,~] = size(srccoefs);
-    [npatches,~] = size(norders);
-    npatp1 = npatches+1;
-
-    if(nargin < 5)
-      targinfo = [];
-      targinfo.r = S.r;
-      targinfo.du = S.du;
-      targinfo.dv = S.dv;
-      targinfo.n = S.n;
-      patch_id  = zeros(npts,1);
-      uvs_targ = zeros(2,npts);
-      # FORTRAN get_patch_id_uvs(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, inout int[npts] patch_id, inout double[2,npts] uvs_targ);
-      targinfo.patch_id = patch_id;
-      targinfo.uvs_targ = uvs_targ;
-      opts = [];
-    else
-      targinfo = varargin{1};
-    end
-
-    ff = 'rsc';
-
-    [targs] = extract_targ_array(targinfo);
-    [ndtarg,ntarg] = size(targs);
-    ntargp1 = ntarg+1;
-
-% Compute quadrature corrections   
-    if ~isprecompq
-      if ~nonsmoothonly
-        opts_quad = [];
-        opts_quad.format = 'rsc';
-%
-%  For now Q is going to be a struct with 'quad_format', 
-%  'nkernels', 'pde', 'bc', 'kernel', 'ker_order',
-%  and either, 'wnear', 'row_ind', 'col_ptr', or
-%  with 'spmat' as a sparse matrix or a cell array of wnear/spmat
-%  if nkernel is >1
-%
-
-        [Q] = lap3d.dirichlet.get_quadrature_correction(S,zpars,eps,targinfo,opts_quad);
-      else
-	Q = init_empty_quadrature_correction(targinfo);
-      end
-    end
-    nquad = Q.iquad(end)-1;
-    nnz = length(Q.col_ind);
-    nnzp1 = nnz+1; 
-
-    [novers] = get_oversampling_parameters(S,Q,eps);
-    Sover = oversample(S,novers);
-
-
-% Extract oversampled arrays
-
-    [srcover,~,~,ixyzso,~,wover] = extract_arrays(Sover);
-    nptso = Sover.npts; 
-
-% Extract quadrature arrays
-    row_ptr = Q.row_ptr;
-    col_ind = Q.col_ind;
-    iquad = Q.iquad;
-    wnear = Q.wnear;
-
-    p = zeros(ntarg,1);
-
-% Call the layer potential evaluator
-    # FORTRAN lpcomp_lap_comb_dir_addsub(int[1] npatches,int[npatches] norders, int[npatp1] ixyzs,int[npatches] iptype, int[1] npts,double[n9,npts] srccoefs,double[n12,npts] srcvals,int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps, dcomplex[2] zpars, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad] wnear, double[npts] sigma, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout double[ntarg] p);   
-end    
-%
-%
-%
-%----------------------------------
-%
 @ +lap3d/+dirichlet/get_quadrature_correction.m 
 function Q = get_quadrature_correction(S, zpars, eps, targinfo, opts)
 %
@@ -294,7 +130,7 @@ function Q = get_quadrature_correction(S, zpars, eps, targinfo, opts)
     # FORTRAN findnear(double[n3,npatches] cms,int[1] npatches,double[npatches] rad_near,int[1] ndtarg,double [ndtarg,ntarg] targs, int[1] ntarg,inout int[ntp1] row_ptr,inout int[nnz] col_ind); 
 
     iquad = zeros(nnz+1,1);
-    # FORTRAN get_iquad_rsc(int[1] npatches,int[npp1] ixyzs,int[1] npts,int[1] nnz,int[ntp1] row_ptr,int[nnz] col_ind,inout int[nnzp1] iquad);
+    # FORTRAN get_iquad_rsc(int[1] npatches, int[npp1] ixyzs, int[1] npts, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, inout int[nnzp1] iquad);
 
     nquad = iquad(nnz+1)-1;
     wnear = zeros(nquad,1);
@@ -307,7 +143,7 @@ function Q = get_quadrature_correction(S, zpars, eps, targinfo, opts)
         iquadtype = 1;
       end
     end
-    # FORTRAN getnearquad_lap_comb_dir(int[1] npatches,int[npatches] norders,int[npp1] ixyzs,int[npatches] iptype,int[1] npts,double[n9,npts] srccoefs,double[n12,npts] srcvals,int[1] ndtarg,int[1] ntarg,double[ndtarg,ntarg] targs, int[npts] patch_id, double[2,npts] uvs_targ,double[1] eps,dcomplex[2] zpars,int[1] iquadtype,int[1] nnz,int[ntp1] row_ptr,int[nnz] col_ind,int[nnzp1] iquad,double[1] rfac0,int[1] nquad,inout double[nquad] wnear);
+    # FORTRAN getnearquad_lap_comb_dir(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, int[ntarg] patch_id, double[2,ntarg] uvs_targ, double[1] eps, double[2] zpars, int[1] iquadtype, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0, int[1] nquad, inout double[nquad] wnear);
     
     Q = [];
     Q.targinfo = targinfo;

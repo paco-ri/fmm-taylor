@@ -1,9 +1,8 @@
-function [curlj,gradrho] = evalgradcurlS0(S,rjvec,rho,eps,varargin)
-%EVALGRADCURLS0 compute grad S0[rho] and curl S0[J]
+function gradrho = eval_ngradS0(S,rho,eps,varargin)
+%EVALGRADCURLS0 compute n . grad S0[rho]
 %
 %  Input arguments:
 %    * S: surfer object, see README.md in matlab for details
-%    * rjvec: layer potential density for which curl S0[j] is computed
 %    * rho: layer potential density for which grad S0[rho] is computed
 %    * eps: precision requested
 %    * targinfo: target info (optional)
@@ -22,14 +21,14 @@ function [curlj,gradrho] = evalgradcurlS0(S,rjvec,rho,eps,varargin)
 %        opts.nonsmoothonly - use smooth quadrature rule for evaluating
 %           layer potential (false)
 
-    if(nargin < 7) 
+    if(nargin < 6) 
       opts = [];
     else
       opts = varargin{3};
     end
 
     isprecompq = true;
-    if(nargin < 6)
+    if(nargin < 5)
        Q = [];
        isprecompq = false;
     else
@@ -41,7 +40,7 @@ function [curlj,gradrho] = evalgradcurlS0(S,rjvec,rho,eps,varargin)
         fprintf('Invalid precomputed quadrature format\n');
         fprintf('Ignoring quadrature corrections\n');
         opts_qcorr = [];
-%        opts_qcorr.type = 'complex';
+        opts_qcorr.type = 'double';
         Q = init_empty_quadrature_correction(targinfo,opts_qcorr);
       end
     end
@@ -58,7 +57,7 @@ function [curlj,gradrho] = evalgradcurlS0(S,rjvec,rho,eps,varargin)
     [npatches,~] = size(norders);
     npatp1 = npatches+1;
 
-    if(nargin < 5)
+    if(nargin < 4)
       targinfo = [];
       targinfo.r = S.r;
       targinfo.du = S.du;
@@ -67,7 +66,7 @@ function [curlj,gradrho] = evalgradcurlS0(S,rjvec,rho,eps,varargin)
       patch_id  = zeros(npts,1);
       uvs_targ = zeros(2,npts);
       mex_id_ = 'get_patch_id_uvs(i int[x], i int[x], i int[x], i int[x], i int[x], io int[x], io double[xx])';
-[ipatch_id, uvs_pts] = funcgradcurlS0(mex_id_, npatches, norders, ixyzs, iptype, npts, ipatch_id, uvs_pts, 1, npatches, npatp1, npatches, 1, npts, 2, npts);
+[patch_id, uvs_targ] = gradcurlS0(mex_id_, npatches, norders, ixyzs, iptype, npts, patch_id, uvs_targ, 1, npatches, npatp1, npatches, 1, npts, 2, npts);
       targinfo.patch_id = patch_id;
       targinfo.uvs_targ = uvs_targ;
       opts = [];
@@ -94,10 +93,10 @@ function [curlj,gradrho] = evalgradcurlS0(S,rjvec,rho,eps,varargin)
 %  if nkernel is >1
 %
 
-        [Q] = lap3d.dirichlet.get_quadrature_correction(S,zpars,eps,targinfo,opts_quad);
+        [Q] = taylor.static.get_quadrature_correction(S,eps,targinfo,opts_quad);
       else
         opts_qcorr = [];
-%        opts_qcorr.type = 'complex';
+        opts_qcorr.type = 'double';
         Q = init_empty_quadrature_correction(targinfo,opts_qcorr);
       end
     end
@@ -117,27 +116,14 @@ function [curlj,gradrho] = evalgradcurlS0(S,rjvec,rho,eps,varargin)
     row_ptr = Q.row_ptr;
     col_ind = Q.col_ind;
     iquad = Q.iquad;
-    wnear = real(Q.wnear);
+    wnear = Q.wnear;
 
-% Separate real and imaginary parts
+    gradrho = zeros(3,ntarg);
 
-    rjvecreal = real(rjvec);
-    rjvecimag = imag(rjvec);
-    rhoreal = real(rho);
-    rhoimag = imag(rho);
-
-    curljreal = zeros(3,ntarg);
-    curljimag = zeros(3,ntarg);
-    gradrhoreal = zeros(3,ntarg);
-    gradrhoimag = zeros(3,ntarg);
-
-% call layer potential evaluator for real and imaginary parts 
-    mex_id_ = 'lpcomp_virtualcasing_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io double[xx], io double[xx])';
-[curljreal, gradrhoreal] = virtualcasing.funcgradcurlS0(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps, nnz, row_ptr, col_ind, iquad, nquad, wnear, rjvecreal, rhoreal, novers, nptso, ixyzso, srcover, wover, curljreal, gradrhoreal, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, ntargp1, nnz, nnzp1, 1, nquad, 3, npts, npts, npatches, 1, npatp1, 12, nptso, nptso, 3, npts, 3, npts);
-    mex_id_ = 'lpcomp_virtualcasing_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io double[xx], io double[xx])';
-[curljimag, gradrhoimag] = virtualcasing.funcgradcurlS0(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps, nnz, row_ptr, col_ind, iquad, nquad, wnear, rjvecimag, rhoimag, novers, nptso, ixyzso, srcover, wover, curljimag, gradrhoimag, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, ntargp1, nnz, nnzp1, 1, nquad, 3, npts, npts, npatches, 1, npatp1, 12, nptso, nptso, 3, npts, 3, npts);
-
-    curlj = complex(curljreal, curljimag);
-    gradrho = complex(gradrhoreal, gradrhoimag);
-
+% Call layer potential evaluator
+    mex_id_ = 'lpcomp_gradlap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io double[xx])';
+[gradrho] = gradcurlS0(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps, nnz, row_ptr, col_ind, iquad, nquad, wnear, rho, novers, nptso, ixyzso, srcover, wover, gradrho, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, ntargp1, nnz, nnzp1, 1, nquad, 3, npts, npatches, 1, npatp1, 12, nptso, nptso, 3, ntarg);
+    
 end
+
+

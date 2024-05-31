@@ -1064,43 +1064,47 @@ mxWrapReturnZDef_single   (mxWrapReturn_single_dcomplex, dcomplex,
 
 #if defined(MWF77_CAPS)
 #define MWF77_get_patch_id_uvs GET_PATCH_ID_UVS
-#define MWF77_lpcomp_lap_comb_dir_addsub LPCOMP_LAP_COMB_DIR_ADDSUB
+#define MWF77_lpcomp_gradlap_addsub LPCOMP_GRADLAP_ADDSUB
+#define MWF77_lpcomp_curllap_addsub LPCOMP_CURLLAP_ADDSUB
 #define MWF77_get_rfacs GET_RFACS
 #define MWF77_get_centroid_rads GET_CENTROID_RADS
 #define MWF77_findnearmem FINDNEARMEM
 #define MWF77_findnear FINDNEAR
 #define MWF77_get_iquad_rsc GET_IQUAD_RSC
-#define MWF77_getnearquad_lap_comb_dir GETNEARQUAD_LAP_COMB_DIR
+#define MWF77_getnearquad_magnetostatics GETNEARQUAD_MAGNETOSTATICS
 #define MWF77_rsc_to_csc RSC_TO_CSC
 #elif defined(MWF77_UNDERSCORE1)
 #define MWF77_get_patch_id_uvs get_patch_id_uvs_
-#define MWF77_lpcomp_lap_comb_dir_addsub lpcomp_lap_comb_dir_addsub_
+#define MWF77_lpcomp_gradlap_addsub lpcomp_gradlap_addsub_
+#define MWF77_lpcomp_curllap_addsub lpcomp_curllap_addsub_
 #define MWF77_get_rfacs get_rfacs_
 #define MWF77_get_centroid_rads get_centroid_rads_
 #define MWF77_findnearmem findnearmem_
 #define MWF77_findnear findnear_
 #define MWF77_get_iquad_rsc get_iquad_rsc_
-#define MWF77_getnearquad_lap_comb_dir getnearquad_lap_comb_dir_
+#define MWF77_getnearquad_magnetostatics getnearquad_magnetostatics_
 #define MWF77_rsc_to_csc rsc_to_csc_
 #elif defined(MWF77_UNDERSCORE0)
 #define MWF77_get_patch_id_uvs get_patch_id_uvs
-#define MWF77_lpcomp_lap_comb_dir_addsub lpcomp_lap_comb_dir_addsub
+#define MWF77_lpcomp_gradlap_addsub lpcomp_gradlap_addsub
+#define MWF77_lpcomp_curllap_addsub lpcomp_curllap_addsub
 #define MWF77_get_rfacs get_rfacs
 #define MWF77_get_centroid_rads get_centroid_rads
 #define MWF77_findnearmem findnearmem
 #define MWF77_findnear findnear
 #define MWF77_get_iquad_rsc get_iquad_rsc
-#define MWF77_getnearquad_lap_comb_dir getnearquad_lap_comb_dir
+#define MWF77_getnearquad_magnetostatics getnearquad_magnetostatics
 #define MWF77_rsc_to_csc rsc_to_csc
 #else /* f2c convention */
 #define MWF77_get_patch_id_uvs get_patch_id_uvs__
-#define MWF77_lpcomp_lap_comb_dir_addsub lpcomp_lap_comb_dir_addsub__
+#define MWF77_lpcomp_gradlap_addsub lpcomp_gradlap_addsub__
+#define MWF77_lpcomp_curllap_addsub lpcomp_curllap_addsub__
 #define MWF77_get_rfacs get_rfacs__
 #define MWF77_get_centroid_rads get_centroid_rads__
 #define MWF77_findnearmem findnearmem_
 #define MWF77_findnear findnear_
 #define MWF77_get_iquad_rsc get_iquad_rsc__
-#define MWF77_getnearquad_lap_comb_dir getnearquad_lap_comb_dir__
+#define MWF77_getnearquad_magnetostatics getnearquad_magnetostatics__
 #define MWF77_rsc_to_csc rsc_to_csc__
 #endif
 
@@ -1113,20 +1117,21 @@ extern "C" { /* Prevent C++ name mangling */
 #endif
 
 MWF77_RETURN MWF77_get_patch_id_uvs(int*, int*, int*, int*, int*, int*, double*);
-MWF77_RETURN MWF77_lpcomp_lap_comb_dir_addsub(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, double*, dcomplex*, int*, int*, int*, int*, int*, double*, double*, int*, int*, int*, double*, double*, double*);
+MWF77_RETURN MWF77_lpcomp_gradlap_addsub(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, double*, int*, int*, int*, int*, int*, double*, double*, int*, int*, int*, double*, double*, double*);
+MWF77_RETURN MWF77_lpcomp_curllap_addsub(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, double*, int*, int*, int*, int*, int*, double*, double*, int*, int*, int*, double*, double*, double*);
 MWF77_RETURN MWF77_get_rfacs(int*, int*, double*, double*);
 MWF77_RETURN MWF77_get_centroid_rads(int*, int*, int*, int*, int*, double*, double*, double*);
 MWF77_RETURN MWF77_findnearmem(double*, int*, double*, int*, double*, int*, int*);
 MWF77_RETURN MWF77_findnear(double*, int*, double*, int*, double*, int*, int*, int*);
 MWF77_RETURN MWF77_get_iquad_rsc(int*, int*, int*, int*, int*, int*, int*);
-MWF77_RETURN MWF77_getnearquad_lap_comb_dir(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, int*, double*, double*, dcomplex*, int*, int*, int*, int*, int*, double*, int*, double*);
+MWF77_RETURN MWF77_getnearquad_magnetostatics(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, int*, double*, double*, int*, int*, int*, int*, int*, double*, int*, double*);
 MWF77_RETURN MWF77_rsc_to_csc(int*, int*, int*, int*, int*, int*, int*, int*);
 
 #ifdef __cplusplus
 } /* end extern C */
 #endif
 
-/* ---- lap_routs.mw: 104 ----
+/* ---- gradcurlS0.mw: 69 ----
  * get_patch_id_uvs(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, inout int[npts] patch_id, inout double[2, npts] uvs_targ);
  */
 static const char* stubids1_ = "get_patch_id_uvs(i int[x], i int[x], i int[x], i int[x], i int[x], io int[x], io double[xx])";
@@ -1252,10 +1257,10 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- lap_routs.mw: 158 ----
- * lpcomp_lap_comb_dir_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, dcomplex[2] zpars, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad] wnear, double[npts] sigma, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout double[ntarg] p);
+/* ---- gradcurlS0.mw: 124 ----
+ * lpcomp_gradlap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad, 3] wnear, double[npts] rho, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout double[3, ntarg] gradrho);
  */
-static const char* stubids2_ = "lpcomp_lap_comb_dir_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[x], i double[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io double[x])";
+static const char* stubids2_ = "lpcomp_gradlap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io double[xx])";
 
 void mexStub2(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -1272,50 +1277,51 @@ void mexStub2(int nlhs, mxArray* plhs[],
     int*        in8_ =0; /* ntarg      */
     double*     in9_ =0; /* targs      */
     double*     in10_ =0; /* eps        */
-    dcomplex*   in11_ =0; /* zpars      */
-    int*        in12_ =0; /* nnz        */
-    int*        in13_ =0; /* row_ptr    */
-    int*        in14_ =0; /* col_ind    */
-    int*        in15_ =0; /* iquad      */
-    int*        in16_ =0; /* nquad      */
-    double*     in17_ =0; /* wnear      */
-    double*     in18_ =0; /* sigma      */
-    int*        in19_ =0; /* novers     */
-    int*        in20_ =0; /* nptso      */
-    int*        in21_ =0; /* ixyzso     */
-    double*     in22_ =0; /* srcover    */
-    double*     in23_ =0; /* wover      */
-    double*     in24_ =0; /* p          */
-    mwSize      dim25_;   /* 1          */
-    mwSize      dim26_;   /* npatches   */
-    mwSize      dim27_;   /* npatp1     */
-    mwSize      dim28_;   /* npatches   */
-    mwSize      dim29_;   /* 1          */
-    mwSize      dim30_;   /* n9         */
-    mwSize      dim31_;   /* npts       */
-    mwSize      dim32_;   /* n12        */
-    mwSize      dim33_;   /* npts       */
+    int*        in11_ =0; /* nnz        */
+    int*        in12_ =0; /* row_ptr    */
+    int*        in13_ =0; /* col_ind    */
+    int*        in14_ =0; /* iquad      */
+    int*        in15_ =0; /* nquad      */
+    double*     in16_ =0; /* wnear      */
+    double*     in17_ =0; /* rho        */
+    int*        in18_ =0; /* novers     */
+    int*        in19_ =0; /* nptso      */
+    int*        in20_ =0; /* ixyzso     */
+    double*     in21_ =0; /* srcover    */
+    double*     in22_ =0; /* wover      */
+    double*     in23_ =0; /* gradrho    */
+    mwSize      dim24_;   /* 1          */
+    mwSize      dim25_;   /* npatches   */
+    mwSize      dim26_;   /* npatp1     */
+    mwSize      dim27_;   /* npatches   */
+    mwSize      dim28_;   /* 1          */
+    mwSize      dim29_;   /* n9         */
+    mwSize      dim30_;   /* npts       */
+    mwSize      dim31_;   /* n12        */
+    mwSize      dim32_;   /* npts       */
+    mwSize      dim33_;   /* 1          */
     mwSize      dim34_;   /* 1          */
-    mwSize      dim35_;   /* 1          */
-    mwSize      dim36_;   /* ndtarg     */
-    mwSize      dim37_;   /* ntarg      */
+    mwSize      dim35_;   /* ndtarg     */
+    mwSize      dim36_;   /* ntarg      */
+    mwSize      dim37_;   /* 1          */
     mwSize      dim38_;   /* 1          */
-    mwSize      dim39_;   /* 2          */
-    mwSize      dim40_;   /* 1          */
-    mwSize      dim41_;   /* ntargp1    */
-    mwSize      dim42_;   /* nnz        */
-    mwSize      dim43_;   /* nnzp1      */
-    mwSize      dim44_;   /* 1          */
-    mwSize      dim45_;   /* nquad      */
-    mwSize      dim46_;   /* npts       */
-    mwSize      dim47_;   /* npatches   */
-    mwSize      dim48_;   /* 1          */
-    mwSize      dim49_;   /* npatp1     */
-    mwSize      dim50_;   /* 12         */
+    mwSize      dim39_;   /* ntargp1    */
+    mwSize      dim40_;   /* nnz        */
+    mwSize      dim41_;   /* nnzp1      */
+    mwSize      dim42_;   /* 1          */
+    mwSize      dim43_;   /* nquad      */
+    mwSize      dim44_;   /* 3          */
+    mwSize      dim45_;   /* npts       */
+    mwSize      dim46_;   /* npatches   */
+    mwSize      dim47_;   /* 1          */
+    mwSize      dim48_;   /* npatp1     */
+    mwSize      dim49_;   /* 12         */
+    mwSize      dim50_;   /* nptso      */
     mwSize      dim51_;   /* nptso      */
-    mwSize      dim52_;   /* nptso      */
+    mwSize      dim52_;   /* 3          */
     mwSize      dim53_;   /* ntarg      */
 
+    dim24_ = (mwSize) mxWrapGetScalar(prhs[24], &mw_err_txt_);
     dim25_ = (mwSize) mxWrapGetScalar(prhs[25], &mw_err_txt_);
     dim26_ = (mwSize) mxWrapGetScalar(prhs[26], &mw_err_txt_);
     dim27_ = (mwSize) mxWrapGetScalar(prhs[27], &mw_err_txt_);
@@ -1346,112 +1352,112 @@ void mexStub2(int nlhs, mxArray* plhs[],
     dim52_ = (mwSize) mxWrapGetScalar(prhs[52], &mw_err_txt_);
     dim53_ = (mwSize) mxWrapGetScalar(prhs[53], &mw_err_txt_);
 
-    if (mxGetM(prhs[0])*mxGetN(prhs[0]) != dim25_) {
+    if (mxGetM(prhs[0])*mxGetN(prhs[0]) != dim24_) {
         mw_err_txt_ = "Bad argument size: npatches";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[1])*mxGetN(prhs[1]) != dim26_) {
+    if (mxGetM(prhs[1])*mxGetN(prhs[1]) != dim25_) {
         mw_err_txt_ = "Bad argument size: norders";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[2])*mxGetN(prhs[2]) != dim27_) {
+    if (mxGetM(prhs[2])*mxGetN(prhs[2]) != dim26_) {
         mw_err_txt_ = "Bad argument size: ixyzs";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[3])*mxGetN(prhs[3]) != dim28_) {
+    if (mxGetM(prhs[3])*mxGetN(prhs[3]) != dim27_) {
         mw_err_txt_ = "Bad argument size: iptype";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[4])*mxGetN(prhs[4]) != dim29_) {
+    if (mxGetM(prhs[4])*mxGetN(prhs[4]) != dim28_) {
         mw_err_txt_ = "Bad argument size: npts";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[5]) != dim30_ ||
-        mxGetN(prhs[5]) != dim31_) {
+    if (mxGetM(prhs[5]) != dim29_ ||
+        mxGetN(prhs[5]) != dim30_) {
         mw_err_txt_ = "Bad argument size: srccoefs";
         goto mw_err_label;
     }
 
-    if (mxGetM(prhs[6]) != dim32_ ||
-        mxGetN(prhs[6]) != dim33_) {
+    if (mxGetM(prhs[6]) != dim31_ ||
+        mxGetN(prhs[6]) != dim32_) {
         mw_err_txt_ = "Bad argument size: srcvals";
         goto mw_err_label;
     }
 
-    if (mxGetM(prhs[7])*mxGetN(prhs[7]) != dim34_) {
+    if (mxGetM(prhs[7])*mxGetN(prhs[7]) != dim33_) {
         mw_err_txt_ = "Bad argument size: ndtarg";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[8])*mxGetN(prhs[8]) != dim35_) {
+    if (mxGetM(prhs[8])*mxGetN(prhs[8]) != dim34_) {
         mw_err_txt_ = "Bad argument size: ntarg";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[9]) != dim36_ ||
-        mxGetN(prhs[9]) != dim37_) {
+    if (mxGetM(prhs[9]) != dim35_ ||
+        mxGetN(prhs[9]) != dim36_) {
         mw_err_txt_ = "Bad argument size: targs";
         goto mw_err_label;
     }
 
-    if (mxGetM(prhs[10])*mxGetN(prhs[10]) != dim38_) {
+    if (mxGetM(prhs[10])*mxGetN(prhs[10]) != dim37_) {
         mw_err_txt_ = "Bad argument size: eps";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[11])*mxGetN(prhs[11]) != dim39_) {
-        mw_err_txt_ = "Bad argument size: zpars";        goto mw_err_label;
-    }
-
-    if (mxGetM(prhs[12])*mxGetN(prhs[12]) != dim40_) {
+    if (mxGetM(prhs[11])*mxGetN(prhs[11]) != dim38_) {
         mw_err_txt_ = "Bad argument size: nnz";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[13])*mxGetN(prhs[13]) != dim41_) {
+    if (mxGetM(prhs[12])*mxGetN(prhs[12]) != dim39_) {
         mw_err_txt_ = "Bad argument size: row_ptr";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[14])*mxGetN(prhs[14]) != dim42_) {
+    if (mxGetM(prhs[13])*mxGetN(prhs[13]) != dim40_) {
         mw_err_txt_ = "Bad argument size: col_ind";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[15])*mxGetN(prhs[15]) != dim43_) {
+    if (mxGetM(prhs[14])*mxGetN(prhs[14]) != dim41_) {
         mw_err_txt_ = "Bad argument size: iquad";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[16])*mxGetN(prhs[16]) != dim44_) {
+    if (mxGetM(prhs[15])*mxGetN(prhs[15]) != dim42_) {
         mw_err_txt_ = "Bad argument size: nquad";        goto mw_err_label;
     }
 
+    if (mxGetM(prhs[16]) != dim43_ ||
+        mxGetN(prhs[16]) != dim44_) {
+        mw_err_txt_ = "Bad argument size: wnear";
+        goto mw_err_label;
+    }
+
     if (mxGetM(prhs[17])*mxGetN(prhs[17]) != dim45_) {
-        mw_err_txt_ = "Bad argument size: wnear";        goto mw_err_label;
+        mw_err_txt_ = "Bad argument size: rho";        goto mw_err_label;
     }
 
     if (mxGetM(prhs[18])*mxGetN(prhs[18]) != dim46_) {
-        mw_err_txt_ = "Bad argument size: sigma";        goto mw_err_label;
-    }
-
-    if (mxGetM(prhs[19])*mxGetN(prhs[19]) != dim47_) {
         mw_err_txt_ = "Bad argument size: novers";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[20])*mxGetN(prhs[20]) != dim48_) {
+    if (mxGetM(prhs[19])*mxGetN(prhs[19]) != dim47_) {
         mw_err_txt_ = "Bad argument size: nptso";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[21])*mxGetN(prhs[21]) != dim49_) {
+    if (mxGetM(prhs[20])*mxGetN(prhs[20]) != dim48_) {
         mw_err_txt_ = "Bad argument size: ixyzso";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[22]) != dim50_ ||
-        mxGetN(prhs[22]) != dim51_) {
+    if (mxGetM(prhs[21]) != dim49_ ||
+        mxGetN(prhs[21]) != dim50_) {
         mw_err_txt_ = "Bad argument size: srcover";
         goto mw_err_label;
     }
 
-    if (mxGetM(prhs[23])*mxGetN(prhs[23]) != dim52_) {
+    if (mxGetM(prhs[22])*mxGetN(prhs[22]) != dim51_) {
         mw_err_txt_ = "Bad argument size: wover";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[24])*mxGetN(prhs[24]) != dim53_) {
-        mw_err_txt_ = "Bad argument size: p";        goto mw_err_label;
+    if (mxGetM(prhs[23]) != dim52_ ||
+        mxGetN(prhs[23]) != dim53_) {
+        mw_err_txt_ = "Bad argument size: gradrho";
+        goto mw_err_label;
     }
 
     if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
@@ -1541,10 +1547,7 @@ void mexStub2(int nlhs, mxArray* plhs[],
     } else
         in10_ = NULL;
     if (mxGetM(prhs[11])*mxGetN(prhs[11]) != 0) {
-        if( mxGetClassID(prhs[11]) != mxDOUBLE_CLASS )
-            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
-        if (mw_err_txt_) goto mw_err_label;
-        in11_ = mxWrapGetArray_dcomplex(prhs[11], &mw_err_txt_);
+        in11_ = mxWrapGetArray_int(prhs[11], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -1574,9 +1577,14 @@ void mexStub2(int nlhs, mxArray* plhs[],
     } else
         in15_ = NULL;
     if (mxGetM(prhs[16])*mxGetN(prhs[16]) != 0) {
-        in16_ = mxWrapGetArray_int(prhs[16], &mw_err_txt_);
-        if (mw_err_txt_)
-            goto mw_err_label;
+        if( mxGetClassID(prhs[16]) != mxDOUBLE_CLASS )
+            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
+        if (mw_err_txt_) goto mw_err_label;
+#if MX_HAS_INTERLEAVED_COMPLEX
+        in16_ = mxGetDoubles(prhs[16]);
+#else
+        in16_ = mxGetPr(prhs[16]);
+#endif
     } else
         in16_ = NULL;
     if (mxGetM(prhs[17])*mxGetN(prhs[17]) != 0) {
@@ -1591,14 +1599,9 @@ void mexStub2(int nlhs, mxArray* plhs[],
     } else
         in17_ = NULL;
     if (mxGetM(prhs[18])*mxGetN(prhs[18]) != 0) {
-        if( mxGetClassID(prhs[18]) != mxDOUBLE_CLASS )
-            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
-        if (mw_err_txt_) goto mw_err_label;
-#if MX_HAS_INTERLEAVED_COMPLEX
-        in18_ = mxGetDoubles(prhs[18]);
-#else
-        in18_ = mxGetPr(prhs[18]);
-#endif
+        in18_ = mxWrapGetArray_int(prhs[18], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
     } else
         in18_ = NULL;
     if (mxGetM(prhs[19])*mxGetN(prhs[19]) != 0) {
@@ -1614,9 +1617,14 @@ void mexStub2(int nlhs, mxArray* plhs[],
     } else
         in20_ = NULL;
     if (mxGetM(prhs[21])*mxGetN(prhs[21]) != 0) {
-        in21_ = mxWrapGetArray_int(prhs[21], &mw_err_txt_);
-        if (mw_err_txt_)
-            goto mw_err_label;
+        if( mxGetClassID(prhs[21]) != mxDOUBLE_CLASS )
+            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
+        if (mw_err_txt_) goto mw_err_label;
+#if MX_HAS_INTERLEAVED_COMPLEX
+        in21_ = mxGetDoubles(prhs[21]);
+#else
+        in21_ = mxGetPr(prhs[21]);
+#endif
     } else
         in21_ = NULL;
     if (mxGetM(prhs[22])*mxGetN(prhs[22]) != 0) {
@@ -1631,27 +1639,16 @@ void mexStub2(int nlhs, mxArray* plhs[],
     } else
         in22_ = NULL;
     if (mxGetM(prhs[23])*mxGetN(prhs[23]) != 0) {
-        if( mxGetClassID(prhs[23]) != mxDOUBLE_CLASS )
-            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
-        if (mw_err_txt_) goto mw_err_label;
-#if MX_HAS_INTERLEAVED_COMPLEX
-        in23_ = mxGetDoubles(prhs[23]);
-#else
-        in23_ = mxGetPr(prhs[23]);
-#endif
-    } else
-        in23_ = NULL;
-    if (mxGetM(prhs[24])*mxGetN(prhs[24]) != 0) {
-        in24_ = mxWrapGetArray_double(prhs[24], &mw_err_txt_);
+        in23_ = mxWrapGetArray_double(prhs[23], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
-        in24_ = NULL;
+        in23_ = NULL;
     if (mexprofrecord_)
         mexprofrecord_[2]++;
-    MWF77_lpcomp_lap_comb_dir_addsub(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_, in8_, in9_, in10_, in11_, in12_, in13_, in14_, in15_, in16_, in17_, in18_, in19_, in20_, in21_, in22_, in23_, in24_);
-    plhs[0] = mxCreateDoubleMatrix(dim53_, 1, mxREAL);
-    mxWrapCopy_double(plhs[0], in24_, dim53_);
+    MWF77_lpcomp_gradlap_addsub(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_, in8_, in9_, in10_, in11_, in12_, in13_, in14_, in15_, in16_, in17_, in18_, in19_, in20_, in21_, in22_, in23_);
+    plhs[0] = mxCreateDoubleMatrix(dim52_, dim53_, mxREAL);
+    mxWrapCopy_double(plhs[0], in23_, dim52_*dim53_);
 
 mw_err_label:
     if (in0_)  mxFree(in0_);
@@ -1666,21 +1663,564 @@ mw_err_label:
     if (in13_)  mxFree(in13_);
     if (in14_)  mxFree(in14_);
     if (in15_)  mxFree(in15_);
-    if (in16_)  mxFree(in16_);
+    if (in18_)  mxFree(in18_);
     if (in19_)  mxFree(in19_);
     if (in20_)  mxFree(in20_);
-    if (in21_)  mxFree(in21_);
-    if (in24_)  mxFree(in24_);
+    if (in23_)  mxFree(in23_);
     if (mw_err_txt_)
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- lap_routs.mw: 279 ----
- * get_rfacs(int[1] norder0, int[1] iptype0, inout double[1] rfac, inout double[1] rfac0);
+/* ---- gradcurlS0.mw: 197 ----
+ * get_patch_id_uvs(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, inout int[npts] patch_id, inout double[2, npts] uvs_targ);
  */
-static const char* stubids3_ = "get_rfacs(i int[x], i int[x], io double[x], io double[x])";
+static const char* stubids3_ = "get_patch_id_uvs(i int[x], i int[x], i int[x], i int[x], i int[x], io int[x], io double[xx])";
 
 void mexStub3(int nlhs, mxArray* plhs[],
+              int nrhs, const mxArray* prhs[])
+{
+    const char* mw_err_txt_ = 0;
+    int*        in0_ =0; /* npatches   */
+    int*        in1_ =0; /* norders    */
+    int*        in2_ =0; /* ixyzs      */
+    int*        in3_ =0; /* iptype     */
+    int*        in4_ =0; /* npts       */
+    int*        in5_ =0; /* patch_id   */
+    double*     in6_ =0; /* uvs_targ   */
+    mwSize      dim7_;   /* 1          */
+    mwSize      dim8_;   /* npatches   */
+    mwSize      dim9_;   /* npatp1     */
+    mwSize      dim10_;   /* npatches   */
+    mwSize      dim11_;   /* 1          */
+    mwSize      dim12_;   /* npts       */
+    mwSize      dim13_;   /* 2          */
+    mwSize      dim14_;   /* npts       */
+
+    dim7_ = (mwSize) mxWrapGetScalar(prhs[7], &mw_err_txt_);
+    dim8_ = (mwSize) mxWrapGetScalar(prhs[8], &mw_err_txt_);
+    dim9_ = (mwSize) mxWrapGetScalar(prhs[9], &mw_err_txt_);
+    dim10_ = (mwSize) mxWrapGetScalar(prhs[10], &mw_err_txt_);
+    dim11_ = (mwSize) mxWrapGetScalar(prhs[11], &mw_err_txt_);
+    dim12_ = (mwSize) mxWrapGetScalar(prhs[12], &mw_err_txt_);
+    dim13_ = (mwSize) mxWrapGetScalar(prhs[13], &mw_err_txt_);
+    dim14_ = (mwSize) mxWrapGetScalar(prhs[14], &mw_err_txt_);
+
+    if (mxGetM(prhs[0])*mxGetN(prhs[0]) != dim7_) {
+        mw_err_txt_ = "Bad argument size: npatches";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[1])*mxGetN(prhs[1]) != dim8_) {
+        mw_err_txt_ = "Bad argument size: norders";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[2])*mxGetN(prhs[2]) != dim9_) {
+        mw_err_txt_ = "Bad argument size: ixyzs";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[3])*mxGetN(prhs[3]) != dim10_) {
+        mw_err_txt_ = "Bad argument size: iptype";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[4])*mxGetN(prhs[4]) != dim11_) {
+        mw_err_txt_ = "Bad argument size: npts";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[5])*mxGetN(prhs[5]) != dim12_) {
+        mw_err_txt_ = "Bad argument size: patch_id";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[6]) != dim13_ ||
+        mxGetN(prhs[6]) != dim14_) {
+        mw_err_txt_ = "Bad argument size: uvs_targ";
+        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
+        in0_ = mxWrapGetArray_int(prhs[0], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in0_ = NULL;
+    if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
+        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in1_ = NULL;
+    if (mxGetM(prhs[2])*mxGetN(prhs[2]) != 0) {
+        in2_ = mxWrapGetArray_int(prhs[2], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in2_ = NULL;
+    if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
+        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in3_ = NULL;
+    if (mxGetM(prhs[4])*mxGetN(prhs[4]) != 0) {
+        in4_ = mxWrapGetArray_int(prhs[4], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in4_ = NULL;
+    if (mxGetM(prhs[5])*mxGetN(prhs[5]) != 0) {
+        in5_ = mxWrapGetArray_int(prhs[5], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in5_ = NULL;
+    if (mxGetM(prhs[6])*mxGetN(prhs[6]) != 0) {
+        in6_ = mxWrapGetArray_double(prhs[6], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in6_ = NULL;
+    if (mexprofrecord_)
+        mexprofrecord_[3]++;
+    MWF77_get_patch_id_uvs(in0_, in1_, in2_, in3_, in4_, in5_, in6_);
+    plhs[0] = mxCreateDoubleMatrix(dim12_, 1, mxREAL);
+    mxWrapCopy_int(plhs[0], in5_, dim12_);
+    plhs[1] = mxCreateDoubleMatrix(dim13_, dim14_, mxREAL);
+    mxWrapCopy_double(plhs[1], in6_, dim13_*dim14_);
+
+mw_err_label:
+    if (in0_)  mxFree(in0_);
+    if (in1_)  mxFree(in1_);
+    if (in2_)  mxFree(in2_);
+    if (in3_)  mxFree(in3_);
+    if (in4_)  mxFree(in4_);
+    if (in5_)  mxFree(in5_);
+    if (in6_)  mxFree(in6_);
+    if (mw_err_txt_)
+        mexErrMsgTxt(mw_err_txt_);
+}
+
+/* ---- gradcurlS0.mw: 252 ----
+ * lpcomp_curllap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad, 3] wnear, double[3, npts] rjvec, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout double[3, ntarg] curlj);
+ */
+static const char* stubids4_ = "lpcomp_curllap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i int[x], i double[xx], i double[x], io double[xx])";
+
+void mexStub4(int nlhs, mxArray* plhs[],
+              int nrhs, const mxArray* prhs[])
+{
+    const char* mw_err_txt_ = 0;
+    int*        in0_ =0; /* npatches   */
+    int*        in1_ =0; /* norders    */
+    int*        in2_ =0; /* ixyzs      */
+    int*        in3_ =0; /* iptype     */
+    int*        in4_ =0; /* npts       */
+    double*     in5_ =0; /* srccoefs   */
+    double*     in6_ =0; /* srcvals    */
+    int*        in7_ =0; /* ndtarg     */
+    int*        in8_ =0; /* ntarg      */
+    double*     in9_ =0; /* targs      */
+    double*     in10_ =0; /* eps        */
+    int*        in11_ =0; /* nnz        */
+    int*        in12_ =0; /* row_ptr    */
+    int*        in13_ =0; /* col_ind    */
+    int*        in14_ =0; /* iquad      */
+    int*        in15_ =0; /* nquad      */
+    double*     in16_ =0; /* wnear      */
+    double*     in17_ =0; /* rjvec      */
+    int*        in18_ =0; /* novers     */
+    int*        in19_ =0; /* nptso      */
+    int*        in20_ =0; /* ixyzso     */
+    double*     in21_ =0; /* srcover    */
+    double*     in22_ =0; /* wover      */
+    double*     in23_ =0; /* curlj      */
+    mwSize      dim24_;   /* 1          */
+    mwSize      dim25_;   /* npatches   */
+    mwSize      dim26_;   /* npatp1     */
+    mwSize      dim27_;   /* npatches   */
+    mwSize      dim28_;   /* 1          */
+    mwSize      dim29_;   /* n9         */
+    mwSize      dim30_;   /* npts       */
+    mwSize      dim31_;   /* n12        */
+    mwSize      dim32_;   /* npts       */
+    mwSize      dim33_;   /* 1          */
+    mwSize      dim34_;   /* 1          */
+    mwSize      dim35_;   /* ndtarg     */
+    mwSize      dim36_;   /* ntarg      */
+    mwSize      dim37_;   /* 1          */
+    mwSize      dim38_;   /* 1          */
+    mwSize      dim39_;   /* ntargp1    */
+    mwSize      dim40_;   /* nnz        */
+    mwSize      dim41_;   /* nnzp1      */
+    mwSize      dim42_;   /* 1          */
+    mwSize      dim43_;   /* nquad      */
+    mwSize      dim44_;   /* 3          */
+    mwSize      dim45_;   /* 3          */
+    mwSize      dim46_;   /* npts       */
+    mwSize      dim47_;   /* npatches   */
+    mwSize      dim48_;   /* 1          */
+    mwSize      dim49_;   /* npatp1     */
+    mwSize      dim50_;   /* 12         */
+    mwSize      dim51_;   /* nptso      */
+    mwSize      dim52_;   /* nptso      */
+    mwSize      dim53_;   /* 3          */
+    mwSize      dim54_;   /* ntarg      */
+
+    dim24_ = (mwSize) mxWrapGetScalar(prhs[24], &mw_err_txt_);
+    dim25_ = (mwSize) mxWrapGetScalar(prhs[25], &mw_err_txt_);
+    dim26_ = (mwSize) mxWrapGetScalar(prhs[26], &mw_err_txt_);
+    dim27_ = (mwSize) mxWrapGetScalar(prhs[27], &mw_err_txt_);
+    dim28_ = (mwSize) mxWrapGetScalar(prhs[28], &mw_err_txt_);
+    dim29_ = (mwSize) mxWrapGetScalar(prhs[29], &mw_err_txt_);
+    dim30_ = (mwSize) mxWrapGetScalar(prhs[30], &mw_err_txt_);
+    dim31_ = (mwSize) mxWrapGetScalar(prhs[31], &mw_err_txt_);
+    dim32_ = (mwSize) mxWrapGetScalar(prhs[32], &mw_err_txt_);
+    dim33_ = (mwSize) mxWrapGetScalar(prhs[33], &mw_err_txt_);
+    dim34_ = (mwSize) mxWrapGetScalar(prhs[34], &mw_err_txt_);
+    dim35_ = (mwSize) mxWrapGetScalar(prhs[35], &mw_err_txt_);
+    dim36_ = (mwSize) mxWrapGetScalar(prhs[36], &mw_err_txt_);
+    dim37_ = (mwSize) mxWrapGetScalar(prhs[37], &mw_err_txt_);
+    dim38_ = (mwSize) mxWrapGetScalar(prhs[38], &mw_err_txt_);
+    dim39_ = (mwSize) mxWrapGetScalar(prhs[39], &mw_err_txt_);
+    dim40_ = (mwSize) mxWrapGetScalar(prhs[40], &mw_err_txt_);
+    dim41_ = (mwSize) mxWrapGetScalar(prhs[41], &mw_err_txt_);
+    dim42_ = (mwSize) mxWrapGetScalar(prhs[42], &mw_err_txt_);
+    dim43_ = (mwSize) mxWrapGetScalar(prhs[43], &mw_err_txt_);
+    dim44_ = (mwSize) mxWrapGetScalar(prhs[44], &mw_err_txt_);
+    dim45_ = (mwSize) mxWrapGetScalar(prhs[45], &mw_err_txt_);
+    dim46_ = (mwSize) mxWrapGetScalar(prhs[46], &mw_err_txt_);
+    dim47_ = (mwSize) mxWrapGetScalar(prhs[47], &mw_err_txt_);
+    dim48_ = (mwSize) mxWrapGetScalar(prhs[48], &mw_err_txt_);
+    dim49_ = (mwSize) mxWrapGetScalar(prhs[49], &mw_err_txt_);
+    dim50_ = (mwSize) mxWrapGetScalar(prhs[50], &mw_err_txt_);
+    dim51_ = (mwSize) mxWrapGetScalar(prhs[51], &mw_err_txt_);
+    dim52_ = (mwSize) mxWrapGetScalar(prhs[52], &mw_err_txt_);
+    dim53_ = (mwSize) mxWrapGetScalar(prhs[53], &mw_err_txt_);
+    dim54_ = (mwSize) mxWrapGetScalar(prhs[54], &mw_err_txt_);
+
+    if (mxGetM(prhs[0])*mxGetN(prhs[0]) != dim24_) {
+        mw_err_txt_ = "Bad argument size: npatches";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[1])*mxGetN(prhs[1]) != dim25_) {
+        mw_err_txt_ = "Bad argument size: norders";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[2])*mxGetN(prhs[2]) != dim26_) {
+        mw_err_txt_ = "Bad argument size: ixyzs";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[3])*mxGetN(prhs[3]) != dim27_) {
+        mw_err_txt_ = "Bad argument size: iptype";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[4])*mxGetN(prhs[4]) != dim28_) {
+        mw_err_txt_ = "Bad argument size: npts";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[5]) != dim29_ ||
+        mxGetN(prhs[5]) != dim30_) {
+        mw_err_txt_ = "Bad argument size: srccoefs";
+        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[6]) != dim31_ ||
+        mxGetN(prhs[6]) != dim32_) {
+        mw_err_txt_ = "Bad argument size: srcvals";
+        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[7])*mxGetN(prhs[7]) != dim33_) {
+        mw_err_txt_ = "Bad argument size: ndtarg";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[8])*mxGetN(prhs[8]) != dim34_) {
+        mw_err_txt_ = "Bad argument size: ntarg";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[9]) != dim35_ ||
+        mxGetN(prhs[9]) != dim36_) {
+        mw_err_txt_ = "Bad argument size: targs";
+        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[10])*mxGetN(prhs[10]) != dim37_) {
+        mw_err_txt_ = "Bad argument size: eps";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[11])*mxGetN(prhs[11]) != dim38_) {
+        mw_err_txt_ = "Bad argument size: nnz";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[12])*mxGetN(prhs[12]) != dim39_) {
+        mw_err_txt_ = "Bad argument size: row_ptr";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[13])*mxGetN(prhs[13]) != dim40_) {
+        mw_err_txt_ = "Bad argument size: col_ind";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[14])*mxGetN(prhs[14]) != dim41_) {
+        mw_err_txt_ = "Bad argument size: iquad";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[15])*mxGetN(prhs[15]) != dim42_) {
+        mw_err_txt_ = "Bad argument size: nquad";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[16]) != dim43_ ||
+        mxGetN(prhs[16]) != dim44_) {
+        mw_err_txt_ = "Bad argument size: wnear";
+        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[17]) != dim45_ ||
+        mxGetN(prhs[17]) != dim46_) {
+        mw_err_txt_ = "Bad argument size: rjvec";
+        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[18])*mxGetN(prhs[18]) != dim47_) {
+        mw_err_txt_ = "Bad argument size: novers";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[19])*mxGetN(prhs[19]) != dim48_) {
+        mw_err_txt_ = "Bad argument size: nptso";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[20])*mxGetN(prhs[20]) != dim49_) {
+        mw_err_txt_ = "Bad argument size: ixyzso";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[21]) != dim50_ ||
+        mxGetN(prhs[21]) != dim51_) {
+        mw_err_txt_ = "Bad argument size: srcover";
+        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[22])*mxGetN(prhs[22]) != dim52_) {
+        mw_err_txt_ = "Bad argument size: wover";        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[23]) != dim53_ ||
+        mxGetN(prhs[23]) != dim54_) {
+        mw_err_txt_ = "Bad argument size: curlj";
+        goto mw_err_label;
+    }
+
+    if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
+        in0_ = mxWrapGetArray_int(prhs[0], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in0_ = NULL;
+    if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
+        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in1_ = NULL;
+    if (mxGetM(prhs[2])*mxGetN(prhs[2]) != 0) {
+        in2_ = mxWrapGetArray_int(prhs[2], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in2_ = NULL;
+    if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
+        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in3_ = NULL;
+    if (mxGetM(prhs[4])*mxGetN(prhs[4]) != 0) {
+        in4_ = mxWrapGetArray_int(prhs[4], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in4_ = NULL;
+    if (mxGetM(prhs[5])*mxGetN(prhs[5]) != 0) {
+        if( mxGetClassID(prhs[5]) != mxDOUBLE_CLASS )
+            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
+        if (mw_err_txt_) goto mw_err_label;
+#if MX_HAS_INTERLEAVED_COMPLEX
+        in5_ = mxGetDoubles(prhs[5]);
+#else
+        in5_ = mxGetPr(prhs[5]);
+#endif
+    } else
+        in5_ = NULL;
+    if (mxGetM(prhs[6])*mxGetN(prhs[6]) != 0) {
+        if( mxGetClassID(prhs[6]) != mxDOUBLE_CLASS )
+            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
+        if (mw_err_txt_) goto mw_err_label;
+#if MX_HAS_INTERLEAVED_COMPLEX
+        in6_ = mxGetDoubles(prhs[6]);
+#else
+        in6_ = mxGetPr(prhs[6]);
+#endif
+    } else
+        in6_ = NULL;
+    if (mxGetM(prhs[7])*mxGetN(prhs[7]) != 0) {
+        in7_ = mxWrapGetArray_int(prhs[7], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in7_ = NULL;
+    if (mxGetM(prhs[8])*mxGetN(prhs[8]) != 0) {
+        in8_ = mxWrapGetArray_int(prhs[8], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in8_ = NULL;
+    if (mxGetM(prhs[9])*mxGetN(prhs[9]) != 0) {
+        if( mxGetClassID(prhs[9]) != mxDOUBLE_CLASS )
+            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
+        if (mw_err_txt_) goto mw_err_label;
+#if MX_HAS_INTERLEAVED_COMPLEX
+        in9_ = mxGetDoubles(prhs[9]);
+#else
+        in9_ = mxGetPr(prhs[9]);
+#endif
+    } else
+        in9_ = NULL;
+    if (mxGetM(prhs[10])*mxGetN(prhs[10]) != 0) {
+        if( mxGetClassID(prhs[10]) != mxDOUBLE_CLASS )
+            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
+        if (mw_err_txt_) goto mw_err_label;
+#if MX_HAS_INTERLEAVED_COMPLEX
+        in10_ = mxGetDoubles(prhs[10]);
+#else
+        in10_ = mxGetPr(prhs[10]);
+#endif
+    } else
+        in10_ = NULL;
+    if (mxGetM(prhs[11])*mxGetN(prhs[11]) != 0) {
+        in11_ = mxWrapGetArray_int(prhs[11], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in11_ = NULL;
+    if (mxGetM(prhs[12])*mxGetN(prhs[12]) != 0) {
+        in12_ = mxWrapGetArray_int(prhs[12], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in12_ = NULL;
+    if (mxGetM(prhs[13])*mxGetN(prhs[13]) != 0) {
+        in13_ = mxWrapGetArray_int(prhs[13], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in13_ = NULL;
+    if (mxGetM(prhs[14])*mxGetN(prhs[14]) != 0) {
+        in14_ = mxWrapGetArray_int(prhs[14], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in14_ = NULL;
+    if (mxGetM(prhs[15])*mxGetN(prhs[15]) != 0) {
+        in15_ = mxWrapGetArray_int(prhs[15], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in15_ = NULL;
+    if (mxGetM(prhs[16])*mxGetN(prhs[16]) != 0) {
+        if( mxGetClassID(prhs[16]) != mxDOUBLE_CLASS )
+            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
+        if (mw_err_txt_) goto mw_err_label;
+#if MX_HAS_INTERLEAVED_COMPLEX
+        in16_ = mxGetDoubles(prhs[16]);
+#else
+        in16_ = mxGetPr(prhs[16]);
+#endif
+    } else
+        in16_ = NULL;
+    if (mxGetM(prhs[17])*mxGetN(prhs[17]) != 0) {
+        if( mxGetClassID(prhs[17]) != mxDOUBLE_CLASS )
+            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
+        if (mw_err_txt_) goto mw_err_label;
+#if MX_HAS_INTERLEAVED_COMPLEX
+        in17_ = mxGetDoubles(prhs[17]);
+#else
+        in17_ = mxGetPr(prhs[17]);
+#endif
+    } else
+        in17_ = NULL;
+    if (mxGetM(prhs[18])*mxGetN(prhs[18]) != 0) {
+        in18_ = mxWrapGetArray_int(prhs[18], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in18_ = NULL;
+    if (mxGetM(prhs[19])*mxGetN(prhs[19]) != 0) {
+        in19_ = mxWrapGetArray_int(prhs[19], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in19_ = NULL;
+    if (mxGetM(prhs[20])*mxGetN(prhs[20]) != 0) {
+        in20_ = mxWrapGetArray_int(prhs[20], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in20_ = NULL;
+    if (mxGetM(prhs[21])*mxGetN(prhs[21]) != 0) {
+        if( mxGetClassID(prhs[21]) != mxDOUBLE_CLASS )
+            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
+        if (mw_err_txt_) goto mw_err_label;
+#if MX_HAS_INTERLEAVED_COMPLEX
+        in21_ = mxGetDoubles(prhs[21]);
+#else
+        in21_ = mxGetPr(prhs[21]);
+#endif
+    } else
+        in21_ = NULL;
+    if (mxGetM(prhs[22])*mxGetN(prhs[22]) != 0) {
+        if( mxGetClassID(prhs[22]) != mxDOUBLE_CLASS )
+            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
+        if (mw_err_txt_) goto mw_err_label;
+#if MX_HAS_INTERLEAVED_COMPLEX
+        in22_ = mxGetDoubles(prhs[22]);
+#else
+        in22_ = mxGetPr(prhs[22]);
+#endif
+    } else
+        in22_ = NULL;
+    if (mxGetM(prhs[23])*mxGetN(prhs[23]) != 0) {
+        in23_ = mxWrapGetArray_double(prhs[23], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
+    } else
+        in23_ = NULL;
+    if (mexprofrecord_)
+        mexprofrecord_[4]++;
+    MWF77_lpcomp_curllap_addsub(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_, in8_, in9_, in10_, in11_, in12_, in13_, in14_, in15_, in16_, in17_, in18_, in19_, in20_, in21_, in22_, in23_);
+    plhs[0] = mxCreateDoubleMatrix(dim53_, dim54_, mxREAL);
+    mxWrapCopy_double(plhs[0], in23_, dim53_*dim54_);
+
+mw_err_label:
+    if (in0_)  mxFree(in0_);
+    if (in1_)  mxFree(in1_);
+    if (in2_)  mxFree(in2_);
+    if (in3_)  mxFree(in3_);
+    if (in4_)  mxFree(in4_);
+    if (in7_)  mxFree(in7_);
+    if (in8_)  mxFree(in8_);
+    if (in11_)  mxFree(in11_);
+    if (in12_)  mxFree(in12_);
+    if (in13_)  mxFree(in13_);
+    if (in14_)  mxFree(in14_);
+    if (in15_)  mxFree(in15_);
+    if (in18_)  mxFree(in18_);
+    if (in19_)  mxFree(in19_);
+    if (in20_)  mxFree(in20_);
+    if (in23_)  mxFree(in23_);
+    if (mw_err_txt_)
+        mexErrMsgTxt(mw_err_txt_);
+}
+
+/* ---- gradcurlS0.mw: 364 ----
+ * get_rfacs(int[1] norder0, int[1] iptype0, inout double[1] rfac, inout double[1] rfac0);
+ */
+static const char* stubids5_ = "get_rfacs(i int[x], i int[x], io double[x], io double[x])";
+
+void mexStub5(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
@@ -1739,7 +2279,7 @@ void mexStub3(int nlhs, mxArray* plhs[],
     } else
         in3_ = NULL;
     if (mexprofrecord_)
-        mexprofrecord_[3]++;
+        mexprofrecord_[5]++;
     MWF77_get_rfacs(in0_, in1_, in2_, in3_);
     plhs[0] = mxCreateDoubleMatrix(dim6_, 1, mxREAL);
     mxWrapCopy_double(plhs[0], in2_, dim6_);
@@ -1755,12 +2295,12 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- lap_routs.mw: 284 ----
+/* ---- gradcurlS0.mw: 369 ----
  * get_centroid_rads(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, inout double[n3, npatches] cms, inout double[npatches] rads);
  */
-static const char* stubids4_ = "get_centroid_rads(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], io double[xx], io double[x])";
+static const char* stubids6_ = "get_centroid_rads(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], io double[xx], io double[x])";
 
-void mexStub4(int nlhs, mxArray* plhs[],
+void mexStub6(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
@@ -1884,7 +2424,7 @@ void mexStub4(int nlhs, mxArray* plhs[],
     } else
         in7_ = NULL;
     if (mexprofrecord_)
-        mexprofrecord_[4]++;
+        mexprofrecord_[6]++;
     MWF77_get_centroid_rads(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_);
     plhs[0] = mxCreateDoubleMatrix(dim15_, dim16_, mxREAL);
     mxWrapCopy_double(plhs[0], in6_, dim15_*dim16_);
@@ -1903,12 +2443,12 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- lap_routs.mw: 288 ----
+/* ---- gradcurlS0.mw: 373 ----
  * findnearmem(double[n3, npatches] cms, int[1] npatches, double[npatches] rad_near, int[1] ndtarg, double[ndtarg, ntarg] targs, int[1] ntarg, inout int[1] nnz);
  */
-static const char* stubids5_ = "findnearmem(i double[xx], i int[x], i double[x], i int[x], i double[xx], i int[x], io int[x])";
+static const char* stubids7_ = "findnearmem(i double[xx], i int[x], i double[x], i int[x], i double[xx], i int[x], io int[x])";
 
-void mexStub5(int nlhs, mxArray* plhs[],
+void mexStub7(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
@@ -2029,7 +2569,7 @@ void mexStub5(int nlhs, mxArray* plhs[],
     } else
         in6_ = NULL;
     if (mexprofrecord_)
-        mexprofrecord_[5]++;
+        mexprofrecord_[7]++;
     MWF77_findnearmem(in0_, in1_, in2_, in3_, in4_, in5_, in6_);
     plhs[0] = mxCreateDoubleMatrix(dim15_, 1, mxREAL);
     mxWrapCopy_int(plhs[0], in6_, dim15_);
@@ -2043,12 +2583,12 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- lap_routs.mw: 294 ----
+/* ---- gradcurlS0.mw: 379 ----
  * findnear(double[n3, npatches] cms, int[1] npatches, double[npatches] rad_near, int[1] ndtarg, double[ndtarg, ntarg] targs, int[1] ntarg, inout int[ntp1] row_ptr, inout int[nnz] col_ind);
  */
-static const char* stubids6_ = "findnear(i double[xx], i int[x], i double[x], i int[x], i double[xx], i int[x], io int[x], io int[x])";
+static const char* stubids8_ = "findnear(i double[xx], i int[x], i double[x], i int[x], i double[xx], i int[x], io int[x], io int[x])";
 
-void mexStub6(int nlhs, mxArray* plhs[],
+void mexStub8(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
@@ -2182,7 +2722,7 @@ void mexStub6(int nlhs, mxArray* plhs[],
     } else
         in7_ = NULL;
     if (mexprofrecord_)
-        mexprofrecord_[6]++;
+        mexprofrecord_[8]++;
     MWF77_findnear(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_);
     plhs[0] = mxCreateDoubleMatrix(dim16_, 1, mxREAL);
     mxWrapCopy_int(plhs[0], in6_, dim16_);
@@ -2199,12 +2739,12 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- lap_routs.mw: 297 ----
+/* ---- gradcurlS0.mw: 382 ----
  * get_iquad_rsc(int[1] npatches, int[npp1] ixyzs, int[1] npts, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, inout int[nnzp1] iquad);
  */
-static const char* stubids7_ = "get_iquad_rsc(i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], io int[x])";
+static const char* stubids9_ = "get_iquad_rsc(i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], io int[x])";
 
-void mexStub7(int nlhs, mxArray* plhs[],
+void mexStub9(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
@@ -2302,7 +2842,7 @@ void mexStub7(int nlhs, mxArray* plhs[],
     } else
         in6_ = NULL;
     if (mexprofrecord_)
-        mexprofrecord_[7]++;
+        mexprofrecord_[9]++;
     MWF77_get_iquad_rsc(in0_, in1_, in2_, in3_, in4_, in5_, in6_);
     plhs[0] = mxCreateDoubleMatrix(dim13_, 1, mxREAL);
     mxWrapCopy_int(plhs[0], in6_, dim13_);
@@ -2319,12 +2859,12 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- lap_routs.mw: 310 ----
- * getnearquad_lap_comb_dir(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, int[npts] patch_id, double[2, npts] uvs_targ, double[1] eps, dcomplex[2] zpars, int[1] iquadtype, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0, int[1] nquad, inout double[nquad] wnear);
+/* ---- gradcurlS0.mw: 396 ----
+ * getnearquad_magnetostatics(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, int[ntarg] patch_id, double[2, ntarg] uvs_targ, double[1] eps, int[1] iquadtype, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0, int[1] nquad, inout double[nquad, 3] wnear);
  */
-static const char* stubids8_ = "getnearquad_lap_comb_dir(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i int[x], i double[xx], i double[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[x], i int[x], io double[x])";
+static const char* stubids10_ = "getnearquad_magnetostatics(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[x], i int[x], io double[xx])";
 
-void mexStub8(int nlhs, mxArray* plhs[],
+void mexStub10(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
@@ -2341,42 +2881,42 @@ void mexStub8(int nlhs, mxArray* plhs[],
     int*        in10_ =0; /* patch_id   */
     double*     in11_ =0; /* uvs_targ   */
     double*     in12_ =0; /* eps        */
-    dcomplex*   in13_ =0; /* zpars      */
-    int*        in14_ =0; /* iquadtype  */
-    int*        in15_ =0; /* nnz        */
-    int*        in16_ =0; /* row_ptr    */
-    int*        in17_ =0; /* col_ind    */
-    int*        in18_ =0; /* iquad      */
-    double*     in19_ =0; /* rfac0      */
-    int*        in20_ =0; /* nquad      */
-    double*     in21_ =0; /* wnear      */
-    mwSize      dim22_;   /* 1          */
-    mwSize      dim23_;   /* npatches   */
-    mwSize      dim24_;   /* npp1       */
-    mwSize      dim25_;   /* npatches   */
-    mwSize      dim26_;   /* 1          */
-    mwSize      dim27_;   /* n9         */
-    mwSize      dim28_;   /* npts       */
-    mwSize      dim29_;   /* n12        */
-    mwSize      dim30_;   /* npts       */
+    int*        in13_ =0; /* iquadtype  */
+    int*        in14_ =0; /* nnz        */
+    int*        in15_ =0; /* row_ptr    */
+    int*        in16_ =0; /* col_ind    */
+    int*        in17_ =0; /* iquad      */
+    double*     in18_ =0; /* rfac0      */
+    int*        in19_ =0; /* nquad      */
+    double*     in20_ =0; /* wnear      */
+    mwSize      dim21_;   /* 1          */
+    mwSize      dim22_;   /* npatches   */
+    mwSize      dim23_;   /* npp1       */
+    mwSize      dim24_;   /* npatches   */
+    mwSize      dim25_;   /* 1          */
+    mwSize      dim26_;   /* n9         */
+    mwSize      dim27_;   /* npts       */
+    mwSize      dim28_;   /* n12        */
+    mwSize      dim29_;   /* npts       */
+    mwSize      dim30_;   /* 1          */
     mwSize      dim31_;   /* 1          */
-    mwSize      dim32_;   /* 1          */
-    mwSize      dim33_;   /* ndtarg     */
+    mwSize      dim32_;   /* ndtarg     */
+    mwSize      dim33_;   /* ntarg      */
     mwSize      dim34_;   /* ntarg      */
-    mwSize      dim35_;   /* npts       */
-    mwSize      dim36_;   /* 2          */
-    mwSize      dim37_;   /* npts       */
+    mwSize      dim35_;   /* 2          */
+    mwSize      dim36_;   /* ntarg      */
+    mwSize      dim37_;   /* 1          */
     mwSize      dim38_;   /* 1          */
-    mwSize      dim39_;   /* 2          */
-    mwSize      dim40_;   /* 1          */
-    mwSize      dim41_;   /* 1          */
-    mwSize      dim42_;   /* ntp1       */
-    mwSize      dim43_;   /* nnz        */
-    mwSize      dim44_;   /* nnzp1      */
-    mwSize      dim45_;   /* 1          */
-    mwSize      dim46_;   /* 1          */
-    mwSize      dim47_;   /* nquad      */
+    mwSize      dim39_;   /* 1          */
+    mwSize      dim40_;   /* ntp1       */
+    mwSize      dim41_;   /* nnz        */
+    mwSize      dim42_;   /* nnzp1      */
+    mwSize      dim43_;   /* 1          */
+    mwSize      dim44_;   /* 1          */
+    mwSize      dim45_;   /* nquad      */
+    mwSize      dim46_;   /* 3          */
 
+    dim21_ = (mwSize) mxWrapGetScalar(prhs[21], &mw_err_txt_);
     dim22_ = (mwSize) mxWrapGetScalar(prhs[22], &mw_err_txt_);
     dim23_ = (mwSize) mxWrapGetScalar(prhs[23], &mw_err_txt_);
     dim24_ = (mwSize) mxWrapGetScalar(prhs[24], &mw_err_txt_);
@@ -2402,102 +2942,99 @@ void mexStub8(int nlhs, mxArray* plhs[],
     dim44_ = (mwSize) mxWrapGetScalar(prhs[44], &mw_err_txt_);
     dim45_ = (mwSize) mxWrapGetScalar(prhs[45], &mw_err_txt_);
     dim46_ = (mwSize) mxWrapGetScalar(prhs[46], &mw_err_txt_);
-    dim47_ = (mwSize) mxWrapGetScalar(prhs[47], &mw_err_txt_);
 
-    if (mxGetM(prhs[0])*mxGetN(prhs[0]) != dim22_) {
+    if (mxGetM(prhs[0])*mxGetN(prhs[0]) != dim21_) {
         mw_err_txt_ = "Bad argument size: npatches";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[1])*mxGetN(prhs[1]) != dim23_) {
+    if (mxGetM(prhs[1])*mxGetN(prhs[1]) != dim22_) {
         mw_err_txt_ = "Bad argument size: norders";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[2])*mxGetN(prhs[2]) != dim24_) {
+    if (mxGetM(prhs[2])*mxGetN(prhs[2]) != dim23_) {
         mw_err_txt_ = "Bad argument size: ixyzs";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[3])*mxGetN(prhs[3]) != dim25_) {
+    if (mxGetM(prhs[3])*mxGetN(prhs[3]) != dim24_) {
         mw_err_txt_ = "Bad argument size: iptype";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[4])*mxGetN(prhs[4]) != dim26_) {
+    if (mxGetM(prhs[4])*mxGetN(prhs[4]) != dim25_) {
         mw_err_txt_ = "Bad argument size: npts";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[5]) != dim27_ ||
-        mxGetN(prhs[5]) != dim28_) {
+    if (mxGetM(prhs[5]) != dim26_ ||
+        mxGetN(prhs[5]) != dim27_) {
         mw_err_txt_ = "Bad argument size: srccoefs";
         goto mw_err_label;
     }
 
-    if (mxGetM(prhs[6]) != dim29_ ||
-        mxGetN(prhs[6]) != dim30_) {
+    if (mxGetM(prhs[6]) != dim28_ ||
+        mxGetN(prhs[6]) != dim29_) {
         mw_err_txt_ = "Bad argument size: srcvals";
         goto mw_err_label;
     }
 
-    if (mxGetM(prhs[7])*mxGetN(prhs[7]) != dim31_) {
+    if (mxGetM(prhs[7])*mxGetN(prhs[7]) != dim30_) {
         mw_err_txt_ = "Bad argument size: ndtarg";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[8])*mxGetN(prhs[8]) != dim32_) {
+    if (mxGetM(prhs[8])*mxGetN(prhs[8]) != dim31_) {
         mw_err_txt_ = "Bad argument size: ntarg";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[9]) != dim33_ ||
-        mxGetN(prhs[9]) != dim34_) {
+    if (mxGetM(prhs[9]) != dim32_ ||
+        mxGetN(prhs[9]) != dim33_) {
         mw_err_txt_ = "Bad argument size: targs";
         goto mw_err_label;
     }
 
-    if (mxGetM(prhs[10])*mxGetN(prhs[10]) != dim35_) {
+    if (mxGetM(prhs[10])*mxGetN(prhs[10]) != dim34_) {
         mw_err_txt_ = "Bad argument size: patch_id";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[11]) != dim36_ ||
-        mxGetN(prhs[11]) != dim37_) {
+    if (mxGetM(prhs[11]) != dim35_ ||
+        mxGetN(prhs[11]) != dim36_) {
         mw_err_txt_ = "Bad argument size: uvs_targ";
         goto mw_err_label;
     }
 
-    if (mxGetM(prhs[12])*mxGetN(prhs[12]) != dim38_) {
+    if (mxGetM(prhs[12])*mxGetN(prhs[12]) != dim37_) {
         mw_err_txt_ = "Bad argument size: eps";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[13])*mxGetN(prhs[13]) != dim39_) {
-        mw_err_txt_ = "Bad argument size: zpars";        goto mw_err_label;
-    }
-
-    if (mxGetM(prhs[14])*mxGetN(prhs[14]) != dim40_) {
+    if (mxGetM(prhs[13])*mxGetN(prhs[13]) != dim38_) {
         mw_err_txt_ = "Bad argument size: iquadtype";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[15])*mxGetN(prhs[15]) != dim41_) {
+    if (mxGetM(prhs[14])*mxGetN(prhs[14]) != dim39_) {
         mw_err_txt_ = "Bad argument size: nnz";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[16])*mxGetN(prhs[16]) != dim42_) {
+    if (mxGetM(prhs[15])*mxGetN(prhs[15]) != dim40_) {
         mw_err_txt_ = "Bad argument size: row_ptr";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[17])*mxGetN(prhs[17]) != dim43_) {
+    if (mxGetM(prhs[16])*mxGetN(prhs[16]) != dim41_) {
         mw_err_txt_ = "Bad argument size: col_ind";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[18])*mxGetN(prhs[18]) != dim44_) {
+    if (mxGetM(prhs[17])*mxGetN(prhs[17]) != dim42_) {
         mw_err_txt_ = "Bad argument size: iquad";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[19])*mxGetN(prhs[19]) != dim45_) {
+    if (mxGetM(prhs[18])*mxGetN(prhs[18]) != dim43_) {
         mw_err_txt_ = "Bad argument size: rfac0";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[20])*mxGetN(prhs[20]) != dim46_) {
+    if (mxGetM(prhs[19])*mxGetN(prhs[19]) != dim44_) {
         mw_err_txt_ = "Bad argument size: nquad";        goto mw_err_label;
     }
 
-    if (mxGetM(prhs[21])*mxGetN(prhs[21]) != dim47_) {
-        mw_err_txt_ = "Bad argument size: wnear";        goto mw_err_label;
+    if (mxGetM(prhs[20]) != dim45_ ||
+        mxGetN(prhs[20]) != dim46_) {
+        mw_err_txt_ = "Bad argument size: wnear";
+        goto mw_err_label;
     }
 
     if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
@@ -2604,10 +3141,7 @@ void mexStub8(int nlhs, mxArray* plhs[],
     } else
         in12_ = NULL;
     if (mxGetM(prhs[13])*mxGetN(prhs[13]) != 0) {
-        if( mxGetClassID(prhs[13]) != mxDOUBLE_CLASS )
-            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
-        if (mw_err_txt_) goto mw_err_label;
-        in13_ = mxWrapGetArray_dcomplex(prhs[13], &mw_err_txt_);
+        in13_ = mxWrapGetArray_int(prhs[13], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -2637,39 +3171,33 @@ void mexStub8(int nlhs, mxArray* plhs[],
     } else
         in17_ = NULL;
     if (mxGetM(prhs[18])*mxGetN(prhs[18]) != 0) {
-        in18_ = mxWrapGetArray_int(prhs[18], &mw_err_txt_);
-        if (mw_err_txt_)
-            goto mw_err_label;
-    } else
-        in18_ = NULL;
-    if (mxGetM(prhs[19])*mxGetN(prhs[19]) != 0) {
-        if( mxGetClassID(prhs[19]) != mxDOUBLE_CLASS )
+        if( mxGetClassID(prhs[18]) != mxDOUBLE_CLASS )
             mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
         if (mw_err_txt_) goto mw_err_label;
 #if MX_HAS_INTERLEAVED_COMPLEX
-        in19_ = mxGetDoubles(prhs[19]);
+        in18_ = mxGetDoubles(prhs[18]);
 #else
-        in19_ = mxGetPr(prhs[19]);
+        in18_ = mxGetPr(prhs[18]);
 #endif
+    } else
+        in18_ = NULL;
+    if (mxGetM(prhs[19])*mxGetN(prhs[19]) != 0) {
+        in19_ = mxWrapGetArray_int(prhs[19], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
     } else
         in19_ = NULL;
     if (mxGetM(prhs[20])*mxGetN(prhs[20]) != 0) {
-        in20_ = mxWrapGetArray_int(prhs[20], &mw_err_txt_);
+        in20_ = mxWrapGetArray_double(prhs[20], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in20_ = NULL;
-    if (mxGetM(prhs[21])*mxGetN(prhs[21]) != 0) {
-        in21_ = mxWrapGetArray_double(prhs[21], &mw_err_txt_);
-        if (mw_err_txt_)
-            goto mw_err_label;
-    } else
-        in21_ = NULL;
     if (mexprofrecord_)
-        mexprofrecord_[8]++;
-    MWF77_getnearquad_lap_comb_dir(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_, in8_, in9_, in10_, in11_, in12_, in13_, in14_, in15_, in16_, in17_, in18_, in19_, in20_, in21_);
-    plhs[0] = mxCreateDoubleMatrix(dim47_, 1, mxREAL);
-    mxWrapCopy_double(plhs[0], in21_, dim47_);
+        mexprofrecord_[10]++;
+    MWF77_getnearquad_magnetostatics(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_, in8_, in9_, in10_, in11_, in12_, in13_, in14_, in15_, in16_, in17_, in18_, in19_, in20_);
+    plhs[0] = mxCreateDoubleMatrix(dim45_, dim46_, mxREAL);
+    mxWrapCopy_double(plhs[0], in20_, dim45_*dim46_);
 
 mw_err_label:
     if (in0_)  mxFree(in0_);
@@ -2685,19 +3213,18 @@ mw_err_label:
     if (in15_)  mxFree(in15_);
     if (in16_)  mxFree(in16_);
     if (in17_)  mxFree(in17_);
-    if (in18_)  mxFree(in18_);
+    if (in19_)  mxFree(in19_);
     if (in20_)  mxFree(in20_);
-    if (in21_)  mxFree(in21_);
     if (mw_err_txt_)
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- lap_routs.mw: 335 ----
+/* ---- gradcurlS0.mw: 417 ----
  * rsc_to_csc(int[1] npatches, int[1] ntarg, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, inout int[npatp1] col_ptr, inout int[nnz] row_ind, inout int[nnz] iper);
  */
-static const char* stubids9_ = "rsc_to_csc(i int[x], i int[x], i int[x], i int[x], i int[x], io int[x], io int[x], io int[x])";
+static const char* stubids11_ = "rsc_to_csc(i int[x], i int[x], i int[x], i int[x], i int[x], io int[x], io int[x], io int[x])";
 
-void mexStub9(int nlhs, mxArray* plhs[],
+void mexStub11(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
@@ -2808,7 +3335,7 @@ void mexStub9(int nlhs, mxArray* plhs[],
     } else
         in7_ = NULL;
     if (mexprofrecord_)
-        mexprofrecord_[9]++;
+        mexprofrecord_[11]++;
     MWF77_rsc_to_csc(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_);
     plhs[0] = mxCreateDoubleMatrix(dim13_, 1, mxREAL);
     mxWrapCopy_int(plhs[0], in5_, dim13_);
@@ -2861,12 +3388,16 @@ void mexFunction(int nlhs, mxArray* plhs[],
         mexStub8(nlhs,plhs, nrhs-1,prhs+1);
     else if (strcmp(id, stubids9_) == 0)
         mexStub9(nlhs,plhs, nrhs-1,prhs+1);
+    else if (strcmp(id, stubids10_) == 0)
+        mexStub10(nlhs,plhs, nrhs-1,prhs+1);
+    else if (strcmp(id, stubids11_) == 0)
+        mexStub11(nlhs,plhs, nrhs-1,prhs+1);
     else if (strcmp(id, "*profile on*") == 0) {
         if (!mexprofrecord_) {
-            mexprofrecord_ = (int*) malloc(10 * sizeof(int));
+            mexprofrecord_ = (int*) malloc(12 * sizeof(int));
             mexLock();
         }
-        memset(mexprofrecord_, 0, 10 * sizeof(int));
+        memset(mexprofrecord_, 0, 12 * sizeof(int));
     } else if (strcmp(id, "*profile off*") == 0) {
         if (mexprofrecord_) {
             free(mexprofrecord_);
@@ -2876,15 +3407,17 @@ void mexFunction(int nlhs, mxArray* plhs[],
     } else if (strcmp(id, "*profile report*") == 0) {
         if (!mexprofrecord_)
             mexPrintf("Profiler inactive\n");
-        mexPrintf("%d calls to lap_routs.mw:104\n", mexprofrecord_[1]);
-        mexPrintf("%d calls to lap_routs.mw:158\n", mexprofrecord_[2]);
-        mexPrintf("%d calls to lap_routs.mw:279\n", mexprofrecord_[3]);
-        mexPrintf("%d calls to lap_routs.mw:284\n", mexprofrecord_[4]);
-        mexPrintf("%d calls to lap_routs.mw:288\n", mexprofrecord_[5]);
-        mexPrintf("%d calls to lap_routs.mw:294\n", mexprofrecord_[6]);
-        mexPrintf("%d calls to lap_routs.mw:297\n", mexprofrecord_[7]);
-        mexPrintf("%d calls to lap_routs.mw:310\n", mexprofrecord_[8]);
-        mexPrintf("%d calls to lap_routs.mw:335\n", mexprofrecord_[9]);
+        mexPrintf("%d calls to gradcurlS0.mw:69\n", mexprofrecord_[1]);
+        mexPrintf("%d calls to gradcurlS0.mw:124\n", mexprofrecord_[2]);
+        mexPrintf("%d calls to gradcurlS0.mw:197\n", mexprofrecord_[3]);
+        mexPrintf("%d calls to gradcurlS0.mw:252\n", mexprofrecord_[4]);
+        mexPrintf("%d calls to gradcurlS0.mw:364\n", mexprofrecord_[5]);
+        mexPrintf("%d calls to gradcurlS0.mw:369\n", mexprofrecord_[6]);
+        mexPrintf("%d calls to gradcurlS0.mw:373\n", mexprofrecord_[7]);
+        mexPrintf("%d calls to gradcurlS0.mw:379\n", mexprofrecord_[8]);
+        mexPrintf("%d calls to gradcurlS0.mw:382\n", mexprofrecord_[9]);
+        mexPrintf("%d calls to gradcurlS0.mw:396\n", mexprofrecord_[10]);
+        mexPrintf("%d calls to gradcurlS0.mw:417\n", mexprofrecord_[11]);
     } else if (strcmp(id, "*profile log*") == 0) {
         FILE* logfp;
         if (nrhs != 2 || mxGetString(prhs[1], id, sizeof(id)) != 0)
@@ -2894,15 +3427,17 @@ void mexFunction(int nlhs, mxArray* plhs[],
             mexErrMsgTxt("Cannot open log for output");
         if (!mexprofrecord_)
             fprintf(logfp, "Profiler inactive\n");
-        fprintf(logfp, "%d calls to lap_routs.mw:104\n", mexprofrecord_[1]);
-        fprintf(logfp, "%d calls to lap_routs.mw:158\n", mexprofrecord_[2]);
-        fprintf(logfp, "%d calls to lap_routs.mw:279\n", mexprofrecord_[3]);
-        fprintf(logfp, "%d calls to lap_routs.mw:284\n", mexprofrecord_[4]);
-        fprintf(logfp, "%d calls to lap_routs.mw:288\n", mexprofrecord_[5]);
-        fprintf(logfp, "%d calls to lap_routs.mw:294\n", mexprofrecord_[6]);
-        fprintf(logfp, "%d calls to lap_routs.mw:297\n", mexprofrecord_[7]);
-        fprintf(logfp, "%d calls to lap_routs.mw:310\n", mexprofrecord_[8]);
-        fprintf(logfp, "%d calls to lap_routs.mw:335\n", mexprofrecord_[9]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:69\n", mexprofrecord_[1]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:124\n", mexprofrecord_[2]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:197\n", mexprofrecord_[3]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:252\n", mexprofrecord_[4]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:364\n", mexprofrecord_[5]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:369\n", mexprofrecord_[6]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:373\n", mexprofrecord_[7]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:379\n", mexprofrecord_[8]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:382\n", mexprofrecord_[9]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:396\n", mexprofrecord_[10]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:417\n", mexprofrecord_[11]);
         fclose(logfp);
     } else
         mexErrMsgTxt("Unknown identifier");
