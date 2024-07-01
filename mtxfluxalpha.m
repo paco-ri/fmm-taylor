@@ -42,10 +42,11 @@ nxminusmHvals = surfacefun_to_array(nxminusmH,dom,S);
 
 % single layer potential evals
 dpars = [1.0, 0.0];
-% TODO: allow user to input quadrature 
-S0nx1 = lap3d.dirichlet.eval(S,dpars,nxminusmHvals(:,1),eps);
-S0nx2 = lap3d.dirichlet.eval(S,dpars,nxminusmHvals(:,2),eps);
-S0nx3 = lap3d.dirichlet.eval(S,dpars,nxminusmHvals(:,3),eps);
+% TODO: allow user to input Laplace quadrature 
+Qlap = lap3d.dirichlet.get_quadrature_correction(S,dpars,eps,S);
+S0nx1 = lap3d.dirichlet.eval(S,dpars,nxminusmHvals(:,1),eps,S,Qlap);
+S0nx2 = lap3d.dirichlet.eval(S,dpars,nxminusmHvals(:,2),eps,S,Qlap);
+S0nx3 = lap3d.dirichlet.eval(S,dpars,nxminusmHvals(:,3),eps,S,Qlap);
 S0nx = [S0nx1 S0nx2 S0nx3];
 S0nx = array_to_surfacefun(S0nx,dom,S);
 

@@ -38,6 +38,12 @@ n = normal(dom);
 ngradS0sigma = dot(n,gradS0sigma);
 
 % construct Bsigma
-Bsigma = sigma/2 + ngradS0sigma;
+Bsigma = sigma./2 + ngradS0sigma;
+% if eval_gradS0 is average of interior and exterior limit
+% Bsigma = -sigma./2 + ngradS0sigma; 
+% if eval_gradS0 is exterior limit
+% Bsigma = sigma + ngradS0sigma;
+% no identity term
+% Bsigma = ngradS0sigma;
 
 end

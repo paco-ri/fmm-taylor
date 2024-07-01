@@ -41,7 +41,7 @@ nxvals = surfacefun_to_array(nxgradS0sigma,dom,S);
 
 % single layer potential evals
 dpars = [1.0, 0.0];
-% TODO: allow user to input quadrature 
+% TODO: allow user to input Laplace quadrature 
 S0nx1 = lap3d.dirichlet.eval(S,dpars,nxvals(:,1),eps);
 S0nx2 = lap3d.dirichlet.eval(S,dpars,nxvals(:,2),eps);
 S0nx3 = lap3d.dirichlet.eval(S,dpars,nxvals(:,3),eps);

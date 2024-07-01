@@ -1,3 +1,6 @@
 *.txt
 *.asv
 *~
+*.fig
+*.mat
+*.eps

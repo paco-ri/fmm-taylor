@@ -1,5 +1,5 @@
-n = 8; 
-nu = 4;
+n = 4; 
+nu = 10;
 nv = nu*3;
 dom = circulartorus(n,nu,nv);
 
@@ -14,10 +14,24 @@ f = surfacefunv(@(x,y,z) -sintheta(x,y,z).*cosphi(x,y,z), ...
     @(x,y,z) -sintheta(x,y,z).*sinphi(x,y,z), ...
     @(x,y,z) costheta(x,y,z), dom);
 
-plot(norm(f))
+% plot(norm(f))
+% hold on
+% plot(dom)
+% colorbar
+
+g = surfacefunv(@(x,y,z) -costheta(x,y,z).^1.*sintheta(x,y,z).*cosphi(x,y,z), ...
+    @(x,y,z) -costheta(x,y,z).^1.*sintheta(x,y,z).*sinphi(x,y,z), ...
+    @(x,y,z) costheta(x,y,z).^1.*costheta(x,y,z), dom);
+
+S = surfer.surfacemesh_to_surfer(dom);
+G = surfacefun_to_array(g,dom,S);
+gg = array_to_surfacefun(G,dom,S);
+diff = g - gg;
+
+plot(norm(diff))
 hold on
-plot(dom)
 colorbar
 
-integ = intacyc(f,n,nu,nv);
+% integ = intacyc(f,n,nu,nv);
+integ = intacyc(g,n,nu,nv);
 disp(integ)

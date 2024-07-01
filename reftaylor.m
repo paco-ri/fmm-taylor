@@ -2,30 +2,44 @@ function B0 = reftaylor(ntheta,rmin,rmaj,jmag,lambda,targ)
 %REFTAYLOR compute a reference Taylor state corresponding to a current ring
 % docs later 
 
-source = zeros([ntheta 3]);
-current = zeros([ntheta 3]);
+source = zeros([3 ntheta]); % points on a ring in the xz-plane 
+current = zeros([3 ntheta]); % current at these points
 for i = 1:ntheta
     theta = 2*pi*(i-1)/ntheta;
-    source(i,1) = rmaj + rmin*cos(theta);
-    source(i,3) = rmin*sin(theta);
-    current(i,1) = -jmag*rmin*sin(theta);
-    current(i,3) = jmag*rmin*cos(theta);
+    source(1,i) = rmaj + rmin*cos(theta);
+    % source(2,i) = rmaj + rmin*cos(theta);
+    source(3,i) = rmin*sin(theta);
+    current(1,i) = -jmag*rmin*sin(theta);
+    % current(2,i) = -jmag*rmin*sin(theta);   
+    current(3,i) = jmag*rmin*cos(theta);
 end
 
-helmker = zeros([ntheta 1]);
-gradhelmker = zeros([ntheta 3]);
-for i = 1:ntheta
-    for j = 1:3
-        gradhelmker(i,j) = targ(j) - source(i,j);
+if lambda == 0
+    lapker = zeros([1 ntheta]);
+    gradlapker = zeros([3 ntheta]);
+    for i = 1:ntheta
+        rr = targ - source(:,i);
+        lapker(i) = 1/norm(rr);
+        gradlapker(:,i) = rr./norm(rr)^3;
     end
-    dist = norm(gradhelmker(i,:));
-    helmker(i) = exp(1i*lambda*dist)/dist;
-    gradhelmker(i,:) = gradhelmker(i,:).*exp(1i*lambda*dist)...
-        .*(1i*lambda - 1/dist)./dist^2;
-end
 
-% integrand = cross(current,gradhelmker);
-integrand = cross(current,gradhelmker);
-B0 = (sum(helmker.*current,1) - sum(integrand,1)).*rmin./(2*ntheta);
+    integrand = cross(gradlapker,current);
+    B0 = sum(integrand,2).*rmin./(2*ntheta);
+else
+    helmker = zeros([1 ntheta]);
+    gradhelmker = zeros([3 theta]);
+    for i = 1:ntheta
+        for j = 1:3
+            gradhelmker(j,i) = targ(j) - source(j,i);
+        end
+        dist = norm(gradhelmker(:,i));
+        helmker(i) = exp(1i*lambda*dist)/dist;
+        gradhelmker(:,i) = gradhelmker(:,i).*exp(1i*lambda*dist)...
+            .*(1i*lambda - 1/dist)./dist^2;
+    end
+    
+    integrand = cross(gradhelmker,current);
+    B0 = (lambda*sum(helmker.*current,1) + sum(integrand,2)).*rmin./(2*ntheta);
+end
 
 end

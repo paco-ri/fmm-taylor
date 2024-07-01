@@ -1,4 +1,4 @@
-function gradrho = eval_ngradS0(S,rho,eps,varargin)
+function gradrho = eval_gradS0(S,rho,eps,varargin)
 %EVALGRADCURLS0 compute grad S0[rho]
 %
 %  Input arguments:

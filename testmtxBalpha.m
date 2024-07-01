@@ -2,9 +2,11 @@
 % For dan meshes
 
 nsph = 5;
-nref = 3;
+nref = 2;
 dom = surfacemesh.sphere(nsph,nref);
-S = surfer.surfacemesh_to_surfer(dom);
+opts = [];
+% opts.iptype = 12;
+S = surfer.surfacemesh_to_surfer(dom,opts);
 
 [srcvals,~,~,~,~,wts] = extract_arrays(S);
 rr2 = sum(wts);
@@ -30,6 +32,11 @@ eps = 1e-7;
 
 rjvec = array_to_surfacefun(rhs.',dom,S);
 ncurlS0j = mtxBalpha(S,dom,rjvec,eps);
+
+plot(ncurlS0j)
+hold on
+colorbar
+
 vn = normal(dom);
 ncurlS0j = surfacefun_to_array(ncurlS0j,dom,S);
 ncurlS0j = ncurlS0j.';
