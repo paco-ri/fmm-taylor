@@ -1,5 +1,5 @@
 ns = 6:2:10;
-nus = 4:2:12; %4:4:16;
+nus = 4:4:12; %4:4:16;
 lerr = zeros([15 size(ns,2)*size(nus,2)]);
 lind = 1;
 
@@ -14,15 +14,14 @@ else
 end
 
 % interior points at which B is computed for convergence analysis
-nintphis = 30;
-intphis = 2*pi.*(0:nintphis-1)./nintphis;
-nintthetas = 30;
-intthetas = 2*pi.*(0:nintthetas-1)./nintthetas;
+% nintphi = 30;
+% ninttheta = 30;
+% nintr = 16;
+nintphis = 32;
+nintthetas = 32;
 nintrs = 16;
-[interior, interiorwts] = interiorcirctorus(nintphis,nintthetas,nintrs, ...
-    domrmin,domrmaj);
-targinfoint = [];
-targinfoint.r = interior;
+ntarginfoints = size(nintrs,2)*size(nintthetas,2)*size(nintphis,2);
+intquadtest = zeros([5,ntarginfoints]);
 
 % quadrature options
 eps = 1e-6;
@@ -102,11 +101,6 @@ t1 = tic;
 Q = taylor.static.get_quadrature_correction(S,eps,S,opts_quad);
 t2 = toc(t1);
 fprintf('on-surface quadrature: %f s\n', t2)
-
-t1 = tic;
-Qint = taylor.static.get_quadrature_correction(S,eps,targinfoint,opts_quad);
-t2 = toc(t1);
-fprintf('interior quadrature: %f s\n', t2)
 
 % do GMRES to solve A11*W = nB0
 b = surfacefun_to_array(nB0,dom,S); 
@@ -215,33 +209,52 @@ curlS0mr = taylor.static.eval_curlS0(S,real(mvals),eps,S,Q);
 curlS0mi = taylor.static.eval_curlS0(S,imag(mvals),eps,S,Q);
 curlS0m = curlS0mr + 1i*curlS0mi;
 
-% for interior B
-t1 = tic;
-gradS0sigmarint = taylor.static.eval_gradS0(S,real(sigmavals),eps,targinfoint,Qint);
-gradS0sigmaiint = taylor.static.eval_gradS0(S,imag(sigmavals),eps,targinfoint,Qint);
-gradS0sigmaint = gradS0sigmarint + 1i.*gradS0sigmaiint;
-curlS0mrint = taylor.static.eval_curlS0(S,real(mvals),eps,targinfoint,Qint);
-curlS0miint = taylor.static.eval_curlS0(S,imag(mvals),eps,targinfoint,Qint);
-curlS0mint = curlS0mrint + 1i*curlS0miint;
-t2 = toc(t1); 
-fprintf('interior B: %f s\n', t2)
-
 vnvals = surfacefun_to_array(vn,dom,S);
 vnvals = vnvals.';
 B = -vnvals.*sigmavals./2 + mvals./2 - gradS0sigma + 1i.*curlS0m;
-% if eval routs are average of interior and exterior limits
-% B = vnvals.*sigmavals./2 - mvals./2 - gradS0sigma + 1i.*curlS0m;
-% if eval routs already compute exterior limit
-% B = -vnvals.*sigmavals + mvals - gradS0sigma + 1i.*curlS0m;
-% no identity terms
-% B = -gradS0sigma + 1i.*curlS0m;
 gradS0sigmafun = array_to_surfacefun(gradS0sigma.',dom,S);
 curlS0mfun = array_to_surfacefun(curlS0m.',dom,S);
 B = array_to_surfacefun(B.',dom,S);
-Bint = -gradS0sigmaint + 1i.*curlS0mint;
-B0int = zeros(size(interior));
-for j = 1:size(interior,2)
-    B0int(:,j) = reftaylor(ntheta,rmin,rmaj,jmag,lambda,interior(:,j));
+
+% for interior B
+ii = 1;
+for nintphi = nintphis
+    for ninttheta = nintthetas
+        for nintr = nintrs
+            [interior, interiorwts] = interiorcirctorus(nintphi, ...
+                ninttheta,nintr,domrmin,domrmaj);
+            targinfoint = [];
+            targinfoint.r = interior;
+            intquadtest(1,ii) = nintphi;
+            intquadtest(2,ii) = ninttheta;
+            intquadtest(3,ii) = nintr;
+        
+            t1 = tic;
+            Qint = taylor.static.get_quadrature_correction(S,eps,targinfoint,opts_quad);
+            t2 = toc(t1);
+            fprintf('interior quadrature: %f s\n', t2)
+            
+            t1 = tic;
+            gradS0sigmarint = taylor.static.eval_gradS0(S,real(sigmavals),eps,targinfoint,Qint);
+            gradS0sigmaiint = taylor.static.eval_gradS0(S,imag(sigmavals),eps,targinfoint,Qint);
+            gradS0sigmaint = gradS0sigmarint + 1i.*gradS0sigmaiint;
+            curlS0mrint = taylor.static.eval_curlS0(S,real(mvals),eps,targinfoint,Qint);
+            curlS0miint = taylor.static.eval_curlS0(S,imag(mvals),eps,targinfoint,Qint);
+            curlS0mint = curlS0mrint + 1i*curlS0miint;
+            t2 = toc(t1); 
+            fprintf('interior B: %f s\n', t2)
+        
+            Bint = -gradS0sigmaint + 1i.*curlS0mint;
+            B0int = zeros(size(interior));
+            for j = 1:size(interior,2)
+                B0int(:,j) = reftaylor(ntheta,rmin,rmaj,jmag,lambda,interior(:,j));
+            end
+        
+            intquadtest(4,ii) = max(abs(Bint-B0int),[],'all')/max(abs(B0int),[],'all');
+            intquadtest(5,ii) = norm(norm(B0-B),inf)/norm(norm(B0),inf);
+            ii = ii + 1;
+        end
+    end
 end
 
 % n.B/B0 plots
@@ -285,7 +298,7 @@ lerr(9,lind) = dot(sum(abs(real(Bint-B0int)),1),interiorwts) ...
 lerr(10,lind) = norm(dot(vn,B0-B),inf)/norm(dot(vn,B0),inf);
 lerr(11,lind) = norm(dot(vn,B0-B),2)/norm(dot(vn,B0),2);
 lerr(12,lind) = norm(dot(vn,B0-B),1)/norm(dot(vn,B0),1);
-lerr(13,lind) = norm(B0-B,inf)/norm(B0,inf);
+lerr(13,lind) = norm(norm(B0-B),inf)/norm(norm(B0),inf);
 lerr(14,lind) = norm(norm(B0-B),2)/norm(norm(B0),2);
 lerr(15,lind) = norm(norm(B0-B),1)/norm(norm(B0),1);
 lind = lind+1;
