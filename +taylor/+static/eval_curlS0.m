@@ -118,10 +118,10 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
     iquad = Q.iquad;
     wnear = Q.wnear;
 
-    curlj = zeros(3,ntarg);
+    curlj = complex(zeros(3,ntarg));
 
 % Call layer potential evaluator
-    mex_id_ = 'lpcomp_curllap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i int[x], i double[xx], i double[x], io double[xx])';
+    mex_id_ = 'lpcomp_curllap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i dcomplex[xx], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx])';
 [curlj] = gradcurlS0(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps, nnz, row_ptr, col_ind, iquad, nquad, wnear, rjvec, novers, nptso, ixyzso, srcover, wover, curlj, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, ntargp1, nnz, nnzp1, 1, nquad, 3, 3, npts, npatches, 1, npatp1, 12, nptso, nptso, 3, ntarg);
     
 end

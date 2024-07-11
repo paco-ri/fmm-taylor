@@ -1117,8 +1117,8 @@ extern "C" { /* Prevent C++ name mangling */
 #endif
 
 MWF77_RETURN MWF77_get_patch_id_uvs(int*, int*, int*, int*, int*, int*, double*);
-MWF77_RETURN MWF77_lpcomp_gradlap_addsub(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, double*, int*, int*, int*, int*, int*, double*, double*, int*, int*, int*, double*, double*, double*);
-MWF77_RETURN MWF77_lpcomp_curllap_addsub(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, double*, int*, int*, int*, int*, int*, double*, double*, int*, int*, int*, double*, double*, double*);
+MWF77_RETURN MWF77_lpcomp_gradlap_addsub(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, double*, int*, int*, int*, int*, int*, double*, dcomplex*, int*, int*, int*, double*, double*, dcomplex*);
+MWF77_RETURN MWF77_lpcomp_curllap_addsub(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, double*, int*, int*, int*, int*, int*, double*, dcomplex*, int*, int*, int*, double*, double*, dcomplex*);
 MWF77_RETURN MWF77_get_rfacs(int*, int*, double*, double*);
 MWF77_RETURN MWF77_get_centroid_rads(int*, int*, int*, int*, int*, double*, double*, double*);
 MWF77_RETURN MWF77_findnearmem(double*, int*, double*, int*, double*, int*, int*);
@@ -1258,9 +1258,9 @@ mw_err_label:
 }
 
 /* ---- gradcurlS0.mw: 124 ----
- * lpcomp_gradlap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad, 3] wnear, double[npts] rho, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout double[3, ntarg] gradrho);
+ * lpcomp_gradlap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad, 3] wnear, dcomplex[npts] rho, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout dcomplex[3, ntarg] gradrho);
  */
-static const char* stubids2_ = "lpcomp_gradlap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io double[xx])";
+static const char* stubids2_ = "lpcomp_gradlap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i dcomplex[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx])";
 
 void mexStub2(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -1283,13 +1283,13 @@ void mexStub2(int nlhs, mxArray* plhs[],
     int*        in14_ =0; /* iquad      */
     int*        in15_ =0; /* nquad      */
     double*     in16_ =0; /* wnear      */
-    double*     in17_ =0; /* rho        */
+    dcomplex*   in17_ =0; /* rho        */
     int*        in18_ =0; /* novers     */
     int*        in19_ =0; /* nptso      */
     int*        in20_ =0; /* ixyzso     */
     double*     in21_ =0; /* srcover    */
     double*     in22_ =0; /* wover      */
-    double*     in23_ =0; /* gradrho    */
+    dcomplex*   in23_ =0; /* gradrho    */
     mwSize      dim24_;   /* 1          */
     mwSize      dim25_;   /* npatches   */
     mwSize      dim26_;   /* npatp1     */
@@ -1591,11 +1591,9 @@ void mexStub2(int nlhs, mxArray* plhs[],
         if( mxGetClassID(prhs[17]) != mxDOUBLE_CLASS )
             mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
         if (mw_err_txt_) goto mw_err_label;
-#if MX_HAS_INTERLEAVED_COMPLEX
-        in17_ = mxGetDoubles(prhs[17]);
-#else
-        in17_ = mxGetPr(prhs[17]);
-#endif
+        in17_ = mxWrapGetArray_dcomplex(prhs[17], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
     } else
         in17_ = NULL;
     if (mxGetM(prhs[18])*mxGetN(prhs[18]) != 0) {
@@ -1639,7 +1637,10 @@ void mexStub2(int nlhs, mxArray* plhs[],
     } else
         in22_ = NULL;
     if (mxGetM(prhs[23])*mxGetN(prhs[23]) != 0) {
-        in23_ = mxWrapGetArray_double(prhs[23], &mw_err_txt_);
+        if( mxGetClassID(prhs[23]) != mxDOUBLE_CLASS )
+            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
+        if (mw_err_txt_) goto mw_err_label;
+        in23_ = mxWrapGetArray_dcomplex(prhs[23], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -1647,8 +1648,8 @@ void mexStub2(int nlhs, mxArray* plhs[],
     if (mexprofrecord_)
         mexprofrecord_[2]++;
     MWF77_lpcomp_gradlap_addsub(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_, in8_, in9_, in10_, in11_, in12_, in13_, in14_, in15_, in16_, in17_, in18_, in19_, in20_, in21_, in22_, in23_);
-    plhs[0] = mxCreateDoubleMatrix(dim52_, dim53_, mxREAL);
-    mxWrapCopy_double(plhs[0], in23_, dim52_*dim53_);
+    plhs[0] = mxCreateDoubleMatrix(dim52_, dim53_, mxCOMPLEX);
+    mxWrapCopy_dcomplex(plhs[0], in23_, dim52_*dim53_);
 
 mw_err_label:
     if (in0_)  mxFree(in0_);
@@ -1663,6 +1664,7 @@ mw_err_label:
     if (in13_)  mxFree(in13_);
     if (in14_)  mxFree(in14_);
     if (in15_)  mxFree(in15_);
+    if (in17_)  mxFree(in17_);
     if (in18_)  mxFree(in18_);
     if (in19_)  mxFree(in19_);
     if (in20_)  mxFree(in20_);
@@ -1798,9 +1800,9 @@ mw_err_label:
 }
 
 /* ---- gradcurlS0.mw: 252 ----
- * lpcomp_curllap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad, 3] wnear, double[3, npts] rjvec, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout double[3, ntarg] curlj);
+ * lpcomp_curllap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad, 3] wnear, dcomplex[3, npts] rjvec, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout dcomplex[3, ntarg] curlj);
  */
-static const char* stubids4_ = "lpcomp_curllap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i int[x], i double[xx], i double[x], io double[xx])";
+static const char* stubids4_ = "lpcomp_curllap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i dcomplex[xx], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx])";
 
 void mexStub4(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
@@ -1823,13 +1825,13 @@ void mexStub4(int nlhs, mxArray* plhs[],
     int*        in14_ =0; /* iquad      */
     int*        in15_ =0; /* nquad      */
     double*     in16_ =0; /* wnear      */
-    double*     in17_ =0; /* rjvec      */
+    dcomplex*   in17_ =0; /* rjvec      */
     int*        in18_ =0; /* novers     */
     int*        in19_ =0; /* nptso      */
     int*        in20_ =0; /* ixyzso     */
     double*     in21_ =0; /* srcover    */
     double*     in22_ =0; /* wover      */
-    double*     in23_ =0; /* curlj      */
+    dcomplex*   in23_ =0; /* curlj      */
     mwSize      dim24_;   /* 1          */
     mwSize      dim25_;   /* npatches   */
     mwSize      dim26_;   /* npatp1     */
@@ -2135,11 +2137,9 @@ void mexStub4(int nlhs, mxArray* plhs[],
         if( mxGetClassID(prhs[17]) != mxDOUBLE_CLASS )
             mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
         if (mw_err_txt_) goto mw_err_label;
-#if MX_HAS_INTERLEAVED_COMPLEX
-        in17_ = mxGetDoubles(prhs[17]);
-#else
-        in17_ = mxGetPr(prhs[17]);
-#endif
+        in17_ = mxWrapGetArray_dcomplex(prhs[17], &mw_err_txt_);
+        if (mw_err_txt_)
+            goto mw_err_label;
     } else
         in17_ = NULL;
     if (mxGetM(prhs[18])*mxGetN(prhs[18]) != 0) {
@@ -2183,7 +2183,10 @@ void mexStub4(int nlhs, mxArray* plhs[],
     } else
         in22_ = NULL;
     if (mxGetM(prhs[23])*mxGetN(prhs[23]) != 0) {
-        in23_ = mxWrapGetArray_double(prhs[23], &mw_err_txt_);
+        if( mxGetClassID(prhs[23]) != mxDOUBLE_CLASS )
+            mw_err_txt_ = "Invalid array argument, mxDOUBLE_CLASS expected";
+        if (mw_err_txt_) goto mw_err_label;
+        in23_ = mxWrapGetArray_dcomplex(prhs[23], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -2191,8 +2194,8 @@ void mexStub4(int nlhs, mxArray* plhs[],
     if (mexprofrecord_)
         mexprofrecord_[4]++;
     MWF77_lpcomp_curllap_addsub(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_, in8_, in9_, in10_, in11_, in12_, in13_, in14_, in15_, in16_, in17_, in18_, in19_, in20_, in21_, in22_, in23_);
-    plhs[0] = mxCreateDoubleMatrix(dim53_, dim54_, mxREAL);
-    mxWrapCopy_double(plhs[0], in23_, dim53_*dim54_);
+    plhs[0] = mxCreateDoubleMatrix(dim53_, dim54_, mxCOMPLEX);
+    mxWrapCopy_dcomplex(plhs[0], in23_, dim53_*dim54_);
 
 mw_err_label:
     if (in0_)  mxFree(in0_);
@@ -2207,6 +2210,7 @@ mw_err_label:
     if (in13_)  mxFree(in13_);
     if (in14_)  mxFree(in14_);
     if (in15_)  mxFree(in15_);
+    if (in17_)  mxFree(in17_);
     if (in18_)  mxFree(in18_);
     if (in19_)  mxFree(in19_);
     if (in20_)  mxFree(in20_);

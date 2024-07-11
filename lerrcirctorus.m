@@ -3,8 +3,8 @@
 % npts = n^2*nu*nv = 3*n^2*nu^2
 % h = sqrt(npts) = sqrt(3)*n*nu
 
-numnus = 4;
-numns = 3;
+numnus = 3;%4;
+numns = 2;%3;
 lerrcol = 4;
 loglog(sqrt(3)*lerr(1,1:numnus).*lerr(2,1:numnus), lerr(lerrcol,1:numnus), 'o-')
 hold on
@@ -26,13 +26,13 @@ end
 % plot(sqrt(N0), einf0, '^:')
 
 h = 60:120;
-plot(h, h(1)^5*3e-4*h.^(-5), 'b--')
+plot(h, h(1)^5*3e-4*h.^(-4), 'b--')
 
 h = 80:160;
-plot(h, h(1)^7*5e-6*h.^(-7), 'r--')
+plot(h, h(1)^7*5e-6*h.^(-6), 'r--')
 
 h = 120:240;
-plot(h, h(1)^9*3e-8*h.^(-9), 'k--')
+plot(h, h(1)^9*3e-8*h.^(-8), 'k--')
 
 % legend('FMM+surfacefun, poly. order = p = 5', ...
 %     'FMM+surfacefun, p = 7', ...
@@ -43,7 +43,7 @@ plot(h, h(1)^9*3e-8*h.^(-9), 'k--')
 legend('FMM+surfacefun, poly. order = p = 5', ...
     'FMM+surfacefun, p = 7', ...
     'FMM+surfacefun, p = 9', ...
-    'O(h^{-5})', 'O(h^{-7})', 'O(h^{-9})', 'Location', 'southwest')
+    'O(h^{-4})', 'O(h^{-6})', 'O(h^{-8})', 'Location', 'southwest')
 
 lerrcol = 13;
 figure(2)

@@ -1,5 +1,5 @@
-ns = 4:2:10;
-nus = 4:4:16;
+ns = 4:2:6;%10;
+nus = 4:4:12;%16;
 lerr = zeros([15 size(ns,2)*size(nus,2)]);
 lind = 1;
 
@@ -167,13 +167,15 @@ t2 = toc(t1);
 fprintf('flux quadrature: %f s\n',t2)
 
 t1 = tic;
-fluxsigmaDr = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,real(dfunc),eps,Qflux);
-fluxsigmaDi = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,imag(dfunc),eps,Qflux);
-fluxsigmaD = fluxsigmaDr + 1i*fluxsigmaDi;
+% fluxsigmaDr = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,real(dfunc),eps,Qflux);
+% fluxsigmaDi = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,imag(dfunc),eps,Qflux);
+% fluxsigmaD = fluxsigmaDr + 1i*fluxsigmaDi;
+fluxsigmaD = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,dfunc,eps,Qflux);
 fluxsigmaW = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,wfunc,eps,Qflux);
-fluxalphar = mtxfluxalphanontaylor(S,dom,qnodes,qweights,real(mH),eps,Qflux);
-fluxalphai = mtxfluxalphanontaylor(S,dom,qnodes,qweights,imag(mH),eps,Qflux);
-fluxalpha = fluxalphar + 1i*fluxalphai;
+% fluxalphar = mtxfluxalphanontaylor(S,dom,qnodes,qweights,real(mH),eps,Qflux);
+% fluxalphai = mtxfluxalphanontaylor(S,dom,qnodes,qweights,imag(mH),eps,Qflux);
+% fluxalpha = fluxalphar + 1i*fluxalphai;
+fluxalpha = mtxfluxalphanontaylor(S,dom,qnodes,qweights,mH,eps,Qflux);
 
 % compute alpha and sigma
 alpha = -1i*(flux - fluxsigmaW)/(-fluxsigmaD + fluxalpha);
@@ -186,14 +188,16 @@ fprintf('alpha and sigma: %f s\n', t2)
 
 sigmavals = surfacefun_to_array(sigma,dom,S);
 sigmavals = sigmavals.';
-gradS0sigmar = taylor.static.eval_gradS0(S,real(sigmavals),eps,S,Q);
-gradS0sigmai = taylor.static.eval_gradS0(S,imag(sigmavals),eps,S,Q);
-gradS0sigma = gradS0sigmar + 1i.*gradS0sigmai;
+% gradS0sigmar = taylor.static.eval_gradS0(S,real(sigmavals),eps,S,Q);
+% gradS0sigmai = taylor.static.eval_gradS0(S,imag(sigmavals),eps,S,Q);
+% gradS0sigma = gradS0sigmar + 1i.*gradS0sigmai;
+gradS0sigma = taylor.static.eval_gradS0(S,sigmavals,eps,S,Q);
 mvals = surfacefun_to_array(m,dom,S);
 mvals = mvals.';
-curlS0mr = taylor.static.eval_curlS0(S,real(mvals),eps,S,Q);
-curlS0mi = taylor.static.eval_curlS0(S,imag(mvals),eps,S,Q);
-curlS0m = curlS0mr + 1i*curlS0mi;
+% curlS0mr = taylor.static.eval_curlS0(S,real(mvals),eps,S,Q);
+% curlS0mi = taylor.static.eval_curlS0(S,imag(mvals),eps,S,Q);
+% curlS0m = curlS0mr + 1i*curlS0mi;
+curlS0m = taylor.static.eval_curlS0(S,mvals,eps,S,Q);
 
 vnvals = surfacefun_to_array(vn,dom,S);
 vnvals = vnvals.';
@@ -214,12 +218,14 @@ t2 = toc(t1);
 fprintf('interior quadrature: %f s\n', t2)
 
 t1 = tic;
-gradS0sigmarint = taylor.static.eval_gradS0(S,real(sigmavals),eps,targinfoint,Qint);
-gradS0sigmaiint = taylor.static.eval_gradS0(S,imag(sigmavals),eps,targinfoint,Qint);
-gradS0sigmaint = gradS0sigmarint + 1i.*gradS0sigmaiint;
-curlS0mrint = taylor.static.eval_curlS0(S,real(mvals),eps,targinfoint,Qint);
-curlS0miint = taylor.static.eval_curlS0(S,imag(mvals),eps,targinfoint,Qint);
-curlS0mint = curlS0mrint + 1i*curlS0miint;
+% gradS0sigmarint = taylor.static.eval_gradS0(S,real(sigmavals),eps,targinfoint,Qint);
+% gradS0sigmaiint = taylor.static.eval_gradS0(S,imag(sigmavals),eps,targinfoint,Qint);
+% gradS0sigmaint = gradS0sigmarint + 1i.*gradS0sigmaiint;
+gradS0sigmaint = taylor.static.eval_gradS0(S,sigmavals,eps,targinfoint,Qint);
+% curlS0mrint = taylor.static.eval_curlS0(S,real(mvals),eps,targinfoint,Qint);
+% curlS0miint = taylor.static.eval_curlS0(S,imag(mvals),eps,targinfoint,Qint);
+% curlS0mint = curlS0mrint + 1i*curlS0miint;
+curlS0mint = taylor.static.eval_curlS0(S,mvals,eps,targinfoint,Qint);
 t2 = toc(t1); 
 fprintf('interior B: %f s\n', t2)
 

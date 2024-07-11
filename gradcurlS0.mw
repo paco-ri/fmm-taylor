@@ -118,10 +118,10 @@ function gradrho = eval_gradS0(S,rho,eps,varargin)
     iquad = Q.iquad;
     wnear = Q.wnear;
 
-    gradrho = zeros(3,ntarg);
+    gradrho = complex(zeros(3,ntarg));
 
 % Call layer potential evaluator
-    # FORTRAN lpcomp_gradlap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad,3] wnear, double[npts] rho, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout double[3,ntarg] gradrho);
+    # FORTRAN lpcomp_gradlap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad,3] wnear, dcomplex[npts] rho, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout dcomplex[3,ntarg] gradrho);
     
 end
 
@@ -246,10 +246,10 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
     iquad = Q.iquad;
     wnear = Q.wnear;
 
-    curlj = zeros(3,ntarg);
+    curlj = complex(zeros(3,ntarg));
 
 % Call layer potential evaluator
-    # FORTRAN lpcomp_curllap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad,3] wnear, double[3,npts] rjvec, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout double[3,ntarg] curlj);
+    # FORTRAN lpcomp_curllap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad,3] wnear, dcomplex[3,npts] rjvec, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout dcomplex[3,ntarg] curlj);
     
 end
 
