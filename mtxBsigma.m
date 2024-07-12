@@ -30,9 +30,7 @@ sigmavals = surfacefun_to_array(sigma,dom,S);
 sigmavals = sigmavals.';
 
 % evaulate layer potential
-% tic
 gradS0sigma = taylor.static.eval_gradS0(S,sigmavals,eps,varargin{:});
-% toc
 gradS0sigma = array_to_surfacefun(gradS0sigma.',dom,S); % note transpose 
 n = normal(dom);
 ngradS0sigma = dot(n,gradS0sigma);
