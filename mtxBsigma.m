@@ -1,4 +1,4 @@
-function Bsigma = mtxBsigma(S,dom,sigma,eps,varargin)
+function Bsigma = mtxBsigma(S,dom,sigma,zk,eps,varargin)
 %MTXBSIGMA compute sigma-dep. terms of surface magnetic field
 % 
 %   Required arguments:
@@ -7,6 +7,7 @@ function Bsigma = mtxBsigma(S,dom,sigma,eps,varargin)
 %     * sigma: [surfacefun] density for which 
 %                  sigma/2 + n . grad S0[sigma]
 %              is computed
+%     * zk: [dcomplex] wavenumber
 %     * eps: [double] precision requested
 % 
 %   Optional arguments:
@@ -26,22 +27,55 @@ function Bsigma = mtxBsigma(S,dom,sigma,eps,varargin)
 %        opts.nonsmoothonly - use smooth quadrature rule for evaluating
 %           layer potential (false)
 
+if nargin < 8
+    opts = [];
+    opts.format = 'rsc';
+else
+    opts = varargin{3};
+end
+
 sigmavals = surfacefun_to_array(sigma,dom,S);
 sigmavals = sigmavals.';
 
 % evaulate layer potential
-gradS0sigma = taylor.static.eval_gradS0(S,sigmavals,eps,varargin{:});
-gradS0sigma = array_to_surfacefun(gradS0sigma.',dom,S); % note transpose 
+if zk == 0
+    gradSsigma = taylor.static.eval_gradS0(S,sigmavals,eps,varargin{:});
+else
+    gradSsigma = taylor.dynamic.eval_gradSk(S,zk,sigmavals,eps,varargin{:});
+end
+gradSsigma = array_to_surfacefun(gradSsigma.',dom,S); % note transpose 
 n = normal(dom);
-ngradS0sigma = dot(n,gradS0sigma);
+ngradSsigma = dot(n,gradSsigma);
 
 % construct Bsigma
-Bsigma = sigma./2 + ngradS0sigma;
-% if eval_gradS0 is average of interior and exterior limit
-% Bsigma = -sigma./2 + ngradS0sigma; 
-% if eval_gradS0 is exterior limit
-% Bsigma = sigma + ngradS0sigma;
-% no identity term
-% Bsigma = ngradS0sigma;
+if zk ~= 0
+    % compute m0
+    m0 = debyem0(sigma,zk);
+    m0vals = surfacefun_to_array(m0,dom,S);
+
+    % compute n . Sk[m0]
+    zpars = [zk 1.0 0];
+    Qhelm = helm3d.dirichlet.get_quadrature_correction(S,zpars,eps, ...
+        varargin{1},opts);
+    Sm0 = zeros(size(m0vals));
+    for j=1:3
+        Sm0(:,j) = helm3d.dirichlet.eval(S,zpars,m0vals(:,j),eps, ...
+            varargin{1},Qhelm,opts);
+    end
+    Sm0 = array_to_surfacefun(Sm0,dom,S);
+
+    % compute n . curl Sk[m0]
+    Qhelm = taylor.dynamic.get_quadrature_correction(S,zk,eps, ...
+        varargin{1},opts);
+    curlSm0 = taylor.dynamic.eval_curlSk(S,zk,m0vals.',eps,varargin{1}, ...
+        Qhelm,opts);
+    curlSm0 = array_to_surfacefun(curlSm0.',dom,S);
+
+    % combine
+    m0terms = 1i.*dot(n,zk.*Sm0+curlSm0);
+    Bsigma = sigma./2 + ngradSsigma - m0terms;
+else
+    Bsigma = sigma./2 + ngradSsigma;
+end
 
 end

@@ -1,12 +1,12 @@
 % ===== copied from lap3d matlab test ==============
-nsph = 8;
-nref = 3;
+nsph = 7;
+nref = 2;
 dom = surfacemesh.sphere(nsph,nref);
 S = surfer.surfacemesh_to_surfer(dom);
 [srcvals,~,~,~,~,wts] = extract_arrays(S);
 vn = normal(dom);
 
-ndeg = 4; % 1 -> 6, 2 -> 10, 3 -> 14, n -> 2(2n+1)
+ndeg = 3; % 1 -> 6, 2 -> 10, 3 -> 14, n -> 2(2n+1)
 mdeg = 0;
 
 f = spherefun.sphharm(ndeg,mdeg);
@@ -17,14 +17,17 @@ eps = 1e-7;
 
 % ===================================================
 
-if false
+if true
+    fprintf('nsph = %d, nref = %d\n',nsph,nref)
     % without precomputed quadrature
     Bsigma = mtxBsigma(S,dom,sigma,eps);
     Bsigma_ex = -(ndeg+1)/(2*ndeg+1).*sigvals + sigvals;
     Bsigma = surfacefun_to_array(Bsigma,dom,S);
     err = sqrt(sum(abs(Bsigma_ex - Bsigma).^2.*wts));
     fprintf('error w/o Q = %f\n',err)
-    
+end
+   
+if false
     % with precomputed quadrature
     Q = taylor.static.get_quadrature_correction(S,eps,S);
     Bsigma = mtxBsigma(S,dom,sigma,eps,S,Q);
@@ -71,7 +74,7 @@ if false
     % inside - nsigma = outside
 end
 
-if true
+if false
     % smaller shell
     targs = S.r;
     targinfoint = [];

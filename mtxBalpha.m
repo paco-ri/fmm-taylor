@@ -27,13 +27,11 @@ function Balpha = mtxBalpha(S,dom,mH,eps,varargin)
 %           layer potential (false)
 
 mHvals = surfacefun_to_array(mH,dom,S);
-mHvals = mHvals';
+mHvals = mHvals.';
 
 % evaluate layer potential
 n = normal(dom);
-% tic
 curlS0mH = taylor.static.eval_curlS0(S,mHvals,eps,varargin{:});
-% toc
 curlS0mH = array_to_surfacefun(curlS0mH.',dom,S);
 Balpha = dot(n,curlS0mH);
 
