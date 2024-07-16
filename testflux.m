@@ -4,15 +4,14 @@
 
 % define surface 
 n = 3; % polynomial order 
-nu = 10; 
+nu = 8; 
 nv = nu*3;
 dom = circulartorus(n,nu,nv);
 
 docirctorus = true;
 
 if docirctorus
-    % ===== lambda = 0 case =====
-    lambda = 0;
+    lambda = 1.0;
     % compute reference Taylor state
     rmaj = 5.0;
     rmin = 3.0; % radius of current ring
@@ -21,8 +20,8 @@ if docirctorus
     B0 = reftaylorsurffun(dom,n,nu,nv,ntheta,rmin,rmaj,jmag,lambda);
     
     % integrate on a disc
-    nr = 6; % number of disc pts in radial dir
-    nt = 6; % '' in angular dir
+    nr = 4*6; % number of disc pts in radial dir
+    nt = 2*6; % '' in angular dir
     surfint = 0;
     domrmaj = 5.0;
     domrmin = 2.0;

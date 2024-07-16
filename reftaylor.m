@@ -27,19 +27,22 @@ if lambda == 0
     B0 = sum(integrand,2).*rmin./(2*ntheta);
 else
     helmker = zeros([1 ntheta]);
-    gradhelmker = zeros([3 theta]);
+    gradhelmker = zeros([3 ntheta]);
     for i = 1:ntheta
+        rr = zeros([3 1]);
         for j = 1:3
-            gradhelmker(j,i) = targ(j) - source(j,i);
+            % gradhelmker(j,i) = targ(j) - source(j,i);
+            rr(j) = targ(j) - source(j,i);
         end
-        dist = norm(gradhelmker(:,i));
+        % dist = norm(gradhelmker(:,i));
+        dist = norm(rr);
         helmker(i) = exp(1i*lambda*dist)/dist;
-        gradhelmker(:,i) = gradhelmker(:,i).*exp(1i*lambda*dist)...
-            .*(1i*lambda - 1/dist)./dist^2;
+        gradhelmker(:,i) = rr.*exp(1i*lambda*dist)...
+            .*(1i*lambda*dist - 1)./dist^3;
     end
     
     integrand = cross(gradhelmker,current);
-    B0 = (lambda*sum(helmker.*current,1) + sum(integrand,2)).*rmin./(2*ntheta);
+    B0 = (lambda.*sum(helmker.*current,2) - sum(integrand,2)).*rmin./(2*ntheta);
 end
 
 end

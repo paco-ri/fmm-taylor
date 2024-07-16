@@ -54,13 +54,14 @@ if zk ~= 0
     m0vals = surfacefun_to_array(m0,dom,S);
 
     % compute n . Sk[m0]
-    zpars = [zk 1.0 0];
-    Qhelm = helm3d.dirichlet.get_quadrature_correction(S,zpars,eps, ...
-        varargin{1},opts);
+    Qhelm = helm3d.dirichlet.get_quadrature_correction(S,eps,zk, ...
+        [1.0 0],varargin{1},opts);
     Sm0 = zeros(size(m0vals));
+    opts_eval = [];
+    opts_eval.precomp_quadrature = Qhelm;
     for j=1:3
-        Sm0(:,j) = helm3d.dirichlet.eval(S,zpars,m0vals(:,j),eps, ...
-            varargin{1},Qhelm,opts);
+        Sm0(:,j) = helm3d.dirichlet.eval(S,m0vals(:,j),varargin{1},eps, ...
+            zk,[1.0 0],opts_eval);
     end
     Sm0 = array_to_surfacefun(Sm0,dom,S);
 

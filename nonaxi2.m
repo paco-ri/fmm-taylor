@@ -1,5 +1,5 @@
-ns = 4:2:6;%10;
-nus = 4:4:12;%16;
+ns = 4; % 4:2:10;
+nus = 4; % 4:4:16;
 lerr = zeros([15 size(ns,2)*size(nus,2)]);
 lind = 1;
 
@@ -66,17 +66,6 @@ vn2 = surfacefunv(@(x,y,z) costheta(x,y,z).*cosphi(x,y,z), ...
 mH = mH2;
 vn = vn2;
 
-% test properties of mH
-% fprintf('surface div of mH = %f\n',integral2(div(mH))/surfacearea(dom));
-% fprintf('surface div of n x mH = %f\n',integral2(div(cross(vn,mH)))/surfacearea(dom));
-% fprintf('n . mH = %f\n',integral2(dot(vn,mH))/surfacearea(dom));
-% fprintf('n x mH + i mH = %f\n',integral2(norm(cross(vn,mH)+1i.*mH))/surfacearea(dom));
-% 
-% fprintf('surface div of mH2 = %f\n',integral2(div(mH2))/surfacearea(dom));
-% fprintf('surface div of n2 x mH2 = %f\n',integral2(div(cross(vn2,mH2)))/surfacearea(dom));
-% fprintf('n2 . mH2 = %f\n',integral2(dot(vn2,mH2))/surfacearea(dom));
-% fprintf('n2 x mH2 + i mH2 = %f\n',integral2(norm(cross(vn2,mH2)+1i.*mH2))/surfacearea(dom));
-
 % compute reference Taylor state
 if whichgeom == 1
     rmaj = 2.0; % dist. of center of current ring from origin
@@ -87,16 +76,20 @@ else
 end
 ntheta = 1e3; % number of disc. points
 jmag = 1.0; % current magnitude 
-lambda = 0; 
+lambda = real(zk); 
 B0 = reftaylorsurffun(dom,n,nu,nv,ntheta,rmin,rmaj,jmag,lambda);
 nB0 = dot(vn,B0);
 
 % convert surfacemesh dom to surfer
 S = surfer.surfacemesh_to_surfer(dom);
 
-% compute near quadrature correction for taylor.static routines
+% compute near quadrature correction for taylor.static/dynamic routines
 t1 = tic;
-Q = taylor.static.get_quadrature_correction(S,eps,S,opts_quad);
+if zk == 0
+    Q = taylor.static.get_quadrature_correction(S,eps,S,opts_quad);
+else
+    Q = taylor.dynamic.get_quadrature_correction(S,zk,eps,S,opts_quad);
+end
 t2 = toc(t1);
 fprintf('on-surface quadrature: %f s\n', t2)
 
@@ -110,17 +103,13 @@ fprintf('GMRES for A11*W = n.B0: %f s / %d iter. = %f s\n', ...
 wfunc = array_to_surfacefun(W,dom,S);
 
 % do GMRES to solve A11*D = A12
-Balphar = mtxBalpha(S,dom,real(mH),eps,S,Q);
-Balphai = mtxBalpha(S,dom,imag(mH),eps,S,Q);
-br = surfacefun_to_array(Balphar,dom,S);
-bi = surfacefun_to_array(Balphai,dom,S);
+Balpha = mtxBalpha(S,dom,mH,zk,eps,S,Q);
+b = surfacefun_to_array(Balpha,dom,S);
 t1 = tic;
-[Dr, flag2, relres2, iter2] = gmres(@(s) A(s,dom,S,eps,Q),br,[],eps,50);
-[Di, flag3, relres3, iter3] = gmres(@(s) A(s,dom,S,eps,Q),bi,[],eps,50);
+[D, flag2, relres2, iter2] = gmres(@(s) A(s,dom,S,zk,eps,Q),b,[],eps,50);
 t2 = toc(t1);
 fprintf('GMRES for A11*D = A12: %f s / %d iter. = %f s\n', ...
-    t2, iter2(2)+iter3(2), t2/(iter2(2)+iter3(2)))
-D = Dr + 1i*Di;
+    t2, iter2(2), t2/iter2(2))
 dfunc = array_to_surfacefun(D,dom,S);
 
 % post-GMRES processing
@@ -164,105 +153,131 @@ targinfoflux = [];
 targinfoflux.r = qnodes;
 opts_quad = [];
 opts_quad.format = 'rsc';
-t1 = tic;
-Qflux = taylor.static.get_quadrature_correction(S,eps,targinfoflux,opts_quad);
-t2 = toc(t1);
+if zk == 0
+    t1 = tic;
+    Qflux = taylor.static.get_quadrature_correction(S,eps,targinfoflux,opts_quad);
+    t2 = toc(t1);
+else
+    t1 = tic;
+    Qflux = taylor.dynamic.get_quadrature_correction(S,zk,eps,targinfoflux,opts_quad);
+    t2 = toc(t1);
+end
 fprintf('flux quadrature: %f s\n',t2)
 
 t1 = tic;
-% fluxsigmaDr = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,real(dfunc),eps,Qflux);
-% fluxsigmaDi = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,imag(dfunc),eps,Qflux);
-% fluxsigmaD = fluxsigmaDr + 1i*fluxsigmaDi;
-fluxsigmaD = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,dfunc,eps,Qflux);
-fluxsigmaW = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,wfunc,eps,Qflux);
-% fluxalphar = mtxfluxalphanontaylor(S,dom,qnodes,qweights,real(mH),eps,Qflux);
-% fluxalphai = mtxfluxalphanontaylor(S,dom,qnodes,qweights,imag(mH),eps,Qflux);
-% fluxalpha = fluxalphar + 1i*fluxalphai;
-fluxalpha = mtxfluxalphanontaylor(S,dom,qnodes,qweights,mH,eps,Qflux);
+fluxsigmaD = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,dfunc,zk,eps,Qflux);
+fluxsigmaW = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,wfunc,zk,eps,Qflux);
+fluxalpha = mtxfluxalphanontaylor(S,dom,qnodes,qweights,mH,zk,eps,Qflux);
 
 % compute alpha and sigma
 alpha = -1i*(flux - fluxsigmaW)/(-fluxsigmaD + fluxalpha);
 sigma = 1i*alpha.*dfunc - wfunc;
-
-% compute B
-m = alpha.*mH; % will later involve call to debyem0
 t2 = toc(t1);
 fprintf('alpha and sigma: %f s\n', t2)
 
+% compute B on-surface
+m = debyem0(sigma,zk) + alpha.*mH; % will later involve call to debyem0
+nxm = cross(vn,m);
+
 sigmavals = surfacefun_to_array(sigma,dom,S);
 sigmavals = sigmavals.';
-% gradS0sigmar = taylor.static.eval_gradS0(S,real(sigmavals),eps,S,Q);
-% gradS0sigmai = taylor.static.eval_gradS0(S,imag(sigmavals),eps,S,Q);
-% gradS0sigma = gradS0sigmar + 1i.*gradS0sigmai;
-gradS0sigma = taylor.static.eval_gradS0(S,sigmavals,eps,S,Q);
+if zk == 0
+    gradSsigma = taylor.static.eval_gradS0(S,sigmavals,eps,S,Q);
+else
+    gradSsigma = taylor.dynamic.eval_gradSk(S,zk,sigmavals,eps,S,Q);
+end
 mvals = surfacefun_to_array(m,dom,S);
 mvals = mvals.';
-% curlS0mr = taylor.static.eval_curlS0(S,real(mvals),eps,S,Q);
-% curlS0mi = taylor.static.eval_curlS0(S,imag(mvals),eps,S,Q);
-% curlS0m = curlS0mr + 1i*curlS0mi;
-curlS0m = taylor.static.eval_curlS0(S,mvals,eps,S,Q);
+if zk == 0
+    curlSm = taylor.static.eval_curlS0(S,mvals,eps,S,Q);
+else
+    curlSm = taylor.dynamic.eval_curlSk(S,zk,mvals,eps,S,Q);
+end
 
 vnvals = surfacefun_to_array(vn,dom,S);
 vnvals = vnvals.';
-B = -vnvals.*sigmavals./2 + mvals./2 - gradS0sigma + 1i.*curlS0m;
-gradS0sigmafun = array_to_surfacefun(gradS0sigma.',dom,S);
-curlS0mfun = array_to_surfacefun(curlS0m.',dom,S);
+nxmvals = surfacefun_to_array(nxm,dom,S);
+nxmvals = nxmvals.';
+B = -vnvals.*sigmavals./2 + 1i.*nxmvals./2 - gradSsigma + 1i.*curlSm;
+if zk ~= 0
+    Qhelm = helm3d.dirichlet.get_quadrature_correction(S,eps,zk,[1.0 0],S);
+    opts_helm = [];
+    opts_helm.precomp_quadrature = Qhelm;
+    Sm = zeros(size(mvals));
+    for j = 1:3
+        Sm(j,:) = helm3d.dirichlet.eval(S,mvals(j,:),S,eps,zk,[1.0 0],opts_helm);
+    end
+    B = B + 1i*zk.*Sm;
+end
 B = array_to_surfacefun(B.',dom,S);
 
-% for interior B
-[interior, interiorwts] = interiorcirctorus(nintphi, ...
-    ninttheta,nintr,domrmin,domrmaj);
+% compute B throughout the interior
+[interior, interiorwts] = interiorcirctorus(nintphi,ninttheta,nintr, ...
+    domrmin,domrmaj);
 targinfoint = [];
 targinfoint.r = interior;
 
 t1 = tic;
-Qint = taylor.static.get_quadrature_correction(S,eps,targinfoint,opts_quad);
+if zk == 0
+    Qint = taylor.static.get_quadrature_correction(S,eps,targinfoint,opts_quad);
+else
+    Qint = taylor.dynamic.get_quadrature_correction(S,zk,eps,targinfoint,opts_quad);
+end
 t2 = toc(t1);
 fprintf('interior quadrature: %f s\n', t2)
 
 t1 = tic;
-% gradS0sigmarint = taylor.static.eval_gradS0(S,real(sigmavals),eps,targinfoint,Qint);
-% gradS0sigmaiint = taylor.static.eval_gradS0(S,imag(sigmavals),eps,targinfoint,Qint);
-% gradS0sigmaint = gradS0sigmarint + 1i.*gradS0sigmaiint;
-gradS0sigmaint = taylor.static.eval_gradS0(S,sigmavals,eps,targinfoint,Qint);
-% curlS0mrint = taylor.static.eval_curlS0(S,real(mvals),eps,targinfoint,Qint);
-% curlS0miint = taylor.static.eval_curlS0(S,imag(mvals),eps,targinfoint,Qint);
-% curlS0mint = curlS0mrint + 1i*curlS0miint;
-curlS0mint = taylor.static.eval_curlS0(S,mvals,eps,targinfoint,Qint);
+if zk == 0
+    gradSsigmaint = taylor.static.eval_gradS0(S,sigmavals,eps,targinfoint,Qint);
+    curlSmint = taylor.static.eval_curlS0(S,mvals,eps,targinfoint,Qint);
+else
+    gradSsigmaint = taylor.dynamic.eval_gradSk(S,zk,sigmavals,eps,targinfoint,Qint);
+    curlSmint = taylor.dynamic.eval_curlSk(S,zk,mvals,eps,targinfoint,Qint);
+end
+Bint = -gradSsigmaint + 1i.*curlSmint;
+if zk ~= 0
+    Qhelmint = helm3d.dirichlet.get_quadrature_correction(S,eps,zk,[1.0 0],targinfoint);
+    opts_helmint = [];
+    opts_helmint.precomp_quadrature = Qhelmint;
+    Smint = zeros(size(interior));
+    for j = 1:3
+        Smint(j,:) = helm3d.dirichlet.eval(S,mvals(j,:),targinfoint, ...
+            eps,zk,[1.0 0],opts_helmint);
+    end
+    Bint = Bint + 1i.*Smint;
+end
 t2 = toc(t1); 
 fprintf('interior B: %f s\n', t2)
 
-Bint = -gradS0sigmaint + 1i.*curlS0mint;
 B0int = zeros(size(interior));
 for j = 1:size(interior,2)
     B0int(:,j) = reftaylor(ntheta,rmin,rmaj,jmag,lambda,interior(:,j));
 end
-     
 
 % n.B/B0 plots
-% figure(1)
-% subplot(1,3,1)
-% plot(dot(vn,B0-B))
-% colorbar
-% 
-% subplot(1,3,2)
-% plot(dot(vn,B0))
-% colorbar
-% 
-% subplot(1,3,3)
-% plot(dot(vn,B))
-% colorbar
-% 
-% figure(2)
-% subplot(1,3,1)
-% plot(norm(B0-B))
-% colorbar
-% subplot(1,3,2)
-% plot(norm(B0))
-% colorbar
-% subplot(1,3,3)
-% plot(norm(B))
-% colorbar
+figure(1)
+subplot(1,3,1)
+plot(dot(vn,B0-B))
+colorbar
+
+subplot(1,3,2)
+plot(dot(vn,B0))
+colorbar
+
+subplot(1,3,3)
+plot(dot(vn,B))
+colorbar
+
+figure(2)
+subplot(1,3,1)
+plot(norm(B0-B))
+colorbar
+subplot(1,3,2)
+plot(norm(B0))
+colorbar
+subplot(1,3,3)
+plot(norm(B))
+colorbar
 
 lerr(1,lind) = n;
 lerr(2,lind) = nu;
@@ -298,18 +313,6 @@ end
 eps = eps*1e-2;
 end
 
-% estimate curl with finite differences
-% DxBint = (Bint(3,5)-Bint(3,4)-Bint(2,7)+Bint(2,6))/(2*h);
-% DyBint = (Bint(1,7)-Bint(1,6)-Bint(3,3)+Bint(3,2))/(2*h);
-% DzBint = (Bint(2,3)-Bint(2,2)-Bint(1,5)+Bint(1,4))/(2*h);
-% disp(DxBint)
-% disp(DyBint)
-% disp(DzBint)
-
-% disp(norm(B0.components{1}-B.components{1},inf)./norm(B0.components{1},inf))
-% disp(norm(B0.components{2}-B.components{2},inf)./norm(B0.components{2},inf))
-% disp(norm(B0.components{3}-B.components{3},inf)./norm(B0.components{3},inf))
-
 % B flux
 nr = 41; % # of nodes in r-dir.
 nt = 301; % 23; % # of nodes in theta-dir.
@@ -339,15 +342,17 @@ targinfoflux.r = qnodes;
 opts_quad = [];
 opts_quad.format = 'rsc';
 t1 = tic;
-Qflux = taylor.static.get_quadrature_correction(S,eps,targinfoflux,opts_quad);
+if zk == 0
+    Qflux = taylor.static.get_quadrature_correction(S,eps,targinfoflux,opts_quad);
+else
+    Qflux = taylor.dynamic.get_quadrature_correction(S,zk,eps,targinfoflux,opts_quad);
+end
 t2 = toc(t1);
 fprintf('flux quadrature: %f s\n',t2)
 
-Bfluxsigmar = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,real(sigma),eps,Qflux);
-Bfluxsigmai = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,imag(sigma),eps,Qflux);
-Bfluxmr = mtxfluxalphanontaylor(S,dom,qnodes,qweights,real(m),eps,Qflux);
-Bfluxmi = mtxfluxalphanontaylor(S,dom,qnodes,qweights,imag(m),eps,Qflux);
-Bflux = -Bfluxsigmar - 1i.*Bfluxsigmai + 1i*(Bfluxmr + 1i.*Bfluxmi);
+Bfluxsigma = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,sigma,zk,eps,Qflux);
+Bfluxm = mtxfluxalphanontaylor(S,dom,qnodes,qweights,m,zk,eps,Qflux);
+Bflux = -Bfluxsigma + 1i*Bfluxm;
 fprintf('B flux = %f\n', Bflux)
 fprintf('flux difference = %f\n', Bflux - flux)
 

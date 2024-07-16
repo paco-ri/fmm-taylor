@@ -1,4 +1,4 @@
-function Balpha = mtxBalpha(S,dom,mH,eps,varargin)
+function Balpha = mtxBalpha(S,dom,mH,zk,eps,varargin)
 %MTXBALPHA compute alpha coefficient for surface magnetic field
 % 
 %   Required arguments:
@@ -7,6 +7,7 @@ function Balpha = mtxBalpha(S,dom,mH,eps,varargin)
 %     * mH: [surfacefunv] density for which 
 %                  n . curl S0[mH]
 %           is computed. Note that there is no factor of i. 
+%     * zk: [dcomplex] wavenumber
 %     * eps: [double] precision requested
 % 
 %   Optional arguments:
@@ -26,13 +27,41 @@ function Balpha = mtxBalpha(S,dom,mH,eps,varargin)
 %        opts.nonsmoothonly - use smooth quadrature rule for evaluating
 %           layer potential (false)
 
+if nargin < 8
+    opts = [];
+    opts.format = 'rsc';
+else
+    opts = varargin{3};
+end
+
 mHvals = surfacefun_to_array(mH,dom,S);
 mHvals = mHvals.';
 
 % evaluate layer potential
 n = normal(dom);
-curlS0mH = taylor.static.eval_curlS0(S,mHvals,eps,varargin{:});
-curlS0mH = array_to_surfacefun(curlS0mH.',dom,S);
-Balpha = dot(n,curlS0mH);
+
+if zk ~= 0
+    % compute curl Sk[mH]
+    curlSmH = taylor.dynamic.eval_curlSk(S,zk,mHvals,eps,varargin{:});
+    curlSmH = array_to_surfacefun(curlSmH.',dom,S);
+
+    % compute Sk[mH]
+    Qhelm = helm3d.dirichlet.get_quadrature_correction(S,eps,zk, ...
+        [1.0 0],varargin{1},opts);
+    SmH = zeros(size(mHvals));
+    opts_eval = [];
+    opts_eval.precomp_quadrature = Qhelm;
+    for j=1:3
+        SmH(j,:) = helm3d.dirichlet.eval(S,mHvals(j,:),varargin{1},eps, ...
+            zk,[1.0 0],opts_eval);
+    end
+    SmH = array_to_surfacefun(SmH.',dom,S);
+
+    Balpha = dot(n,zk.*SmH + curlSmH);
+else
+    curlS0mH = taylor.static.eval_curlS0(S,mHvals,eps,varargin{:});
+    curlS0mH = array_to_surfacefun(curlS0mH.',dom,S);
+    Balpha = dot(n,curlS0mH);
+end
 
 end

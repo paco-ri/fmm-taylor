@@ -1,5 +1,5 @@
 function fluxsigma = mtxfluxsigmanontaylor(S,dom,nodes,weights,sigma, ...
-    eps,varargin)
+    zk,eps,varargin)
 %MTXFLUXSIGMANONTAYLOR compute sigma-dep. terms of flux condition for
 %                      a non-Taylor-state magnetic field
 % 
@@ -24,21 +24,29 @@ targinfo = [];
 targinfo.r = nodes;
 opts_quad = [];
 opts_quad.format = 'rsc';
-if (nargin > 6)
-    Q = varargin{1};
-else
-    Q = taylor.static.get_quadrature_correction(S,eps,targinfo,opts_quad);
-end
 
 sigmavals = surfacefun_to_array(sigma,dom,S);
 sigmavals = sigmavals';
 
+if (nargin > 6)
+    Q = varargin{1};
+elseif zk == 0
+    Q = taylor.static.get_quadrature_correction(S,eps,targinfo,opts_quad);
+else
+    Q = taylor.dynamic.get_quadrature_correction(S,zk,eps,targinfo,opts_quad);
+end
+
 % Evaluate layer potential
-gradS0sigma = taylor.static.eval_gradS0(S,sigmavals,eps,targinfo,Q, ...
-    opts_quad);
+if zk == 0
+    gradSsigma = taylor.static.eval_gradS0(S,sigmavals,eps,targinfo,Q, ...
+        opts_quad);
+else
+    gradSsigma = taylor.dynamic.eval_gradSk(S,zk,sigmavals,eps, ...
+        targinfo,Q,opts_quad);
+end
 
 % Compute flux
 % ASSUMES y^ IS THE NORMAL TO THE CROSS-SECTION
-fluxsigma = dot(gradS0sigma(2,:),weights);
+fluxsigma = dot(gradSsigma(2,:),weights);
 
 end

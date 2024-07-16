@@ -3,8 +3,8 @@
 % npts = n^2*nu*nv = 3*n^2*nu^2
 % h = sqrt(npts) = sqrt(3)*n*nu
 
-numnus = 3;%4;
-numns = 2;%3;
+numnus = 2;%4;
+numns = 1;%3;
 lerrcol = 4;
 loglog(sqrt(3)*lerr(1,1:numnus).*lerr(2,1:numnus), lerr(lerrcol,1:numnus), 'o-')
 hold on
@@ -45,7 +45,7 @@ legend('FMM+surfacefun, poly. order = p = 5', ...
     'FMM+surfacefun, p = 9', ...
     'O(h^{-4})', 'O(h^{-6})', 'O(h^{-8})', 'Location', 'southwest')
 
-lerrcol = 13;
+lerrcol = 10;
 figure(2)
 loglog(sqrt(3)*lerr(1,1:numnus).*lerr(2,1:numnus), lerr(lerrcol,1:numnus), 'o-')
 xlabel('1/h')
