@@ -1,5 +1,5 @@
 ns = 4:2:6;%10;
-nus = 4:4:12;%16;
+nus = 4:4:8;%16;
 lerr = zeros([15 size(ns,2)*size(nus,2)]);
 lind = 1;
 
@@ -107,8 +107,8 @@ fprintf('GMRES for A11*W = n.B0: %f s / %d iter. = %f s\n', ...
 wfunc = array_to_surfacefun(W,dom,S);
 
 % do GMRES to solve A11*D = A12
-Balphar = mtxBalpha(S,dom,real(mH),eps,S,Q);
-Balphai = mtxBalpha(S,dom,imag(mH),eps,S,Q);
+Balphar = mtxBalpha(S,dom,real(mH),0,eps,S,Q);
+Balphai = mtxBalpha(S,dom,imag(mH),0,eps,S,Q);
 br = surfacefun_to_array(Balphar,dom,S);
 bi = surfacefun_to_array(Balphai,dom,S);
 t1 = tic;
@@ -170,12 +170,12 @@ t1 = tic;
 % fluxsigmaDr = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,real(dfunc),eps,Qflux);
 % fluxsigmaDi = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,imag(dfunc),eps,Qflux);
 % fluxsigmaD = fluxsigmaDr + 1i*fluxsigmaDi;
-fluxsigmaD = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,dfunc,eps,Qflux);
-fluxsigmaW = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,wfunc,eps,Qflux);
+fluxsigmaD = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,dfunc,0,eps,Qflux);
+fluxsigmaW = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,wfunc,0,eps,Qflux);
 % fluxalphar = mtxfluxalphanontaylor(S,dom,qnodes,qweights,real(mH),eps,Qflux);
 % fluxalphai = mtxfluxalphanontaylor(S,dom,qnodes,qweights,imag(mH),eps,Qflux);
 % fluxalpha = fluxalphar + 1i*fluxalphai;
-fluxalpha = mtxfluxalphanontaylor(S,dom,qnodes,qweights,mH,eps,Qflux);
+fluxalpha = mtxfluxalphanontaylor(S,dom,qnodes,qweights,mH,0,eps,Qflux);
 
 % compute alpha and sigma
 alpha = -1i*(flux - fluxsigmaW)/(-fluxsigmaD + fluxalpha);
@@ -340,10 +340,10 @@ Qflux = taylor.static.get_quadrature_correction(S,eps,targinfoflux,opts_quad);
 t2 = toc(t1);
 fprintf('flux quadrature: %f s\n',t2)
 
-Bfluxsigmar = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,real(sigma),eps,Qflux);
-Bfluxsigmai = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,imag(sigma),eps,Qflux);
-Bfluxmr = mtxfluxalphanontaylor(S,dom,qnodes,qweights,real(m),eps,Qflux);
-Bfluxmi = mtxfluxalphanontaylor(S,dom,qnodes,qweights,imag(m),eps,Qflux);
+Bfluxsigmar = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,real(sigma),0,eps,Qflux);
+Bfluxsigmai = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,imag(sigma),0,eps,Qflux);
+Bfluxmr = mtxfluxalphanontaylor(S,dom,qnodes,qweights,real(m),0,eps,Qflux);
+Bfluxmi = mtxfluxalphanontaylor(S,dom,qnodes,qweights,imag(m),0,eps,Qflux);
 Bflux = -Bfluxsigmar - 1i.*Bfluxsigmai + 1i*(Bfluxmr + 1i.*Bfluxmi);
 fprintf('B flux = %f\n', Bflux)
 fprintf('flux difference = %f\n', Bflux - flux)
@@ -351,7 +351,7 @@ fprintf('flux difference = %f\n', Bflux - flux)
 % function in solve for D
 function A = A(s,dom,S,eps,Q)
 sigma = array_to_surfacefun(s,dom,S);
-Bsigma = mtxBsigma(S,dom,sigma,eps,S,Q);
+Bsigma = mtxBsigma(S,dom,sigma,0,eps,S,Q);
 A = surfacefun_to_array(Bsigma,dom,S);
 end
 

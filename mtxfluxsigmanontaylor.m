@@ -26,7 +26,7 @@ opts_quad = [];
 opts_quad.format = 'rsc';
 
 sigmavals = surfacefun_to_array(sigma,dom,S);
-sigmavals = sigmavals';
+sigmavals = sigmavals.';
 
 if (nargin > 6)
     Q = varargin{1};
@@ -38,15 +38,31 @@ end
 
 % Evaluate layer potential
 if zk == 0
-    gradSsigma = taylor.static.eval_gradS0(S,sigmavals,eps,targinfo,Q, ...
+    sigmaterms = taylor.static.eval_gradS0(S,sigmavals,eps,targinfo,Q, ...
         opts_quad);
 else
     gradSsigma = taylor.dynamic.eval_gradSk(S,zk,sigmavals,eps, ...
         targinfo,Q,opts_quad);
+    m0 = debyem0(sigma,zk);
+    m0vals = surfacefun_to_array(m0,dom,S);
+    m0vals = m0vals.';
+    curlSm0 = taylor.dynamic.eval_curlSk(S,zk,m0vals,eps,targinfo,Q, ...
+        opts_quad);
+    Qhelm = helm3d.dirichlet.get_quadrature_correction(S,eps,zk, ...
+        [1.0 0],targinfo,opts_quad); 
+    opts_helm = [];
+    opts_helm.precomp_quadrature = Qhelm;
+    Sm0 = complex(zeros(size(nodes)));
+    for j = 1:3
+        Sm0(j,:) = helm3d.dirichlet.eval(S,m0vals(j,:),targinfo,eps,zk, ...
+            [1.0 0],opts_helm);
+    end
+    sigmaterms = gradSsigma - 1i.*(zk.*Sm0 + curlSm0);
 end
 
 % Compute flux
 % ASSUMES y^ IS THE NORMAL TO THE CROSS-SECTION
-fluxsigma = dot(gradSsigma(2,:),weights);
+% fluxsigma = dot(sigmaterms(2,:),weights);
+fluxsigma = sum(sigmaterms(2,:).*weights);
 
 end

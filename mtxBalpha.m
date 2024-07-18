@@ -51,6 +51,7 @@ if zk ~= 0
     SmH = zeros(size(mHvals));
     opts_eval = [];
     opts_eval.precomp_quadrature = Qhelm;
+    opts_eval.format = 'rsc';
     for j=1:3
         SmH(j,:) = helm3d.dirichlet.eval(S,mHvals(j,:),varargin{1},eps, ...
             zk,[1.0 0],opts_eval);
@@ -59,9 +60,9 @@ if zk ~= 0
 
     Balpha = dot(n,zk.*SmH + curlSmH);
 else
-    curlS0mH = taylor.static.eval_curlS0(S,mHvals,eps,varargin{:});
-    curlS0mH = array_to_surfacefun(curlS0mH.',dom,S);
-    Balpha = dot(n,curlS0mH);
+    curlSmH = taylor.static.eval_curlS0(S,mHvals,eps,varargin{:});
+    curlSmH = array_to_surfacefun(curlSmH.',dom,S);
+    Balpha = dot(n,curlSmH);
 end
 
 end

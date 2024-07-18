@@ -59,6 +59,7 @@ if zk ~= 0
     Sm0 = zeros(size(m0vals));
     opts_eval = [];
     opts_eval.precomp_quadrature = Qhelm;
+    opts_eval.format = 'rsc';
     for j=1:3
         Sm0(:,j) = helm3d.dirichlet.eval(S,m0vals(:,j),varargin{1},eps, ...
             zk,[1.0 0],opts_eval);

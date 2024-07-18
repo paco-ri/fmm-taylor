@@ -20,7 +20,7 @@ opts_quad = [];
 opts_quad.format = 'rsc';
 
 mHvals = surfacefun_to_array(mH,dom,S);
-mHvals = mHvals';
+mHvals = mHvals.';
 
 if (nargin > 6)
     Q = varargin{1};
@@ -38,18 +38,19 @@ else
     % compute Sk[mH]
     Qhelm = helm3d.dirichlet.get_quadrature_correction(S,eps,zk, ...
         [1.0 0],targinfo,opts_quad);
-    SmH = zeros(size(nodes));
+    SmH = complex(zeros(size(nodes)));
     opts_eval = [];
     opts_eval.precomp_quadrature = Qhelm;
     for j=1:3
         SmH(j,:) = helm3d.dirichlet.eval(S,mHvals(j,:),targinfo,eps, ...
             zk,[1.0 0],opts_eval);
     end
-    mHterms = curlSmH + SmH;
+    mHterms = curlSmH + zk.*SmH;
 end
 
 % Compute flux
 % ASSUMES y^ IS THE NORMAL TO THE CROSS-SECTION
-fluxalpha = dot(mHterms(2,:),weights);
+% fluxalpha = dot(mHterms(2,:),weights);
+fluxalpha = sum(mHterms(2,:).*weights);
 
 end

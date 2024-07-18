@@ -10,7 +10,7 @@ n = normal(dom);
 % solve lap(u) = sigma
 L = surfaceop(dom, pdo, sigma);
 L.rankdef = true;
-u = solve(L);
+u = L.solve();
 
 m0 = 1i.*lambda.*(grad(u) + 1i.*cross(n, grad(u)));
 % m0 = surfacefunv(dom);

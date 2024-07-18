@@ -1,10 +1,11 @@
-ns = 4; % 4:2:10;
-nus = 4; % 4:4:16;
+ns = 5; % 4:2:10;
+nus = 4:2:8; % 4:4:16;
 lerr = zeros([15 size(ns,2)*size(nus,2)]);
 lind = 1;
 
 % wavenumber 
 zk = 1.0 + 0.0i; 
+lambda = real(zk); 
 
 whichgeom = 1; % circular torus
 
@@ -76,7 +77,6 @@ else
 end
 ntheta = 1e3; % number of disc. points
 jmag = 1.0; % current magnitude 
-lambda = real(zk); 
 B0 = reftaylorsurffun(dom,n,nu,nv,ntheta,rmin,rmaj,jmag,lambda);
 nB0 = dot(vn,B0);
 
@@ -111,6 +111,14 @@ t2 = toc(t1);
 fprintf('GMRES for A11*D = A12: %f s / %d iter. = %f s\n', ...
     t2, iter2(2), t2/iter2(2))
 dfunc = array_to_surfacefun(D,dom,S);
+
+% === GMRES CHECK ===
+
+bcheck = mtxBsigma(S,dom,dfunc,zk,eps,S,Q);
+bcheck = surfacefun_to_array(bcheck,dom,S);   
+berr = bcheck - b;
+
+% ===================
 
 % post-GMRES processing
 
@@ -151,17 +159,13 @@ fprintf('B0 flux = %f\n',flux)
 
 targinfoflux = [];
 targinfoflux.r = qnodes;
-opts_quad = [];
-opts_quad.format = 'rsc';
+t1 = tic;
 if zk == 0
-    t1 = tic;
     Qflux = taylor.static.get_quadrature_correction(S,eps,targinfoflux,opts_quad);
-    t2 = toc(t1);
 else
-    t1 = tic;
     Qflux = taylor.dynamic.get_quadrature_correction(S,zk,eps,targinfoflux,opts_quad);
-    t2 = toc(t1);
 end
+t2 = toc(t1);
 fprintf('flux quadrature: %f s\n',t2)
 
 t1 = tic;
@@ -175,8 +179,12 @@ sigma = 1i*alpha.*dfunc - wfunc;
 t2 = toc(t1);
 fprintf('alpha and sigma: %f s\n', t2)
 
+m0 = debyem0(sigma,zk);
+m0err = div(m0) - 1i*zk.*sigma;
+fprintf('m0err = %f\n', norm(m0err))
+
 % compute B on-surface
-m = debyem0(sigma,zk) + alpha.*mH; % will later involve call to debyem0
+m = m0 + alpha.*mH; 
 nxm = cross(vn,m);
 
 sigmavals = surfacefun_to_array(sigma,dom,S);
@@ -203,6 +211,7 @@ if zk ~= 0
     Qhelm = helm3d.dirichlet.get_quadrature_correction(S,eps,zk,[1.0 0],S);
     opts_helm = [];
     opts_helm.precomp_quadrature = Qhelm;
+    opts_helm.format = 'rsc';
     Sm = zeros(size(mvals));
     for j = 1:3
         Sm(j,:) = helm3d.dirichlet.eval(S,mvals(j,:),S,eps,zk,[1.0 0],opts_helm);
@@ -239,12 +248,13 @@ if zk ~= 0
     Qhelmint = helm3d.dirichlet.get_quadrature_correction(S,eps,zk,[1.0 0],targinfoint);
     opts_helmint = [];
     opts_helmint.precomp_quadrature = Qhelmint;
+    opts_helmint.format = 'rsc';
     Smint = zeros(size(interior));
     for j = 1:3
         Smint(j,:) = helm3d.dirichlet.eval(S,mvals(j,:),targinfoint, ...
             eps,zk,[1.0 0],opts_helmint);
     end
-    Bint = Bint + 1i.*Smint;
+    Bint = Bint + 1i*zk.*Smint;
 end
 t2 = toc(t1); 
 fprintf('interior B: %f s\n', t2)
@@ -256,28 +266,28 @@ end
 
 % n.B/B0 plots
 figure(1)
-subplot(1,3,1)
+% subplot(1,3,1)
 plot(dot(vn,B0-B))
 colorbar
 
-subplot(1,3,2)
-plot(dot(vn,B0))
-colorbar
-
-subplot(1,3,3)
-plot(dot(vn,B))
-colorbar
+% subplot(1,3,2)
+% plot(dot(vn,B0))
+% colorbar
+% 
+% subplot(1,3,3)
+% plot(dot(vn,B))
+% colorbar
 
 figure(2)
-subplot(1,3,1)
+% subplot(1,3,1)
 plot(norm(B0-B))
 colorbar
-subplot(1,3,2)
-plot(norm(B0))
-colorbar
-subplot(1,3,3)
-plot(norm(B))
-colorbar
+% subplot(1,3,2)
+% plot(norm(B0))
+% colorbar
+% subplot(1,3,3)
+% plot(norm(B))
+% colorbar
 
 lerr(1,lind) = n;
 lerr(2,lind) = nu;
@@ -339,8 +349,6 @@ end
 
 targinfoflux = [];
 targinfoflux.r = qnodes;
-opts_quad = [];
-opts_quad.format = 'rsc';
 t1 = tic;
 if zk == 0
     Qflux = taylor.static.get_quadrature_correction(S,eps,targinfoflux,opts_quad);
@@ -351,8 +359,8 @@ t2 = toc(t1);
 fprintf('flux quadrature: %f s\n',t2)
 
 Bfluxsigma = mtxfluxsigmanontaylor(S,dom,qnodes,qweights,sigma,zk,eps,Qflux);
-Bfluxm = mtxfluxalphanontaylor(S,dom,qnodes,qweights,m,zk,eps,Qflux);
-Bflux = -Bfluxsigma + 1i*Bfluxm;
+BfluxmH = mtxfluxalphanontaylor(S,dom,qnodes,qweights,mH,zk,eps,Qflux);
+Bflux = -Bfluxsigma + 1i*alpha*BfluxmH;
 fprintf('B flux = %f\n', Bflux)
 fprintf('flux difference = %f\n', Bflux - flux)
 
