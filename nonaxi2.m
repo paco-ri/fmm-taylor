@@ -1,5 +1,5 @@
-ns = 5; % 4:2:10;
-nus = 4:2:8; % 4:4:16;
+ns = 6; % 4:2:10;
+nus = 6:2:8; % 4:4:16;
 lerr = zeros([15 size(ns,2)*size(nus,2)]);
 lind = 1;
 
@@ -320,7 +320,7 @@ lind = lind+1;
 fprintf('==============\n')
 
 end
-eps = eps*1e-2;
+eps = eps*1e-1;
 end
 
 % B flux
