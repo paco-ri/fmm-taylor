@@ -1,14 +1,14 @@
 ns = [5 7]; % [5 7 9];
-nus = [8 10]; % 8:2:14;
+nus = [6 8]; % 8:2:14;
 lerr = zeros([15 size(ns,2)*size(nus,2)]);
 lind = 1;
 
 % wavenumber 
-zk = 1.0 + 0.0i; 
+zk = 0;%1.0 + 0.0i; 
 lambda = real(zk); 
 
-% whichgeom = 1; % circular torus
-whichgeom = 2; % elliptical torus
+whichgeom = 1; % circular torus
+% whichgeom = 2; % elliptical torus
 
 % domain
 domrmin = 1.0;
@@ -38,7 +38,11 @@ nv = nu*3;
 fprintf('n = %d, nu = %d, nv = %d\n',n,nu,nv)
 
 if whichgeom == 1
+    temp = nu;
+    nu = nv;
+    nv = temp;
     dom = circulartorus(n,nu,nv,domrmin,domrmaj);
+    domo = circulartorus(2*n,nu,nv,domrmin,domrmaj);
 elseif whichgeom == 2
     a = 3.0;
     a0 = 5.0;

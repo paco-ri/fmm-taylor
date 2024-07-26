@@ -3,8 +3,8 @@
 % npts = n^2*nu*nv = 3*n^2*nu^2
 % h = sqrt(npts) = sqrt(3)*n*nu
 
-numnus = 4;
-numns = 1;%3;
+numnus = 2;
+numns = 2;%3;
 lerrcol = 4;
 loglog(sqrt(3)*lerr(1,1:numnus).*lerr(2,1:numnus), lerr(lerrcol,1:numnus), 'o-')
 hold on
