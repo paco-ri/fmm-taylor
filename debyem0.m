@@ -9,9 +9,7 @@ pdo.lap = 1;
 % resample
 n = size(sigma.vals{1,1},1);
 sigma = resample(sigma,n*2);
-
 dom = sigma.domain;
-vn = normal(dom);
 
 % solve lap(u) = sigma
 L = surfaceop(dom, pdo, sigma);

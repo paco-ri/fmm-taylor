@@ -52,11 +52,13 @@ if zk ~= 0
     opts_eval = [];
     opts_eval.precomp_quadrature = Qhelm;
     opts_eval.format = 'rsc';
+    mHvals = surfacefun_to_array(mH,dom,S,true); % added with s_t_a option
+    mHvals = mHvals.';
     for j=1:3
         SmH(j,:) = helm3d.dirichlet.eval(S,mHvals(j,:),varargin{1},eps, ...
             zk,[1.0 0],opts_eval);
     end
-    SmH = array_to_surfacefun(SmH.',dom,S);
+    SmH = array_to_surfacefun(SmH.',dom,S,true);
 
     Balpha = dot(n,zk.*SmH + curlSmH);
 else

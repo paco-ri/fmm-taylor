@@ -1,5 +1,5 @@
 function [interior,interiorwts] = interiortorus(nphi,ntheta,nr)
-%INTERIORCIRCTORUS Generate points and quadrature weights in the interior
+%INTERIORTORUS Generate points and quadrature weights in the interior
 %   of surfacemesh.torus
 %   Arguments:
 %     nphi: [int] number of points in phi-dir.
@@ -10,8 +10,9 @@ function [interior,interiorwts] = interiortorus(nphi,ntheta,nr)
 
 phis = 2*pi.*(0:nphi-1)./nphi;
 thetas = 2*pi.*(0:ntheta-1)./ntheta;
-% [rs, rwts] = legpts(nr, [0 rmin]); % skip zero 
+[rs, rwts] = legpts(nr, [0 1]); % skip zero 
 interior = zeros([3 (nr*ntheta+1)*nphi]);
+rmaj = 4.5;
 
 % points on axis
 for i = 1:nphi
@@ -20,23 +21,24 @@ for i = 1:nphi
     interior(3,i) = 0;
 end
 interiorwts = zeros([1 (nr*ntheta+1)*nphi]);
+ind = nphi+1;
 for i = 1:nphi
+    phi = phis(i);
     for j = 1:ntheta
+        theta = thetas(j);
         for k = 1:nr
-            interior(1,(i-1)*ntheta*nr+(j-1)*nr+k+nphi) = ...
-                (rmaj+rs(k)*cos(thetas(j)))*cos(phis(i));
-            interior(2,(i-1)*ntheta*nr+(j-1)*nr+k+nphi) = ...
-                (rmaj+rs(k)*cos(thetas(j)))*sin(phis(i));
-            interior(3,(i-1)*ntheta*nr+(j-1)*nr+k+nphi) = ...
-                rs(k)*sin(thetas(j));
-            interiorwts(1,(i-1)*ntheta*nr+(j-1)*nr+k+nphi) = ...
-                4*pi*pi*rwts(k)/nphi/ntheta;
+            r = rs(k);
+            [interior(1,ind), interior(2,ind), interior(3,ind)] = ...
+                evalTorus(phi,theta,r);
+            interiorwts(1,ind) = 4*pi*pi*rwts(k)/nphi/ntheta;
+            ind = ind+1;
         end
     end
 end
+% plot3(interior(1,:),interior(2,:),interior(3,:),'.')
 end
 
-function [x, y, z] = evalTorus(u, v)
+function [x, y, z] = evalTorus(u, v, varargin)
 
 d = [0.17 0.11  0    0;
      0    1     0.01 0;
@@ -46,6 +48,12 @@ d = [0.17 0.11  0    0;
 x = zeros(size(u));
 y = zeros(size(u));
 z = zeros(size(u));
+
+if nargin == 3
+    temp = d(3,2);
+    d = d.*varargin{1};
+    d(3,2) = temp;
+end
 
 for i = -1:2
     for j = -1:2

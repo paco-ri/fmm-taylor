@@ -1,7 +1,7 @@
 % test \nabla_\Gamma \cdot m = i \lambda \sigma
 
 ns = 4:2:12;
-nus = 8:4:20;
+nus = 32;% 8:4:20;
 numns = size(ns,2);
 numnus = size(nus,2);
 errs = zeros([4 numns*numnus]);
@@ -39,19 +39,19 @@ vn = normal(dom);
 % get harmonic surface vector field 
 sinphi = @(x,y,z) y./sqrt(x.^2 + y.^2);
 cosphi = @(x,y,z) x./sqrt(x.^2 + y.^2);
-sigma = surfacefun(@(x,y,z) sinphi(x,y,z)+cosphi(x,y,z)+z,dom);
-sigmao = resample(sigma,n*2);
+sigma = surfacefun(@(x,y,z) sinphi(x,y,z)+cosphi(x,y,z)+1./(1+z.^2),dom);
 
 m0 = debyem0(sigma,lambda);
 m0err = div(m0) - 1i*lambda.*sigma;
 
-m0o = debyem0(sigmao,lambda);
-m0oerr = div(m0o) - 1i*lambda.*sigmao;
+% sigmao = resample(sigma,n*2);
+% m0o = debyem0(sigmao,lambda);
+% m0oerr = div(m0o) - 1i*lambda.*sigmao;
 
 errs(1,ii) = n;
 errs(2,ii) = nu;
 errs(3,ii) = norm(m0err);
-errs(4,ii) = norm(m0oerr);
+% errs(4,ii) = norm(m0oerr);
 
 ii = ii + 1;
 end
@@ -65,13 +65,13 @@ for j = 1:(numns-1)
     semilogy(sqrt(errs(1,jj).*errs(2,jj)), errs(3,jj), 'o-')
 end
 
-figure(2)
-semilogy(sqrt(errs(1,1:numnus).*errs(2,1:numnus)), errs(4,1:numnus), 'o-')
-hold on
-for j = 1:(numns-1)
-    jj = (numnus*j+1):(numnus*(j+1));
-    semilogy(sqrt(errs(1,jj).*errs(2,jj)), errs(4,jj), 'o-')
-end
+% figure(2)
+% semilogy(sqrt(errs(1,1:numnus).*errs(2,1:numnus)), errs(4,1:numnus), 'o-')
+% hold on
+% for j = 1:(numns-1)
+%     jj = (numnus*j+1):(numnus*(j+1));
+%     semilogy(sqrt(errs(1,jj).*errs(2,jj)), errs(4,jj), 'o-')
+% end
 
 % nsph = 8;
 % nref = 3;

@@ -1,5 +1,5 @@
-ns = 6; % 4:2:10;
-nus = 6:2:8; % 4:4:16;
+ns = [5 7]; % [5 7 9];
+nus = [8 10]; % 8:2:14;
 lerr = zeros([15 size(ns,2)*size(nus,2)]);
 lind = 1;
 
@@ -7,12 +7,15 @@ lind = 1;
 zk = 1.0 + 0.0i; 
 lambda = real(zk); 
 
-whichgeom = 1; % circular torus
+% whichgeom = 1; % circular torus
+whichgeom = 2; % elliptical torus
 
 % domain
 domrmin = 1.0;
 if whichgeom == 1
     domrmaj = 2.0;
+elseif whichgeom == 2
+    domrmaj = 5.0;
 else
     domrmaj = 4.5; % for surfacemesh.torus
 end
@@ -36,6 +39,15 @@ fprintf('n = %d, nu = %d, nv = %d\n',n,nu,nv)
 
 if whichgeom == 1
     dom = circulartorus(n,nu,nv,domrmin,domrmaj);
+elseif whichgeom == 2
+    a = 3.0;
+    a0 = 5.0;
+    b0 = 2.0;
+    temp = nu;
+    nu = nv;
+    nv = temp;
+    dom = twisted_ellipse_torus(a,a0,b0,n,nu,nv);
+    domo = twisted_ellipse_torus(a,a0,b0,2*n,nu,nv);
 else
     dom = surfacemesh.torus(n, nu, nv);
 end
@@ -48,29 +60,40 @@ cosphi = @(x,y,z) x./sqrt(x.^2 + y.^2);
 phihat = surfacefunv(@(x,y,z) -sinphi(x,y,z), ...
                      @(x,y,z) cosphi(x,y,z), ...
                      @(x,y,z) 0.*z, dom);
+phihato = surfacefunv(@(x,y,z) -sinphi(x,y,z), ...
+                      @(x,y,z) cosphi(x,y,z), ...
+                      @(x,y,z) 0.*z, domo);
+vno = normal(domo);
 tauhat = cross(vn, phihat); 
-[u, v, vH, curlfree, divfree] = hodge(tauhat);
-mH = vH + 1i.*cross(vn,vH);
+tauhato = cross(vno, phihato);
+% [u, v, vH, curlfree, divfree] = hodge(tauhat);
+[u, v, vHo, curlfree, divfree] = hodge(tauhato);
+% mH = vH + 1i.*cross(vn,vH);
+mHo = vHo + 1i.*cross(vno,vHo);
+mH = resample(mHo,n);
 
 % harmonic surface vector field in axisymmetric case -- no L-B solve
-sintheta = @(x,y,z) z./domrmin; 
-costheta = @(x,y,z) (sqrt(x.^2 + y.^2) - domrmaj)./domrmin;
-% theta routines are wrong for surfacemesh.torus
-tauhat2 = surfacefunv(@(x,y,z) -sintheta(x,y,z).*cosphi(x,y,z), ...
-                     @(x,y,z) -sintheta(x,y,z).*sinphi(x,y,z), ...
-                     @(x,y,z) costheta(x,y,z), dom);
-overr = surfacefun(@(x,y,z) 1./sqrt(x.^2 + y.^2), dom);
-mH2 = tauhat2.*overr - 1i.*phihat.*overr;
-vn2 = surfacefunv(@(x,y,z) costheta(x,y,z).*cosphi(x,y,z), ...
-                 @(x,y,z) costheta(x,y,z).*sinphi(x,y,z), ...
-                 @(x,y,z) sintheta(x,y,z), dom); 
-mH = mH2;
-vn = vn2;
+% sintheta = @(x,y,z) z./domrmin; 
+% costheta = @(x,y,z) (sqrt(x.^2 + y.^2) - domrmaj)./domrmin;
+% % theta routines are wrong for surfacemesh.torus
+% tauhat2 = surfacefunv(@(x,y,z) -sintheta(x,y,z).*cosphi(x,y,z), ...
+%                      @(x,y,z) -sintheta(x,y,z).*sinphi(x,y,z), ...
+%                      @(x,y,z) costheta(x,y,z), dom);
+% overr = surfacefun(@(x,y,z) 1./sqrt(x.^2 + y.^2), dom);
+% mH2 = tauhat2.*overr - 1i.*phihat.*overr;
+% vn2 = surfacefunv(@(x,y,z) costheta(x,y,z).*cosphi(x,y,z), ...
+%                  @(x,y,z) costheta(x,y,z).*sinphi(x,y,z), ...
+%                  @(x,y,z) sintheta(x,y,z), dom); 
+% mH = mH2;
+% vn = vn2;
 
 % compute reference Taylor state
 if whichgeom == 1
     rmaj = 2.0; % dist. of center of current ring from origin
     rmin = 2.0; % radius of current ring 
+elseif whichgeom == 2
+    rmaj = 5.0;
+    rmin = 5.0;
 else
     rmaj = 4.5; % for surfacemesh.torus
     rmin = 3.0; % for surfacemesh.torus
@@ -112,12 +135,6 @@ fprintf('GMRES for A11*D = A12: %f s / %d iter. = %f s\n', ...
     t2, iter2(2), t2/iter2(2))
 dfunc = array_to_surfacefun(D,dom,S);
 
-% === GMRES CHECK ===
-
-bcheck = mtxBsigma(S,dom,dfunc,zk,eps,S,Q);
-bcheck = surfacefun_to_array(bcheck,dom,S);   
-berr = bcheck - b;
-
 % ===================
 
 % post-GMRES processing
@@ -148,7 +165,11 @@ if whichgeom == 1
         end
     end
 else
-    [qnodes, qweights] = torusfluxquad(nr, nt);
+    if whichgeom == 2
+        [qnodes, qweights] = ellipsefluxquad(nr, nt, a, a0, b0);
+    else
+        [qnodes, qweights] = torusfluxquad(nr, nt);
+    end
     flux = 0;
     for i = 1:nr*nt
         B0eval = reftaylor(ntheta,rmin,rmaj,jmag,lambda,qnodes(:,i));
@@ -213,16 +234,31 @@ if zk ~= 0
     opts_helm.precomp_quadrature = Qhelm;
     opts_helm.format = 'rsc';
     Sm = zeros(size(mvals));
+    % mvals = surfacefun_to_array(m,dom,S,true);
+    mvals = surfacefun_to_array(m,dom,S);
+    mvals = mvals.';
     for j = 1:3
         Sm(j,:) = helm3d.dirichlet.eval(S,mvals(j,:),S,eps,zk,[1.0 0],opts_helm);
     end
+    % Sm = array_to_surfacefun(Sm.',dom,S,true);
+    % Sm = surfacefun_to_array(Sm,dom,S);
+    % Sm = Sm.';
     B = B + 1i*zk.*Sm;
+    mvals = surfacefun_to_array(m,dom,S);
+    mvals = mvals.';
 end
 B = array_to_surfacefun(B.',dom,S);
 
 % compute B throughout the interior
-[interior, interiorwts] = interiorcirctorus(nintphi,ninttheta,nintr, ...
-    domrmin,domrmaj);
+if whichgeom == 1
+    [interior, interiorwts] = interiorcirctorus(nintphi,ninttheta, ...
+        nintr,domrmin,domrmaj);
+elseif whichgeom == 2
+    [interior, interiorwts] = interiorellipsetorus(nintphi,ninttheta, ...
+        nintr,a,a0,b0);
+else
+    [interior, interiorwts] = interiortorus(nintphi,ninttheta,nintr);
+end
 targinfoint = [];
 targinfoint.r = interior;
 
@@ -250,11 +286,16 @@ if zk ~= 0
     opts_helmint.precomp_quadrature = Qhelmint;
     opts_helmint.format = 'rsc';
     Smint = zeros(size(interior));
+    % mvals = surfacefun_to_array(m,dom,S,true);
+    mvals = surfacefun_to_array(m,dom,S);
+    mvals = mvals.';
     for j = 1:3
         Smint(j,:) = helm3d.dirichlet.eval(S,mvals(j,:),targinfoint, ...
             eps,zk,[1.0 0],opts_helmint);
     end
     Bint = Bint + 1i*zk.*Smint;
+    mvals = surfacefun_to_array(m,dom,S);
+    mvals = mvals.';
 end
 t2 = toc(t1); 
 fprintf('interior B: %f s\n', t2)
@@ -343,6 +384,8 @@ if whichgeom == 1
             qweights(ii) = rr(i)*wr(i)*wt;
         end
     end
+elseif whichgeom == 2
+    [qnodes, qweights] = ellipsefluxquad(nr, nt, a, a0, b0);
 else
     [qnodes, qweights] = torusfluxquad(nr, nt);
 end

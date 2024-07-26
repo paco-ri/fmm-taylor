@@ -1,4 +1,4 @@
-function B0 = reftaylor(ntheta,rmin,rmaj,jmag,lambda,targ)
+ function B0 = reftaylor(ntheta,rmin,rmaj,jmag,lambda,targ)
 %REFTAYLOR compute a reference Taylor state corresponding to a current ring
 % docs later 
 
@@ -38,7 +38,7 @@ else
         dist = norm(rr);
         helmker(i) = exp(1i*lambda*dist)/dist;
         gradhelmker(:,i) = rr.*exp(1i*lambda*dist)...
-            .*(1i*lambda*dist - 1)./dist^3;
+            .*(1i.*lambda.*dist - 1)./dist^3;
     end
     
     integrand = cross(gradhelmker,current);
