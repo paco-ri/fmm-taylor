@@ -1,14 +1,15 @@
-ns = [5 7]; % [5 7 9];
-nus = [6 8]; % 8:2:14;
-lerr = zeros([15 size(ns,2)*size(nus,2)]);
+ns = [5 6 7]; % [5 7]; % [5 7 9];
+nvs = 8; % [6 8]; % 8:2:14;
+lerr = zeros([15 size(ns,2)*size(nvs,2)]);
 lind = 1;
 
 % wavenumber 
-zk = 0;%1.0 + 0.0i; 
+zk = 0.1 + 0.0i; 
 lambda = real(zk); 
 
 whichgeom = 1; % circular torus
 % whichgeom = 2; % elliptical torus
+exactmH = true;
 
 % domain
 domrmin = 1.0;
@@ -21,9 +22,9 @@ else
 end
 
 % interior points at which B is computed for convergence analysis
-nintphi = 32;
-ninttheta = 32;
-nintr = 64;
+nintphi = 16;
+ninttheta = 16;
+nintr = 32;
 
 % quadrature options
 eps = 1e-7;
@@ -31,29 +32,23 @@ opts_quad = [];
 opts_quad.format='rsc';
 
 for n = ns
-for nu = nus
+for nv = nvs
 
 % define surface 
-nv = nu*3;
-fprintf('n = %d, nu = %d, nv = %d\n',n,nu,nv)
+nu = nv*3;
+fprintf('n = %d, nu = %d, nv = %d\n',n,nv,nu)
 
 if whichgeom == 1
-    temp = nu;
-    nu = nv;
-    nv = temp;
-    dom = circulartorus(n,nu,nv,domrmin,domrmaj);
-    domo = circulartorus(2*n,nu,nv,domrmin,domrmaj);
+    dom = circulartorus(n,nv,nu,domrmin,domrmaj);
+    domo = circulartorus(2*n,nv,nu,domrmin,domrmaj);
 elseif whichgeom == 2
     a = 3.0;
     a0 = 5.0;
     b0 = 2.0;
-    temp = nu;
-    nu = nv;
-    nv = temp;
-    dom = twisted_ellipse_torus(a,a0,b0,n,nu,nv);
-    domo = twisted_ellipse_torus(a,a0,b0,2*n,nu,nv);
+    dom = twisted_ellipse_torus(a,a0,b0,n,nv,nu);
+    domo = twisted_ellipse_torus(a,a0,b0,2*n,nv,nu);
 else
-    dom = surfacemesh.torus(n, nu, nv);
+    dom = surfacemesh.torus(n, nv, nu); % INCORRECT 
 end
 
 vn = normal(dom);
@@ -77,19 +72,21 @@ mHo = vHo + 1i.*cross(vno,vHo);
 mH = resample(mHo,n);
 
 % harmonic surface vector field in axisymmetric case -- no L-B solve
-% sintheta = @(x,y,z) z./domrmin; 
-% costheta = @(x,y,z) (sqrt(x.^2 + y.^2) - domrmaj)./domrmin;
-% % theta routines are wrong for surfacemesh.torus
-% tauhat2 = surfacefunv(@(x,y,z) -sintheta(x,y,z).*cosphi(x,y,z), ...
-%                      @(x,y,z) -sintheta(x,y,z).*sinphi(x,y,z), ...
-%                      @(x,y,z) costheta(x,y,z), dom);
-% overr = surfacefun(@(x,y,z) 1./sqrt(x.^2 + y.^2), dom);
-% mH2 = tauhat2.*overr - 1i.*phihat.*overr;
-% vn2 = surfacefunv(@(x,y,z) costheta(x,y,z).*cosphi(x,y,z), ...
-%                  @(x,y,z) costheta(x,y,z).*sinphi(x,y,z), ...
-%                  @(x,y,z) sintheta(x,y,z), dom); 
-% mH = mH2;
-% vn = vn2;
+if whichgeom == 1 && exactmH
+sintheta = @(x,y,z) z./domrmin; 
+costheta = @(x,y,z) (sqrt(x.^2 + y.^2) - domrmaj)./domrmin;
+% theta routines are wrong for surfacemesh.torus
+tauhat2 = surfacefunv(@(x,y,z) -sintheta(x,y,z).*cosphi(x,y,z), ...
+                     @(x,y,z) -sintheta(x,y,z).*sinphi(x,y,z), ...
+                     @(x,y,z) costheta(x,y,z), dom);
+overr = surfacefun(@(x,y,z) 1./sqrt(x.^2 + y.^2), dom);
+mH2 = tauhat2.*overr - 1i.*phihat.*overr;
+vn2 = surfacefunv(@(x,y,z) costheta(x,y,z).*cosphi(x,y,z), ...
+                 @(x,y,z) costheta(x,y,z).*sinphi(x,y,z), ...
+                 @(x,y,z) sintheta(x,y,z), dom); 
+mH = mH2;
+vn = vn2;
+end
 
 % compute reference Taylor state
 if whichgeom == 1
@@ -104,7 +101,7 @@ else
 end
 ntheta = 1e3; % number of disc. points
 jmag = 1.0; % current magnitude 
-B0 = reftaylorsurffun(dom,n,nu,nv,ntheta,rmin,rmaj,jmag,lambda);
+B0 = reftaylorsurffun(dom,n,nv,nu,ntheta,rmin,rmaj,jmag,lambda);
 nB0 = dot(vn,B0);
 
 % convert surfacemesh dom to surfer
@@ -238,18 +235,10 @@ if zk ~= 0
     opts_helm.precomp_quadrature = Qhelm;
     opts_helm.format = 'rsc';
     Sm = zeros(size(mvals));
-    % mvals = surfacefun_to_array(m,dom,S,true);
-    mvals = surfacefun_to_array(m,dom,S);
-    mvals = mvals.';
     for j = 1:3
         Sm(j,:) = helm3d.dirichlet.eval(S,mvals(j,:),S,eps,zk,[1.0 0],opts_helm);
     end
-    % Sm = array_to_surfacefun(Sm.',dom,S,true);
-    % Sm = surfacefun_to_array(Sm,dom,S);
-    % Sm = Sm.';
     B = B + 1i*zk.*Sm;
-    mvals = surfacefun_to_array(m,dom,S);
-    mvals = mvals.';
 end
 B = array_to_surfacefun(B.',dom,S);
 
@@ -290,16 +279,11 @@ if zk ~= 0
     opts_helmint.precomp_quadrature = Qhelmint;
     opts_helmint.format = 'rsc';
     Smint = zeros(size(interior));
-    % mvals = surfacefun_to_array(m,dom,S,true);
-    mvals = surfacefun_to_array(m,dom,S);
-    mvals = mvals.';
     for j = 1:3
         Smint(j,:) = helm3d.dirichlet.eval(S,mvals(j,:),targinfoint, ...
             eps,zk,[1.0 0],opts_helmint);
     end
     Bint = Bint + 1i*zk.*Smint;
-    mvals = surfacefun_to_array(m,dom,S);
-    mvals = mvals.';
 end
 t2 = toc(t1); 
 fprintf('interior B: %f s\n', t2)
@@ -334,32 +318,29 @@ colorbar
 % plot(norm(B))
 % colorbar
 
-lerr(1,lind) = n;
-lerr(2,lind) = nu;
-lerr(3,lind) = nv;
-lerr(4,lind) = max(abs(Bint-B0int),[],'all')/max(abs(B0int),[],'all');
-lerr(5,lind) = max(real(Bint-B0int),[],'all')/max(real(B0int),[],'all');
-lerr(6,lind) = dot(dot(Bint-B0int,Bint-B0int),interiorwts) ...
-    /dot(dot(B0int,B0int),interiorwts);
-lerr(7,lind) = dot(dot(real(Bint-B0int),real(Bint-B0int)),interiorwts) ...
-    /dot(dot(real(B0int),real(B0int)),interiorwts);
-lerr(8,lind) = dot(sum(abs(Bint-B0int),1),interiorwts) ...
-    /dot(sum(abs(B0int),1),interiorwts);
-lerr(9,lind) = dot(sum(abs(real(Bint-B0int)),1),interiorwts) ...
-    /dot(sum(abs(real(B0int)),1),interiorwts);
-lerr(10,lind) = norm(dot(vn,B0-B),inf)/norm(dot(vn,B0),inf);
-lerr(11,lind) = norm(dot(vn,B0-B),2)/norm(dot(vn,B0),2);
-lerr(12,lind) = norm(dot(vn,B0-B),1)/norm(dot(vn,B0),1);
-% lerr(13,lind) = norm(norm(B0-B),inf)/norm(norm(B0),inf);
-numer = max([norm(B0.components{1}-B.components{1}, inf) ...
-    norm(B0.components{2}-B.components{2}, inf), ...
-    norm(B0.components{3}-B.components{3}, inf)]);
-denom = max([norm(B0.components{1}, inf) ...
-    norm(B0.components{2}, inf), ...
-    norm(B0.components{3}, inf)]);
-lerr(13,lind) = numer/denom;
-lerr(14,lind) = norm(norm(B0-B),2)/norm(norm(B0),2);
-lerr(15,lind) = norm(norm(B0-B),1)/norm(norm(B0),1);
+lerr(1,lind) = n; % number of points on each patch
+lerr(2,lind) = nv; % geom. param. 
+lerr(3,lind) = nu; % geom. param. 
+lerr(4,lind) = max(abs(Bint-B0int),[],'all')/max(abs(B0int),[],'all'); % rel. L^inf norm of |B|
+lerr(5,lind) = norm(dot(vn,B0-B),inf)/norm(dot(vn,B0),inf); % rel. L^inf norm of n.B
+% numer = max([norm(B0.components{1}-B.components{1}, inf) ...
+%     norm(B0.components{2}-B.components{2}, inf), ...
+%     norm(B0.components{3}-B.components{3}, inf)]);
+% denom = max([norm(B0.components{1}, inf) ...
+%     norm(B0.components{2}, inf), ...
+%     norm(B0.components{3}, inf)]);
+% lerr(6,lind) = numer/denom; % rel. L^inf norm of (vector) B
+lerr(6,lind) = vecinfnorm(B0-B)/vecinfnorm(B0); 
+lerr(7,lind) = norm(sigma, inf); % L^inf norm of sigma
+lerr(8,lind) = abs(alpha); % |alpha|
+lerr(9,lind) = vecinfnorm(m0); 
+lerr(10,lind) = vecinfnorm(m); 
+lerr(11,lind) = max(abs(gradSsigma),[],'all'); 
+lerr(12,lind) = max(abs(curlSm),[],'all');
+lerr(13,lind) = max(abs(gradSsigmaint),[],'all');
+lerr(14,lind) = max(abs(curlSmint),[],'all');
+lerr(15,lind) = max(abs(Smint),[],'all');
+
 lind = lind+1;
 
 fprintf('==============\n')
@@ -418,3 +399,8 @@ Bsigma = mtxBsigma(S,dom,sigma,zk,eps,S,Q);
 A = surfacefun_to_array(Bsigma,dom,S);
 end
 
+function N = vecinfnorm(f)
+N = max([norm(f.components{1}, inf) ...
+        norm(f.components{2}, inf), ...
+        norm(f.components{3}, inf)]);
+end

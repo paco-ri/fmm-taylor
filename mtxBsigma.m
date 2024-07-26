@@ -51,7 +51,7 @@ ngradSsigma = dot(n,gradSsigma);
 if zk ~= 0
     % compute m0
     m0 = debyem0(sigma,zk);
-    m0vals = surfacefun_to_array(m0,dom,S,true);
+    m0vals = surfacefun_to_array(m0,dom,S);
 
     % compute n . Sk[m0]
     Qhelm = helm3d.dirichlet.get_quadrature_correction(S,eps,zk, ...
@@ -64,7 +64,7 @@ if zk ~= 0
         Sm0(:,j) = helm3d.dirichlet.eval(S,m0vals(:,j),varargin{1},eps, ...
             zk,[1.0 0],opts_eval);
     end
-    Sm0 = array_to_surfacefun(Sm0,dom,S,true);
+    Sm0 = array_to_surfacefun(Sm0,dom,S);
 
     % compute n . curl Sk[m0]
     Qhelm = taylor.dynamic.get_quadrature_correction(S,zk,eps, ...
