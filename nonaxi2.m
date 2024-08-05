@@ -1,10 +1,10 @@
-ns = [5 6 7]; % [5 7]; % [5 7 9];
-nvs = 8; % [6 8]; % 8:2:14;
-lerr = zeros([15 size(ns,2)*size(nvs,2)]);
+ns = 6; % [5 7]; % [5 7 9]; 10 for static, 8 dynamic
+nvs = [4 5 6 7];% 8]; % [6 8]; % 8:2:14; 12 for static, 10 dynamic, 4 5 6 7 8 for conv test
+lerr = zeros([17 size(ns,2)*size(nvs,2)]);
 lind = 1;
 
 % wavenumber 
-zk = 0.1 + 0.0i; 
+zk = .1 + 0.0i; 
 lambda = real(zk); 
 
 whichgeom = 1; % circular torus
@@ -295,28 +295,28 @@ end
 
 % n.B/B0 plots
 figure(1)
-% subplot(1,3,1)
 plot(dot(vn,B0-B))
 colorbar
 
-% subplot(1,3,2)
-% plot(dot(vn,B0))
-% colorbar
-% 
-% subplot(1,3,3)
-% plot(dot(vn,B))
-% colorbar
-
 figure(2)
-% subplot(1,3,1)
+plot(dot(vn,B0))
+colorbar
+
+figure(3)
+plot(dot(vn,B))
+colorbar
+
+figure(4)
 plot(norm(B0-B))
 colorbar
-% subplot(1,3,2)
-% plot(norm(B0))
-% colorbar
-% subplot(1,3,3)
-% plot(norm(B))
-% colorbar
+
+figure(5)
+plot(norm(B0))
+colorbar
+
+figure(6)
+plot(norm(B))
+colorbar
 
 lerr(1,lind) = n; % number of points on each patch
 lerr(2,lind) = nv; % geom. param. 
@@ -340,6 +340,8 @@ lerr(12,lind) = max(abs(curlSm),[],'all');
 lerr(13,lind) = max(abs(gradSsigmaint),[],'all');
 lerr(14,lind) = max(abs(curlSmint),[],'all');
 lerr(15,lind) = max(abs(Smint),[],'all');
+lerr(16,lind) = max(abs(Bint),[],'all');
+lerr(17,lind) = max(abs(B0int),[],'all');
 
 lind = lind+1;
 

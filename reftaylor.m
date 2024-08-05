@@ -1,4 +1,4 @@
- function B0 = reftaylor(ntheta,rmin,rmaj,jmag,lambda,targ)
+function B0 = reftaylor(ntheta,rmin,rmaj,jmag,lambda,targ)
 %REFTAYLOR compute a reference Taylor state corresponding to a current ring
 % docs later 
 
