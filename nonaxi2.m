@@ -1,5 +1,5 @@
-ns = 6; % [5 7]; % [5 7 9]; 10 for static, 8 dynamic
-nvs = [4 5 6 7];% 8]; % [6 8]; % 8:2:14; 12 for static, 10 dynamic, 4 5 6 7 8 for conv test
+ns = 8; % [5 7]; % [5 7 9]; 10 for static, 8 dynamic
+nvs = [4 5];% 6 7];% 8]; % [6 8]; % 8:2:14; 12 for static, 10 dynamic, 4 5 6 7 8 for conv test
 lerr = zeros([17 size(ns,2)*size(nvs,2)]);
 lind = 1;
 
@@ -39,8 +39,8 @@ nu = nv*3;
 fprintf('n = %d, nu = %d, nv = %d\n',n,nv,nu)
 
 if whichgeom == 1
-    dom = circulartorus(n,nv,nu,domrmin,domrmaj);
-    domo = circulartorus(2*n,nv,nu,domrmin,domrmaj);
+    dom = circulartorus(n,nu,nv,domrmin,domrmaj);
+    domo = circulartorus(2*n,nu,nv,domrmin,domrmaj);
 elseif whichgeom == 2
     a = 3.0;
     a0 = 5.0;
@@ -207,7 +207,7 @@ fprintf('m0err = %f\n', norm(m0err))
 
 % compute B on-surface
 m = m0 + alpha.*mH; 
-nxm = cross(vn,m);
+% nxm = cross(vn,m);
 
 sigmavals = surfacefun_to_array(sigma,dom,S);
 sigmavals = sigmavals.';
@@ -226,9 +226,10 @@ end
 
 vnvals = surfacefun_to_array(vn,dom,S);
 vnvals = vnvals.';
-nxmvals = surfacefun_to_array(nxm,dom,S);
-nxmvals = nxmvals.';
-B = -vnvals.*sigmavals./2 + 1i.*nxmvals./2 - gradSsigma + 1i.*curlSm;
+% nxmvals = surfacefun_to_array(nxm,dom,S);
+% nxmvals = nxmvals.';
+% B = -vnvals.*sigmavals./2 + 1i.*nxmvals./2 - gradSsigma + 1i.*curlSm;
+B = -vnvals.*sigmavals./2 + mvals./2 - gradSsigma + 1i.*curlSm;
 if zk ~= 0
     Qhelm = helm3d.dirichlet.get_quadrature_correction(S,eps,zk,[1.0 0],S);
     opts_helm = [];
@@ -294,29 +295,29 @@ for j = 1:size(interior,2)
 end
 
 % n.B/B0 plots
-figure(1)
-plot(dot(vn,B0-B))
-colorbar
-
-figure(2)
-plot(dot(vn,B0))
-colorbar
-
-figure(3)
-plot(dot(vn,B))
-colorbar
+% figure(1)
+% plot(dot(vn,B0-B))
+% colorbar
+% 
+% figure(2)
+% plot(dot(vn,B0))
+% colorbar
+% 
+% figure(3)
+% plot(dot(vn,B))
+% colorbar
 
 figure(4)
 plot(norm(B0-B))
 colorbar
 
-figure(5)
-plot(norm(B0))
-colorbar
-
-figure(6)
-plot(norm(B))
-colorbar
+% figure(5)
+% plot(norm(B0))
+% colorbar
+% 
+% figure(6)
+% plot(norm(B))
+% colorbar
 
 lerr(1,lind) = n; % number of points on each patch
 lerr(2,lind) = nv; % geom. param. 
