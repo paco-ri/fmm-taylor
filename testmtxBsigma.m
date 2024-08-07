@@ -1,13 +1,13 @@
 % ===== copied from lap3d matlab test ==============
 nsph = 7;
-nref = 2;
+nref = 3;
 dom = surfacemesh.sphere(nsph,nref);
 S = surfer.surfacemesh_to_surfer(dom);
 [srcvals,~,~,~,~,wts] = extract_arrays(S);
 vn = normal(dom);
 
-ndeg = 3; % 1 -> 6, 2 -> 10, 3 -> 14, n -> 2(2n+1)
-mdeg = 0;
+ndeg = 4; % 1 -> 6, 2 -> 10, 3 -> 14, n -> 2(2n+1)
+mdeg = 2;
 
 f = spherefun.sphharm(ndeg,mdeg);
 sigma = surfacefun(@(x,y,z) f(x,y,z),dom);
@@ -20,7 +20,7 @@ eps = 1e-7;
 if true
     fprintf('nsph = %d, nref = %d\n',nsph,nref)
     % without precomputed quadrature
-    Bsigma = mtxBsigma(S,dom,sigma,eps);
+    Bsigma = mtxBsigma(S,dom,sigma,0,eps);
     Bsigma_ex = -(ndeg+1)/(2*ndeg+1).*sigvals + sigvals;
     Bsigma = surfacefun_to_array(Bsigma,dom,S);
     err = sqrt(sum(abs(Bsigma_ex - Bsigma).^2.*wts));

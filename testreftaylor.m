@@ -7,7 +7,7 @@ jmag = 1.0;
 lambda = 1.0;
 
 phi = 4*pi/7;
-h = 1e-3;
+h = 1e-4;
 center = [rmaj*cos(phi)+.2 rmaj*sin(phi)-.1 .5];
 targs = [center;
     center + [h 0 0];

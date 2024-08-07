@@ -1,5 +1,5 @@
 ns = 6; % [5 7]; % [5 7 9]; 10 for static, 8 dynamic
-nvs = [4 5];% 6 7];% 8]; % [6 8]; % 8:2:14; 12 for static, 10 dynamic, 4 5 6 7 8 for conv test
+nvs = [4 6 8];%[4 5];% 6 7];% 8]; % [6 8]; % 8:2:14; 12 for static, 10 dynamic, 4 5 6 7 8 for conv test
 lerr = zeros([17 size(ns,2)*size(nvs,2)]);
 lind = 1;
 
@@ -119,8 +119,13 @@ fprintf('on-surface quadrature: %f s\n', t2)
 
 % do GMRES to solve A11*W = nB0
 b = surfacefun_to_array(nB0,dom,S); 
+% br = real(b);
+% bi = imag(b);
 t1 = tic;
 [W, flag1, relres1, iter1] = gmres(@(s) A(s,dom,S,zk,eps,Q),b,[],eps,50);
+% [Wr, flag1r, relres1r, iter1r] = gmres(@(s) A(s,dom,S,zk,eps,Q),br,[],eps,50);
+% [Wi, flag1i, relres1i, iter1i] = gmres(@(s) A(s,dom,S,zk,eps,Q),bi,[],eps,50);
+% W = Wr + 1i.*Wi;
 t2 = toc(t1);
 fprintf('GMRES for A11*W = n.B0: %f s / %d iter. = %f s\n', ...
     t2, iter1(2), t2/iter1(2))
@@ -129,8 +134,13 @@ wfunc = array_to_surfacefun(W,dom,S);
 % do GMRES to solve A11*D = A12
 Balpha = mtxBalpha(S,dom,mH,zk,eps,S,Q);
 b = surfacefun_to_array(Balpha,dom,S);
+% br = real(b);
+% bi = imag(b);
 t1 = tic;
 [D, flag2, relres2, iter2] = gmres(@(s) A(s,dom,S,zk,eps,Q),b,[],eps,50);
+% [Dr, flag2r, relres2r, iter2r] = gmres(@(s) A(s,dom,S,zk,eps,Q),br,[],eps,50);
+% [Di, flag2i, relres2i, iter2i] = gmres(@(s) A(s,dom,S,zk,eps,Q),bi,[],eps,50);
+% D = Dr + 1i.*Di;
 t2 = toc(t1);
 fprintf('GMRES for A11*D = A12: %f s / %d iter. = %f s\n', ...
     t2, iter2(2), t2/iter2(2))
@@ -203,11 +213,11 @@ fprintf('alpha and sigma: %f s\n', t2)
 
 m0 = debyem0(sigma,zk);
 m0err = div(m0) - 1i*zk.*sigma;
-fprintf('m0err = %f\n', norm(abs(m0err),'inf'))
+fprintf('m0err real = %f\n', norm(real(m0err),'inf'))
+fprintf('m0err imag = %f\n', norm(imag(m0err),'inf'))
 
 % compute B on-surface
 m = m0 + alpha.*mH; 
-% nxm = cross(vn,m);
 
 sigmavals = surfacefun_to_array(sigma,dom,S);
 sigmavals = sigmavals.';
