@@ -1,4 +1,4 @@
-ns = 8; % [5 7]; % [5 7 9]; 10 for static, 8 dynamic
+ns = 6; % [5 7]; % [5 7 9]; 10 for static, 8 dynamic
 nvs = [4 5];% 6 7];% 8]; % [6 8]; % 8:2:14; 12 for static, 10 dynamic, 4 5 6 7 8 for conv test
 lerr = zeros([17 size(ns,2)*size(nvs,2)]);
 lind = 1;
@@ -203,7 +203,7 @@ fprintf('alpha and sigma: %f s\n', t2)
 
 m0 = debyem0(sigma,zk);
 m0err = div(m0) - 1i*zk.*sigma;
-fprintf('m0err = %f\n', norm(m0err))
+fprintf('m0err = %f\n', norm(abs(m0err),'inf'))
 
 % compute B on-surface
 m = m0 + alpha.*mH; 

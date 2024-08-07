@@ -6,9 +6,10 @@ pdo = [];
 pdo.lap = 1;
 
 % resample
-% n = size(sigma.vals{1,1},1);
-% sigma = resample(sigma,n+1);
+n = size(sigma.vals{1,1},1);
+sigma = resample(sigma,n+4);
 dom = sigma.domain;
+S = surfer.surfacemesh_to_surfer(dom);
 
 % solve lap(u) = sigma
 L = surfaceop(dom, pdo, sigma);
@@ -27,12 +28,16 @@ vn = normal(dom);
 %                  @(x,y,z) costheta(x,y,z).*sinphi(x,y,z), ...
 %                  @(x,y,z) sintheta(x,y,z), dom); 
 % ========================
-m0 = 1i.*lambda.*(grad(u) + 1i.*cross(vn, grad(u)));
+% m0 = 1i.*lambda.*(grad(u) + 1i.*cross(vn, grad(u)));
+uvals = surfacefun_to_array(u,dom,S);
+graduvals = get_surface_grad(S,uvals);
+gradu = array_to_surfacefun(graduvals.',dom,S);
+m0 = 1i.*lambda.*(gradu + 1i.*cross(vn, gradu));
 
 % m0err = div(m0) - 1i*lambda.*sigma;
 % fprintf('upsampled m0err = %f\n', norm(m0err))
 
 % resample
-% m0 = resample(m0,n);
+m0 = resample(m0,n);
 
 end

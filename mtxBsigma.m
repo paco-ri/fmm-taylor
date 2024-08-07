@@ -56,7 +56,7 @@ if zk ~= 0
     % compute n . Sk[m0]
     Qhelm = helm3d.dirichlet.get_quadrature_correction(S,eps,zk, ...
         [1.0 0],varargin{1},opts);
-    Sm0 = zeros(size(m0vals));
+    Sm0 = complex(zeros(size(m0vals)));
     opts_eval = [];
     opts_eval.precomp_quadrature = Qhelm;
     opts_eval.format = 'rsc';
@@ -74,7 +74,8 @@ if zk ~= 0
     curlSm0 = array_to_surfacefun(curlSm0.',dom,S);
 
     % combine
-    m0terms = 1i.*dot(n,zk.*Sm0+curlSm0);
+    % m0terms = 1i.*dot(n,zk.*Sm0+curlSm0);
+    m0terms = 1i*zk.*dot(n,Sm0) + 1i.*dot(n,curlSm0);
     Bsigma = sigma./2 + ngradSsigma - m0terms;
 else
     Bsigma = sigma./2 + ngradSsigma;

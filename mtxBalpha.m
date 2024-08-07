@@ -48,7 +48,7 @@ if zk ~= 0
     % compute Sk[mH]
     Qhelm = helm3d.dirichlet.get_quadrature_correction(S,eps,zk, ...
         [1.0 0],varargin{1},opts);
-    SmH = zeros(size(mHvals));
+    SmH = complex(zeros(size(mHvals)));
     opts_eval = [];
     opts_eval.precomp_quadrature = Qhelm;
     opts_eval.format = 'rsc';
@@ -60,7 +60,8 @@ if zk ~= 0
     end
     SmH = array_to_surfacefun(SmH.',dom,S);
 
-    Balpha = dot(n,zk.*SmH + curlSmH);
+    % Balpha = dot(n,zk.*SmH + curlSmH);
+    Balpha = zk.*dot(n,SmH) + dot(n,curlSmH);
 else
     curlSmH = taylor.static.eval_curlS0(S,mHvals,eps,varargin{:});
     curlSmH = array_to_surfacefun(curlSmH.',dom,S);
