@@ -1,13 +1,13 @@
 % test \nabla_\Gamma \cdot m = i \lambda \sigma
 
-ns = 4:2:12;
-nus = 32;% 8:4:20;
+ns = 4:2:10;%12;
+nvs = 8:4:16;
 numns = size(ns,2);
-numnus = size(nus,2);
-errs = zeros([4 numns*numnus]);
+numnvs = size(nvs,2);
+errs = zeros([4 numns*numnvs]);
 
 % wavenumber 
-zk = 1.0 + 0.0i; 
+zk = .1 + 0.0i; 
 lambda = real(zk); 
 
 whichgeom = 1; % circular torus
@@ -22,10 +22,10 @@ end
 
 ii = 1;
 for n = ns
-for nu = nus
+for nv = nvs
 
 % define surface 
-nv = nu*3;
+nu = nv*3;
 % fprintf('n = %d, nu = %d, nv = %d\n',n,nu,nv)
 
 if whichgeom == 1
@@ -39,39 +39,40 @@ vn = normal(dom);
 % get harmonic surface vector field 
 sinphi = @(x,y,z) y./sqrt(x.^2 + y.^2);
 cosphi = @(x,y,z) x./sqrt(x.^2 + y.^2);
-sigma = surfacefun(@(x,y,z) sinphi(x,y,z)+cosphi(x,y,z)+1./(1+z.^2),dom);
+sigma = surfacefun(@(x,y,z) sinphi(x,y,z)+cosphi(x,y,z) + z.^4, dom); % +1./(1+x.^2+y.^2+z.^2),dom);
+sigma = surfacefun(@(x,y,z) z.^7, dom);
 
 m0 = debyem0(sigma,lambda);
 m0err = div(m0) - 1i*lambda.*sigma;
 
-% sigmao = resample(sigma,n*2);
-% m0o = debyem0(sigmao,lambda);
-% m0oerr = div(m0o) - 1i*lambda.*sigmao;
+sigmao = resample(sigma,2*n);
+m0o = debyem0(sigmao,lambda);
+m0oerr = div(m0o) - 1i*lambda.*sigmao;
 
 errs(1,ii) = n;
-errs(2,ii) = nu;
+errs(2,ii) = nv;
 errs(3,ii) = norm(m0err);
-% errs(4,ii) = norm(m0oerr);
+errs(4,ii) = norm(m0oerr);
 
 ii = ii + 1;
 end
 end
 
 figure(1)
-semilogy(sqrt(errs(1,1:numnus).*errs(2,1:numnus)), errs(3,1:numnus), 'o-')
+semilogy(sqrt(errs(1,1:numnvs).*errs(2,1:numnvs)), errs(3,1:numnvs), 'o-')
 hold on
 for j = 1:(numns-1)
-    jj = (numnus*j+1):(numnus*(j+1));
+    jj = (numnvs*j+1):(numnvs*(j+1));
     semilogy(sqrt(errs(1,jj).*errs(2,jj)), errs(3,jj), 'o-')
 end
 
-% figure(2)
-% semilogy(sqrt(errs(1,1:numnus).*errs(2,1:numnus)), errs(4,1:numnus), 'o-')
-% hold on
-% for j = 1:(numns-1)
-%     jj = (numnus*j+1):(numnus*(j+1));
-%     semilogy(sqrt(errs(1,jj).*errs(2,jj)), errs(4,jj), 'o-')
-% end
+figure(2)
+semilogy(sqrt(errs(1,1:numnvs).*errs(2,1:numnvs)), errs(4,1:numnvs), 'o-')
+hold on
+for j = 1:(numns-1)
+    jj = (numnvs*j+1):(numnvs*(j+1));
+    semilogy(sqrt(errs(1,jj).*errs(2,jj)), errs(4,jj), 'o-')
+end
 
 % nsph = 8;
 % nref = 3;

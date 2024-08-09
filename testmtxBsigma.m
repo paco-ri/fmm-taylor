@@ -1,30 +1,33 @@
 % ===== copied from lap3d matlab test ==============
-nsph = 7;
-nref = 3;
-dom = surfacemesh.sphere(nsph,nref);
-S = surfer.surfacemesh_to_surfer(dom);
-[srcvals,~,~,~,~,wts] = extract_arrays(S);
-vn = normal(dom);
-
 ndeg = 4; % 1 -> 6, 2 -> 10, 3 -> 14, n -> 2(2n+1)
 mdeg = 2;
-
 f = spherefun.sphharm(ndeg,mdeg);
-sigma = surfacefun(@(x,y,z) f(x,y,z),dom);
-sigvals = surfacefun_to_array(sigma,dom,S);
-
 eps = 1e-7;
+
+nsphs = [6 7];
+nrefs = [2 3 4];
+for nsph = nsphs
+    for nref = nrefs
+        dom = surfacemesh.flat_sphere(nsph,nref);
+        S = surfer.surfacemesh_to_surfer(dom);
+        [srcvals,~,~,~,~,wts] = extract_arrays(S);
+        vn = normal(dom);
+        
+        sigma = surfacefun(@(x,y,z) f(x,y,z), dom);
+        tanmphi = surfacefun(@(x,y,z) tan(mdeg.*atan2(y,x)), dom);
+        sigma = sigma + 1i.*sigma.*tanmphi;
+        sigvals = surfacefun_to_array(sigma,dom,S);
 
 % ===================================================
 
-if true
-    fprintf('nsph = %d, nref = %d\n',nsph,nref)
-    % without precomputed quadrature
-    Bsigma = mtxBsigma(S,dom,sigma,0,eps);
-    Bsigma_ex = -(ndeg+1)/(2*ndeg+1).*sigvals + sigvals;
-    Bsigma = surfacefun_to_array(Bsigma,dom,S);
-    err = sqrt(sum(abs(Bsigma_ex - Bsigma).^2.*wts));
-    fprintf('error w/o Q = %f\n',err)
+        fprintf('nsph = %d, nref = %d\n',nsph,nref)
+        % without precomputed quadrature
+        Bsigma = mtxBsigma(S,dom,sigma,0,eps);
+        Bsigma_ex = -(ndeg+1)/(2*ndeg+1).*sigvals + sigvals;
+        Bsigma = surfacefun_to_array(Bsigma,dom,S);
+        err = sqrt(sum(abs(Bsigma_ex - Bsigma).^2.*wts));
+        fprintf('error w/o Q = %f\n',err)
+    end
 end
    
 if false

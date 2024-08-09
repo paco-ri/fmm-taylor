@@ -42,7 +42,7 @@ else
     end
     
     integrand = cross(gradhelmker,current);
-    B0 = (lambda.*sum(helmker.*current,2) - sum(integrand,2)).*rmin./(2*ntheta);
+    B0 = (lambda.*sum(helmker.*current,2) + sum(integrand,2)).*rmin./(2*ntheta);
 end
 
 end

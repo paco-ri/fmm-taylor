@@ -17,13 +17,13 @@ L = surfaceop(dom, pdo, sigma);
 L.rankdef = true;
 u = L.solve();
 
-Lr = surfaceop(dom, pdo, real(sigma));
-Lr.rankdef = true;
-ur = Lr.solve();
-Li = surfaceop(dom, pdo, imag(sigma));
-Li.rankdef = true;
-ui = Li.solve();
-u = ur + 1i.*ui;
+% Lr = surfaceop(dom, pdo, real(sigma));
+% Lr.rankdef = true;
+% ur = Lr.solve();
+% Li = surfaceop(dom, pdo, imag(sigma));
+% Li.rankdef = true;
+% ui = Li.solve();
+% u = ur + 1i.*ui;
 
 vn = normal(dom);
 m0 = 1i.*lambda.*(grad(u) + 1i.*cross(vn, grad(u)));

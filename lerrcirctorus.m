@@ -3,9 +3,10 @@
 % npts = n^2*nu*nv = 3*n^2*nu^2
 % h = sqrt(npts) = sqrt(3)*n*nu
 
-numnus = 3;
-numns = 1;
-lerrcol = 6;
+numns = 2;
+numnus = 4;
+
+lerrcol = 4;
 loglog(sqrt(3)*lerr(1,1:numnus).*lerr(2,1:numnus), lerr(lerrcol,1:numnus), 'o-')
 hold on
 xlabel('h^{-1}')
@@ -26,26 +27,16 @@ end
 % plot(sqrt(N0), einf0, '^:')
 
 h = 60:120;
-plot(h, h(1)^5*3e-4*h.^(-4), 'b--')
+plot(h, h(1)^2*3e-4*h.^(-2), 'b--')
 
 h = 80:160;
-plot(h, h(1)^7*5e-6*h.^(-6), 'r--')
+plot(h, h(1)^4*5e-6*h.^(-4), 'r--')
 
-h = 120:240;
-plot(h, h(1)^9*3e-8*h.^(-8), 'k--')
-
-% legend('FMM+surfacefun, poly. order = p = 5', ...
-%     'FMM+surfacefun, p = 7', ...
-%     'FMM+surfacefun, p = 9', ...
-%     'BIEST, \lambda = 0.5, one non-axisymm. surface', ...
-%     'BIEST, \lambda = 0, two non-axisymm. surfaces', ...
-%     'O(h^{-3})', 'O(h^{-5})', 'O(h^{-7})', 'Location', 'southwest')
 legend('FMM+surfacefun, poly. order = p = 5', ...
     'FMM+surfacefun, p = 7', ...
-    'FMM+surfacefun, p = 9', ...
-    'O(h^{-4})', 'O(h^{-6})', 'O(h^{-8})', 'Location', 'southwest')
+    'O(h^{-4})', 'O(h^{-6})', 'Location', 'southwest')
 
-lerrcol = 5;
+lerrcol = 6;
 figure(2)
 loglog(sqrt(3)*lerr(1,1:numnus).*lerr(2,1:numnus), lerr(lerrcol,1:numnus), 'o-')
 xlabel('1/h')
@@ -57,15 +48,11 @@ for i = 1:numns-1
 end
 
 h = 80:120;
-plot(h, h(1)^4*8e-4*h.^(-4), 'b--')
+plot(h, h(1)^4*8e-3*h.^(-4), 'b--')
 
 h = 120:220;
-plot(h, h(1)^6*1e-5*h.^(-6), 'r--')
-
-h = 160:260;
-plot(h, h(1)^8*8e-8*h.^(-8), 'k--')
+plot(h, h(1)^6*1e-3*h.^(-6), 'r--')
 
 legend('FMM+surfacefun, poly. order = p = 5', ...
     'FMM+surfacefun, p = 7', ...
-    'FMM+surfacefun, p = 9', ...
-    'O(h^{-4})', 'O(h^{-6})', 'O(h^{-8})', 'Location', 'southwest')
+    'O(h^{-4})', 'O(h^{-6})', 'Location', 'southwest')

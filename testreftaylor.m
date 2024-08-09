@@ -25,7 +25,7 @@ end
 curlB0 = [B0int(6,2)-B0int(7,2)-B0int(4,3)+B0int(5,3); % DyBz-DzBy
     B0int(2,3)-B0int(3,3)-B0int(6,1)+B0int(7,1); % DzBx-DxBz
     B0int(4,1)-B0int(5,1)-B0int(2,2)+B0int(3,2)]; % DxBy-DyBx
-curlB0 = curlB0./(2*h);
+curlB0 = -curlB0./(2*h);
 
 lambdaB0 = lambda.*B0int(1,:).';
 disp(norm(curlB0-lambdaB0))
