@@ -1,4 +1,4 @@
-function fluxalpha = mtxfluxalpha(S,dom,n,nu,nv,mH,eps,varargin)
+function fluxalpha = mtxfluxalpha(S,dom,n,nu,nv,mH,zk,eps,varargin)
 %MTXFLUXALPHA compute alpha coefficient in flux condition
 % 
 %   Required arguments:
@@ -10,6 +10,7 @@ function fluxalpha = mtxfluxalpha(S,dom,n,nu,nv,mH,eps,varargin)
 %     * mH: [surfacefunv] density for which 
 %                  \oint -mH/2 + n x curl S0[mH]
 %              is computed
+%     * zk: [double complex] wavenumber
 %     * eps: [double] precision requested
 % 
 %   Optional arguments:
@@ -22,34 +23,106 @@ function fluxalpha = mtxfluxalpha(S,dom,n,nu,nv,mH,eps,varargin)
 %           is off-surface (optional)
 %         targinfo.uvs_targ (2,nt) local uv ccordinates of target on
 %           patch if on-surface (optional)
-%    * Q: precomputed quadrature corrections struct (optional)
+%    * Q: precomputed quadrature corrections struct for taylor routine
+%         evaluation (optional)
 %           currently only supports quadrature corrections
 %           computed in rsc format 
+%    * Qlh: precomputed quadrature corrections struct for S_k evaluation
+%           (optional)
+%             currently only supports quadrature corrections
+%             computed in rsc format 
 %    * opts: options struct
 %        opts.nonsmoothonly - use smooth quadrature rule for evaluating
 %           layer potential (false)
 
+if nargin < 12
+    opts = [];
+    opts.format = 'rsc';
+else
+    opts = varargin{4};
+end
+
+dpars = [1.0, 0.0];
+if nargin < 9
+    targinfo = S;
+else
+    targinfo = varargin{1};
+    if nargin < 10
+        if abs(zk) < 1e-16
+            Q = taylor.static.get_quadrature_correction(S,eps, ...
+                targinfo,opts);
+        else
+            Q = taylor.dynamic.get_quadrature_correction(S,zk,eps, ...
+                targinfo,opts);
+        end
+    else
+        Q = varargin{2};
+        if nargin < 11
+            if abs(zk) < 1e-16
+                Qlh = lap3d.dirichlet.get_quadrature_correction(S,eps, ...
+                    dpars,targinfo,opts);
+            else
+                Qlh = helm3d.dirichlet.get_quadrature_correction(S, ...
+                    eps,zk,dpars,targinfo,opts);
+            end
+        else
+            Qlh = varargin{3};
+        end
+    end
+end
+
 mHvals = surfacefun_to_array(mH,dom,S);
 mHvals = mHvals';
-
-% derivative of layer potential
-curlS0mH = taylor.static.eval_curlS0(S,mHvals,eps,varargin{:});
-curlS0mH = array_to_surfacefun(curlS0mH',dom,S);
 vn = normal(dom);
-nxcurlS0mH = cross(vn,curlS0mH);
-nxminusmH = nxcurlS0mH - mH./2;
-nxminusmHvals = surfacefun_to_array(nxminusmH,dom,S);
 
-% single layer potential evals
+% S_k quadrature
+optslh = [];
+optslh.format = 'rsc';
+optslh.precomp_quadrature = Qlh;
+
 dpars = [1.0, 0.0];
-% TODO: allow user to input Laplace quadrature 
-Qlap = lap3d.dirichlet.get_quadrature_correction(S,dpars,eps,S);
-S0nx1 = lap3d.dirichlet.eval(S,dpars,nxminusmHvals(:,1),eps,S,Qlap);
-S0nx2 = lap3d.dirichlet.eval(S,dpars,nxminusmHvals(:,2),eps,S,Qlap);
-S0nx3 = lap3d.dirichlet.eval(S,dpars,nxminusmHvals(:,3),eps,S,Qlap);
-S0nx = [S0nx1 S0nx2 S0nx3];
-S0nx = array_to_surfacefun(S0nx,dom,S);
 
-fluxalpha = intacyc(S0nx,n,nu,nv);
+if abs(zk) < 1e-16
+    % n x curl S0[mH] - mH/2
+    curlS0mH = taylor.static.eval_curlS0(S,mHvals,eps,targinfo,Q,opts);
+    curlS0mH = array_to_surfacefun(curlS0mH',dom,S);
+    nxcurlS0mH = cross(vn,curlS0mH);
+    nxminusmH = nxcurlS0mH - mH./2;
+    nxminusmHvals = surfacefun_to_array(nxminusmH,dom,S);
+    
+    % S0[n x curl S0[mH] - mH/2]
+    S0nx1 = lap3d.dirichlet.eval(S,nxminusmHvals(:,1),targinfo,eps, ...
+        dpars,optslh);
+    S0nx2 = lap3d.dirichlet.eval(S,nxminusmHvals(:,2),targinfo,eps, ...
+        dpars,optslh);
+    S0nx3 = lap3d.dirichlet.eval(S,nxminusmHvals(:,3),targinfo,eps, ...
+        dpars,optslh);
+    S0nx = [S0nx1 S0nx2 S0nx3];
+    S0nx = array_to_surfacefun(S0nx,dom,S);
+
+    fluxalpha = 1i*intacyc(S0nx,n,nu,nv);
+else
+    % Sk[mH]
+    SkmH1 = helm3d.dirichlet.eval(S,mHvals(1,:),targinfo,eps,zk, ...
+        dpars,optslh);
+    SkmH2 = helm3d.dirichlet.eval(S,mHvals(2,:),targinfo,eps,zk, ...
+        dpars,optslh);
+    SkmH3 = helm3d.dirichlet.eval(S,mHvals(3,:),targinfo,eps,zk, ...
+        dpars,optslh);
+    SkmH = [SkmH1 SkmH2 SkmH3];
+    SkmH = array_to_surfacefun(SkmH,dom,S);
+
+    % curl Sk[mH]
+    curlSkmH = taylor.dynamic.eval_curlSk(S,zk,mHvals,eps,targinfo,Q,opts);
+    curlSkmH = array_to_surfacefun(curlSkmH.',dom,S);
+
+    % curl S0[mH]
+    curlS0mH = taylor.static.eval_curlS0(S,mHvals,eps);
+    curlS0mH = array_to_surfacefun(curlS0mH.',dom,S);
+
+    % A-cycle integral
+    integrand = 1i.*( SkmH + (curlSkmH - curlS0mH)./zk );
+    fluxalpha = intacyc(integrand,n,nu,nv);
+end
 
 end

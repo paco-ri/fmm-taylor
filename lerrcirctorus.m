@@ -1,10 +1,12 @@
-% load('lerrcirctorus280624.mat')
+% lerrleft = load('lerrellipse0point1_130824.mat');
+% lerrright = load('lerrellipse0point1_130824_pt2.mat');
+% lerr = [lerrleft.lerr(:,1:3) lerrright.lerr(:,1) lerrleft.lerr(:,4:6) lerrright.lerr(:,2)];
 
 % npts = n^2*nu*nv = 3*n^2*nu^2
 % h = sqrt(npts) = sqrt(3)*n*nu
 
-numns = 2;
-numnus = 4;
+numns = 1;
+numnus = 3;
 
 lerrcol = 4;
 loglog(sqrt(3)*lerr(1,1:numnus).*lerr(2,1:numnus), lerr(lerrcol,1:numnus), 'o-')
@@ -26,15 +28,15 @@ end
 % einf0 = [2.3e-1 3.1e-2 6.6e-3 1.6e-3]; % 5.9e-4 9.4e-6];
 % plot(sqrt(N0), einf0, '^:')
 
-h = 60:120;
-plot(h, h(1)^2*3e-4*h.^(-2), 'b--')
+h = 40:60;
+plot(h, h(1)^2*3e-2*h.^(-2), 'b--')
 
-h = 80:160;
-plot(h, h(1)^4*5e-6*h.^(-4), 'r--')
+h = 50:80;
+plot(h, h(1)^4*5e-2*h.^(-4), 'r--')
 
-legend('FMM+surfacefun, poly. order = p = 5', ...
-    'FMM+surfacefun, p = 7', ...
-    'O(h^{-4})', 'O(h^{-6})', 'Location', 'southwest')
+% legend('FMM+surfacefun, poly. order = p = 5', ...
+%     'FMM+surfacefun, p = 7', ...
+%     'O(h^{-4})', 'O(h^{-6})', 'Location', 'southwest')
 
 lerrcol = 6;
 figure(2)
@@ -47,11 +49,11 @@ for i = 1:numns-1
     loglog(sqrt(3)*lerr(1,cols).*lerr(2,cols), lerr(lerrcol,cols), 'o-')
 end
 
-h = 80:120;
-plot(h, h(1)^4*8e-3*h.^(-4), 'b--')
+h = 40:80;
+plot(h, h(1)^2*8e-2*h.^(-2), 'b--')
 
-h = 120:220;
-plot(h, h(1)^6*1e-3*h.^(-6), 'r--')
+% h = 120:220;
+plot(h, h(1)^4*1e-3*h.^(-4), 'r--')
 
 legend('FMM+surfacefun, poly. order = p = 5', ...
     'FMM+surfacefun, p = 7', ...

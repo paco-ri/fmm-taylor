@@ -33,6 +33,8 @@ plot(norm(diff))
 hold on
 colorbar
 
-integ = intacyc(f,n,nu,nv);
-integ = intacyc(g,n,nu,nv);
+h = f + 2i.*f;
+
+integ = intacyc(h,n,nu,nv);
+% integ = intacyc(g,n,nu,nv);
 disp(integ)
