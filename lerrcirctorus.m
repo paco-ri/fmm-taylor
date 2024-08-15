@@ -6,7 +6,7 @@
 % h = sqrt(npts) = sqrt(3)*n*nu
 
 numns = 1;
-numnus = 3;
+numnus = 6;
 
 lerrcol = 4;
 loglog(sqrt(3)*lerr(1,1:numnus).*lerr(2,1:numnus), lerr(lerrcol,1:numnus), 'o-')

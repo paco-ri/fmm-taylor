@@ -20,18 +20,24 @@ function Bsigma = mtxBsigma(S,dom,sigma,zk,eps,varargin)
 %           is off-surface (optional)
 %         targinfo.uvs_targ (2,nt) local uv ccordinates of target on
 %           patch if on-surface (optional)
-%    * Q: precomputed quadrature corrections struct (optional)
-%           currently only supports quadrature corrections
-%           computed in rsc format 
 %    * opts: options struct
 %        opts.nonsmoothonly - use smooth quadrature rule for evaluating
 %           layer potential (false)
+%        opts.precomp_quadrature - precomputed quadrature corrections struct 
+%           currently only supports quadrature corrections
+%           computed in rsc format 
 
-if nargin < 8
+if nargin < 7
     opts = [];
     opts.format = 'rsc';
 else
-    opts = varargin{3};
+    opts = varargin{2};
+end
+
+if nargin < 6
+    targinfo = S;
+else
+    targinfo = varargin{1};
 end
 
 sigmavals = surfacefun_to_array(sigma,dom,S);
@@ -61,7 +67,7 @@ if zk ~= 0
     opts_eval.precomp_quadrature = Qhelm;
     opts_eval.format = 'rsc';
     for j=1:3
-        Sm0(:,j) = helm3d.dirichlet.eval(S,m0vals(:,j),varargin{1},eps, ...
+        Sm0(:,j) = helm3d.dirichlet.eval(S,m0vals(:,j),targinfo,eps, ...
             zk,[1.0 0],opts_eval);
     end
     Sm0 = array_to_surfacefun(Sm0,dom,S);
@@ -69,8 +75,10 @@ if zk ~= 0
     % compute n . curl Sk[m0]
     Qhelm = taylor.dynamic.get_quadrature_correction(S,zk,eps, ...
         varargin{1},opts);
-    curlSm0 = taylor.dynamic.eval_curlSk(S,zk,m0vals.',eps,varargin{1}, ...
-        Qhelm,opts);
+    opts0 = [];
+    opts0.precomp_quadrature = Qhelm;
+    opts0.format = 'rsc';
+    curlSm0 = taylor.dynamic.eval_curlSk(S,zk,m0vals.',eps,targinfo,opts0);
     curlSm0 = array_to_surfacefun(curlSm0.',dom,S);
 
     % combine

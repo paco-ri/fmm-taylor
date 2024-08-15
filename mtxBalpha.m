@@ -20,18 +20,18 @@ function Balpha = mtxBalpha(S,dom,mH,zk,eps,varargin)
 %           is off-surface (optional)
 %         targinfo.uvs_targ (2,nt) local uv ccordinates of target on
 %           patch if on-surface (optional)
-%    * Q: precomputed quadrature corrections struct (optional)
-%           currently only supports quadrature corrections
-%           computed in rsc format 
 %    * opts: options struct
 %        opts.nonsmoothonly - use smooth quadrature rule for evaluating
 %           layer potential (false)
+%        opts.precomp_quadrature - precomputed quadrature corrections struct
+%           currently only supports quadrature corrections
+%           computed in rsc format 
 
-if nargin < 8
+if nargin < 7
     opts = [];
     opts.format = 'rsc';
 else
-    opts = varargin{3};
+    opts = varargin{2};
 end
 
 mHvals = surfacefun_to_array(mH,dom,S);

@@ -1,13 +1,25 @@
-function m0 = debyem0(sigma,lambda)
+function m0 = debyem0(sigma,lambda,varargin)
 %DEBYEM0 compute part of the Debye current associated with sigma
-%   Detailed explanation goes here
+%   
+%    Arguments
+%      sigma [surfacefun] 
+%      lambda [double] 
+%      np [int>0] polynomial degree by which to oversample
+
+oversample = false;
+if nargin > 2
+    oversample = true;
+    np = varargin{1};
+end
 
 pdo = [];
 pdo.lap = 1;
 
 % resample
 n = size(sigma.vals{1,1},1);
-sigma = resample(sigma,n+2);
+if oversample
+    sigma = resample(sigma,n+np);
+end
 
 dom = sigma.domain;
 
@@ -22,7 +34,9 @@ m0 = 1i.*lambda.*(grad(u) + 1i.*cross(vn, grad(u)));
 % m0err = div(m0) - 1i*lambda.*sigma;
 % fprintf('upsampled m0err = %f\n', norm(m0err))
 
-% resample
-m0 = resample(m0,n);
+if oversample
+    % resample
+    m0 = resample(m0,n);
+end
 
 end

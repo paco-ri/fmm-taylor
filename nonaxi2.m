@@ -1,5 +1,5 @@
-ns = 5; % [5 7 9]; 10 for static, 8 dynamic
-nvs = [5 6 7];%[4 5];% 6 7];% 8]; % [6 8]; % 8:2:14; 12 for static, 10 dynamic, 4 5 6 7 8 for conv test
+ns = 7;
+nvs = 10;%[5 6 7 8 9];% 10];
 lerr = zeros([17 size(ns,2)*size(nvs,2)]);
 lind = 1;
 
@@ -7,9 +7,10 @@ lind = 1;
 zk = .1 + 0.0i; 
 lambda = real(zk); 
 
-whichgeom = 1; % circular torus
+% whichgeom = 1; % circular torus
 whichgeom = 2; % elliptical torus
 exactmH = false;
+oversamplemH = false;
 
 % domain
 domrmin = 1.0;
@@ -22,8 +23,8 @@ else
 end
 
 % interior points at which B is computed for convergence analysis
-nintphi = 32;
-ninttheta = 32;
+nintphi = 8;%32;
+ninttheta =8;% 32;
 nintr = 32;
 
 % quadrature options
@@ -40,13 +41,17 @@ fprintf('n = %d, nu = %d, nv = %d\n',n,nv,nu)
 
 if whichgeom == 1
     dom = circulartorus(n,nu,nv,domrmin,domrmaj);
-    domo = circulartorus(2*n,nu,nv,domrmin,domrmaj);
+    if oversamplemH
+        domo = circulartorus(2*n,nu,nv,domrmin,domrmaj);
+    end
 elseif whichgeom == 2
     a = 3.0;
     a0 = 5.0;
     b0 = 2.0;
     dom = twisted_ellipse_torus(a,a0,b0,n,nu,nv);
-    domo = twisted_ellipse_torus(a,a0,b0,n+2,nu,nv);
+    if oversamplemH
+        domo = twisted_ellipse_torus(a,a0,b0,n+2,nu,nv);
+    end
 else
     dom = surfacemesh.torus(n, nv, nu); % INCORRECT 
 end
@@ -56,20 +61,23 @@ vn = normal(dom);
 % get harmonic surface vector field 
 sinphi = @(x,y,z) y./sqrt(x.^2 + y.^2);
 cosphi = @(x,y,z) x./sqrt(x.^2 + y.^2);
-phihat = surfacefunv(@(x,y,z) -sinphi(x,y,z), ...
-                     @(x,y,z) cosphi(x,y,z), ...
-                     @(x,y,z) 0.*z, dom);
-phihato = surfacefunv(@(x,y,z) -sinphi(x,y,z), ...
+if oversamplemH
+    phihato = surfacefunv(@(x,y,z) -sinphi(x,y,z), ...
                       @(x,y,z) cosphi(x,y,z), ...
                       @(x,y,z) 0.*z, domo);
-vno = normal(domo);
-tauhat = cross(vn, phihat); 
-tauhato = cross(vno, phihato);
-% [u, v, vH, curlfree, divfree] = hodge(tauhat);
-[u, v, vHo, curlfree, divfree] = hodge(tauhato);
-% mH = vH + 1i.*cross(vn,vH);
-mHo = vHo + 1i.*cross(vno,vHo);
-mH = resample(mHo,n);
+    vno = normal(domo);
+    tauhato = cross(vno, phihato);
+    [u, v, vHo, curlfree, divfree] = hodge(tauhato);
+    mHo = vHo + 1i.*cross(vno,vHo);
+    mH = resample(mHo,n);
+else
+    phihat = surfacefunv(@(x,y,z) -sinphi(x,y,z), ...
+                     @(x,y,z) cosphi(x,y,z), ...
+                     @(x,y,z) 0.*z, dom);
+    tauhat = cross(vn, phihat); 
+    [u, v, vH, curlfree, divfree] = hodge(tauhat);
+    mH = vH + 1i.*cross(vn,vH);
+end
 
 % harmonic surface vector field in axisymmetric case -- no L-B solve
 if whichgeom == 1 && exactmH
@@ -116,6 +124,8 @@ else
 end
 t2 = toc(t1);
 fprintf('on-surface quadrature: %f s\n', t2)
+opts_taylor = [];
+opts_taylor.precomp_quadrature = Q;
 
 % do GMRES to solve A11*W = nB0
 b = surfacefun_to_array(nB0,dom,S); 
@@ -212,23 +222,20 @@ m = m0 + alpha.*mH;
 sigmavals = surfacefun_to_array(sigma,dom,S);
 sigmavals = sigmavals.';
 if zk == 0
-    gradSsigma = taylor.static.eval_gradS0(S,sigmavals,eps,S,Q);
+    gradSsigma = taylor.static.eval_gradS0(S,sigmavals,eps,S,opts_taylor);
 else
-    gradSsigma = taylor.dynamic.eval_gradSk(S,zk,sigmavals,eps,S,Q);
+    gradSsigma = taylor.dynamic.eval_gradSk(S,zk,sigmavals,eps,S,opts_taylor);
 end
 mvals = surfacefun_to_array(m,dom,S);
 mvals = mvals.';
 if zk == 0
-    curlSm = taylor.static.eval_curlS0(S,mvals,eps,S,Q);
+    curlSm = taylor.static.eval_curlS0(S,mvals,eps,S,opts_taylor);
 else
-    curlSm = taylor.dynamic.eval_curlSk(S,zk,mvals,eps,S,Q);
+    curlSm = taylor.dynamic.eval_curlSk(S,zk,mvals,eps,S,opts_taylor);
 end
 
 vnvals = surfacefun_to_array(vn,dom,S);
 vnvals = vnvals.';
-% nxmvals = surfacefun_to_array(nxm,dom,S);
-% nxmvals = nxmvals.';
-% B = -vnvals.*sigmavals./2 + 1i.*nxmvals./2 - gradSsigma + 1i.*curlSm;
 B = -vnvals.*sigmavals./2 + mvals./2 - gradSsigma + 1i.*curlSm;
 if zk ~= 0
     Qhelm = helm3d.dirichlet.get_quadrature_correction(S,eps,zk,[1.0 0],S);

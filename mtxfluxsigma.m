@@ -14,7 +14,7 @@ function fluxsigma = mtxfluxsigma(S,dom,n,nu,nv,sigma,zk,eps,varargin)
 %     * eps: [double] precision requested
 % 
 %   Optional arguments:
-%     * targinfo: target info (optional)
+%     * targinfo: target info 
 %         targinfo.r = (3,nt) target locations
 %         targinfo.du = u tangential derivative info
 %         targinfo.dv = v tangential derivative info
@@ -23,24 +23,20 @@ function fluxsigma = mtxfluxsigma(S,dom,n,nu,nv,sigma,zk,eps,varargin)
 %           is off-surface (optional)
 %         targinfo.uvs_targ (2,nt) local uv ccordinates of target on
 %           patch if on-surface (optional)
-%    * Q: precomputed quadrature corrections struct for taylor routine 
-%         evaluation (optional)
-%           currently only supports quadrature corrections
-%           computed in rsc format 
-%    * Qlh: precomputed quadrature corrections struct for S_k evaluation
-%           (optional)
-%             currently only supports quadrature corrections
-%             computed in rsc format 
-%    * opts: options struct
+%    * opts: options struct for taylor routines
 %        opts.nonsmoothonly - use smooth quadrature rule for evaluating
 %           layer potential (false)
-
-if nargin < 12
-    opts = [];
-    opts.format = 'rsc';
-else
-    opts = varargin{4};
-end
+%        opts.precomp_quadrature - precomputed quadrature corrections 
+%           struct for taylor routine evaluation
+%             currently only supports quadrature corrections 
+%             computed in rsc format 
+%    * optslh: options struct for S_k evaluation
+%        opts.nonsmoothonly - use smooth quadrature rule for evaluating
+%           layer potential (false)
+%        opts.precomp_quadrature - precomputed quadrature corrections 
+%           struct for S_k evaluation
+%             currently only supports quadrature corrections 
+%             computed in rsc format 
 
 dpars = [1.0, 0.0];
 if nargin < 9
@@ -55,8 +51,11 @@ else
             Q = taylor.dynamic.get_quadrature_correction(S,zk,eps, ...
                 targinfo,opts);
         end
+        opts = [];
+        opts.format = 'rsc';
+        opts.precomp_quadrature = Q;
     else
-        Q = varargin{2};
+        opts = varargin{2};
         if nargin < 11
             if abs(zk) < 1e-16
                 Qlh = lap3d.dirichlet.get_quadrature_correction(S,eps, ...
@@ -65,8 +64,11 @@ else
                 Qlh = helm3d.dirichlet.get_quadrature_correction(S, ...
                     eps,zk,dpars,targinfo,opts);
             end
+            optslh = [];
+            optslh.format = 'rsc';
+            optslh.precomp_quadrature = Qlh;
         else
-            Qlh = varargin{3};
+            optslh = varargin{3};
         end
     end
 end
@@ -75,15 +77,9 @@ sigmavals = surfacefun_to_array(sigma,dom,S);
 sigmavals = sigmavals.';
 vn = normal(dom);
 
-% S_k quadrature
-optslh = [];
-optslh.format = 'rsc';
-optslh.precomp_quadrature = Qlh;
-
 if abs(zk) < 1e-16
     % n x grad S_0[sigma]
-    gradS0sigma = taylor.static.eval_gradS0(S,sigmavals,eps,targinfo, ...
-        Q,opts);
+    gradS0sigma = taylor.static.eval_gradS0(S,sigmavals,eps,targinfo,opts);
     gradS0sigma = array_to_surfacefun(gradS0sigma.',dom,S);
     nxgradS0sigma = cross(vn,gradS0sigma);
     nxvals = surfacefun_to_array(nxgradS0sigma,dom,S);
@@ -112,7 +108,7 @@ else
 
     % curl S_k[m_0]
     m0vals = m0vals.';
-    curlSkm0 = taylor.dynamic.eval_curlSk(S,zk,m0vals,eps,targinfo,Q,opts);
+    curlSkm0 = taylor.dynamic.eval_curlSk(S,zk,m0vals,eps,targinfo,opts);
     curlSkm0 = array_to_surfacefun(curlSkm0.',dom,S);
     
     % A-cycle integral

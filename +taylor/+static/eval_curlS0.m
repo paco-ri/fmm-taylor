@@ -14,25 +14,34 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
 %          is off-surface (optional)
 %       targinfo.uvs_targ (2,nt) local uv ccordinates of target on
 %          patch if on-surface (optional)
-%    * Q: precomputed quadrature corrections struct (optional)
-%           currently only supports quadrature corrections
-%           computed in rsc format 
 %    * opts: options struct
 %        opts.nonsmoothonly - use smooth quadrature rule for evaluating
 %           layer potential (false)
+%        opts.precomp_quadrature: precomputed quadrature corrections struct
+%           currently only supports quadrature corrections
+%           computed in rsc format 
+% 
 
-    if(nargin < 6) 
+    if(nargin < 5) 
       opts = [];
+      if(nargin < 4)
+        targinfo = S;
+      else
+        targinfo = varargin{1};
+      end
     else
-      opts = varargin{3};
+      opts = varargin{2};
     end
 
-    isprecompq = true;
-    if(nargin < 5)
-       Q = [];
-       isprecompq = false;
-    else
-       Q = varargin{2}; 
+    nonsmoothonly = false;
+    if(isfield(opts,'nonsmoothonly'))
+      nonsmoothonly = opts.nonsmoothonly;
+    end
+    
+    isprecompq = false;
+    if isfield(opts, 'precomp_quadrature')
+      isprecompq = true;
+      Q = opts.precomp_quadrature;
     end
     
     if(isprecompq)
@@ -43,11 +52,6 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
         opts_qcorr.type = 'double';
         Q = init_empty_quadrature_correction(targinfo,opts_qcorr);
       end
-    end
-
-    nonsmoothonly = false;
-    if(isfield(opts,'nonsmoothonly'))
-      nonsmoothonly = opts.nonsmoothonly;
     end
 
 % Extract arrays

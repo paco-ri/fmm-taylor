@@ -29,17 +29,21 @@ elseif zk == 0
 else
     Q = taylor.dynamic.get_quadrature_correction(S,zk,eps,targinfo,opts_quad);
 end
+opts = [];
+opts.format = 'rsc';
+opts.precomp_quadrature = Q;
 
 % Evaluate layer potential
 if zk == 0
-    mHterms = taylor.static.eval_curlS0(S,mHvals,eps,targinfo,Q,opts_quad);
+    mHterms = taylor.static.eval_curlS0(S,mHvals,eps,targinfo,opts);
 else
-    curlSmH = taylor.dynamic.eval_curlSk(S,zk,mHvals,eps,targinfo,Q,opts_quad);
+    curlSmH = taylor.dynamic.eval_curlSk(S,zk,mHvals,eps,targinfo,opts);
     % compute Sk[mH]
     Qhelm = helm3d.dirichlet.get_quadrature_correction(S,eps,zk, ...
         [1.0 0],targinfo,opts_quad);
     SmH = complex(zeros(size(nodes)));
     opts_eval = [];
+    opts_eval.format = 'rsc';
     opts_eval.precomp_quadrature = Qhelm;
     for j=1:3
         SmH(j,:) = helm3d.dirichlet.eval(S,mHvals(j,:),targinfo,eps, ...

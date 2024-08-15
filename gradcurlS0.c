@@ -1131,7 +1131,7 @@ MWF77_RETURN MWF77_rsc_to_csc(int*, int*, int*, int*, int*, int*, int*, int*);
 } /* end extern C */
 #endif
 
-/* ---- gradcurlS0.mw: 69 ----
+/* ---- gradcurlS0.mw: 68 ----
  * get_patch_id_uvs(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, inout int[npts] patch_id, inout double[2, npts] uvs_targ);
  */
 static const char* stubids1_ = "get_patch_id_uvs(i int[x], i int[x], i int[x], i int[x], i int[x], io int[x], io double[xx])";
@@ -1257,7 +1257,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 124 ----
+/* ---- gradcurlS0.mw: 123 ----
  * lpcomp_gradlap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad, 3] wnear, dcomplex[npts] rho, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout dcomplex[3, ntarg] gradrho);
  */
 static const char* stubids2_ = "lpcomp_gradlap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i dcomplex[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx])";
@@ -1673,7 +1673,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 197 ----
+/* ---- gradcurlS0.mw: 200 ----
  * get_patch_id_uvs(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, inout int[npts] patch_id, inout double[2, npts] uvs_targ);
  */
 static const char* stubids3_ = "get_patch_id_uvs(i int[x], i int[x], i int[x], i int[x], i int[x], io int[x], io double[xx])";
@@ -1799,7 +1799,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 252 ----
+/* ---- gradcurlS0.mw: 255 ----
  * lpcomp_curllap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad, 3] wnear, dcomplex[3, npts] rjvec, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout dcomplex[3, ntarg] curlj);
  */
 static const char* stubids4_ = "lpcomp_curllap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i dcomplex[xx], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx])";
@@ -2219,7 +2219,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 364 ----
+/* ---- gradcurlS0.mw: 367 ----
  * get_rfacs(int[1] norder0, int[1] iptype0, inout double[1] rfac, inout double[1] rfac0);
  */
 static const char* stubids5_ = "get_rfacs(i int[x], i int[x], io double[x], io double[x])";
@@ -2299,7 +2299,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 369 ----
+/* ---- gradcurlS0.mw: 372 ----
  * get_centroid_rads(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, inout double[n3, npatches] cms, inout double[npatches] rads);
  */
 static const char* stubids6_ = "get_centroid_rads(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], io double[xx], io double[x])";
@@ -2447,7 +2447,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 373 ----
+/* ---- gradcurlS0.mw: 376 ----
  * findnearmem(double[n3, npatches] cms, int[1] npatches, double[npatches] rad_near, int[1] ndtarg, double[ndtarg, ntarg] targs, int[1] ntarg, inout int[1] nnz);
  */
 static const char* stubids7_ = "findnearmem(i double[xx], i int[x], i double[x], i int[x], i double[xx], i int[x], io int[x])";
@@ -2587,7 +2587,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 379 ----
+/* ---- gradcurlS0.mw: 382 ----
  * findnear(double[n3, npatches] cms, int[1] npatches, double[npatches] rad_near, int[1] ndtarg, double[ndtarg, ntarg] targs, int[1] ntarg, inout int[ntp1] row_ptr, inout int[nnz] col_ind);
  */
 static const char* stubids8_ = "findnear(i double[xx], i int[x], i double[x], i int[x], i double[xx], i int[x], io int[x], io int[x])";
@@ -2743,7 +2743,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 382 ----
+/* ---- gradcurlS0.mw: 385 ----
  * get_iquad_rsc(int[1] npatches, int[npp1] ixyzs, int[1] npts, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, inout int[nnzp1] iquad);
  */
 static const char* stubids9_ = "get_iquad_rsc(i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], io int[x])";
@@ -2863,7 +2863,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 396 ----
+/* ---- gradcurlS0.mw: 399 ----
  * getnearquad_magnetostatics(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, int[ntarg] patch_id, double[2, ntarg] uvs_targ, double[1] eps, int[1] iquadtype, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0, int[1] nquad, inout double[nquad, 3] wnear);
  */
 static const char* stubids10_ = "getnearquad_magnetostatics(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[x], i int[x], io double[xx])";
@@ -3223,7 +3223,7 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 417 ----
+/* ---- gradcurlS0.mw: 420 ----
  * rsc_to_csc(int[1] npatches, int[1] ntarg, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, inout int[npatp1] col_ptr, inout int[nnz] row_ind, inout int[nnz] iper);
  */
 static const char* stubids11_ = "rsc_to_csc(i int[x], i int[x], i int[x], i int[x], i int[x], io int[x], io int[x], io int[x])";
@@ -3411,17 +3411,17 @@ void mexFunction(int nlhs, mxArray* plhs[],
     } else if (strcmp(id, "*profile report*") == 0) {
         if (!mexprofrecord_)
             mexPrintf("Profiler inactive\n");
-        mexPrintf("%d calls to gradcurlS0.mw:69\n", mexprofrecord_[1]);
-        mexPrintf("%d calls to gradcurlS0.mw:124\n", mexprofrecord_[2]);
-        mexPrintf("%d calls to gradcurlS0.mw:197\n", mexprofrecord_[3]);
-        mexPrintf("%d calls to gradcurlS0.mw:252\n", mexprofrecord_[4]);
-        mexPrintf("%d calls to gradcurlS0.mw:364\n", mexprofrecord_[5]);
-        mexPrintf("%d calls to gradcurlS0.mw:369\n", mexprofrecord_[6]);
-        mexPrintf("%d calls to gradcurlS0.mw:373\n", mexprofrecord_[7]);
-        mexPrintf("%d calls to gradcurlS0.mw:379\n", mexprofrecord_[8]);
-        mexPrintf("%d calls to gradcurlS0.mw:382\n", mexprofrecord_[9]);
-        mexPrintf("%d calls to gradcurlS0.mw:396\n", mexprofrecord_[10]);
-        mexPrintf("%d calls to gradcurlS0.mw:417\n", mexprofrecord_[11]);
+        mexPrintf("%d calls to gradcurlS0.mw:68\n", mexprofrecord_[1]);
+        mexPrintf("%d calls to gradcurlS0.mw:123\n", mexprofrecord_[2]);
+        mexPrintf("%d calls to gradcurlS0.mw:200\n", mexprofrecord_[3]);
+        mexPrintf("%d calls to gradcurlS0.mw:255\n", mexprofrecord_[4]);
+        mexPrintf("%d calls to gradcurlS0.mw:367\n", mexprofrecord_[5]);
+        mexPrintf("%d calls to gradcurlS0.mw:372\n", mexprofrecord_[6]);
+        mexPrintf("%d calls to gradcurlS0.mw:376\n", mexprofrecord_[7]);
+        mexPrintf("%d calls to gradcurlS0.mw:382\n", mexprofrecord_[8]);
+        mexPrintf("%d calls to gradcurlS0.mw:385\n", mexprofrecord_[9]);
+        mexPrintf("%d calls to gradcurlS0.mw:399\n", mexprofrecord_[10]);
+        mexPrintf("%d calls to gradcurlS0.mw:420\n", mexprofrecord_[11]);
     } else if (strcmp(id, "*profile log*") == 0) {
         FILE* logfp;
         if (nrhs != 2 || mxGetString(prhs[1], id, sizeof(id)) != 0)
@@ -3431,17 +3431,17 @@ void mexFunction(int nlhs, mxArray* plhs[],
             mexErrMsgTxt("Cannot open log for output");
         if (!mexprofrecord_)
             fprintf(logfp, "Profiler inactive\n");
-        fprintf(logfp, "%d calls to gradcurlS0.mw:69\n", mexprofrecord_[1]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:124\n", mexprofrecord_[2]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:197\n", mexprofrecord_[3]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:252\n", mexprofrecord_[4]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:364\n", mexprofrecord_[5]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:369\n", mexprofrecord_[6]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:373\n", mexprofrecord_[7]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:379\n", mexprofrecord_[8]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:382\n", mexprofrecord_[9]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:396\n", mexprofrecord_[10]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:417\n", mexprofrecord_[11]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:68\n", mexprofrecord_[1]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:123\n", mexprofrecord_[2]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:200\n", mexprofrecord_[3]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:255\n", mexprofrecord_[4]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:367\n", mexprofrecord_[5]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:372\n", mexprofrecord_[6]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:376\n", mexprofrecord_[7]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:382\n", mexprofrecord_[8]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:385\n", mexprofrecord_[9]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:399\n", mexprofrecord_[10]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:420\n", mexprofrecord_[11]);
         fclose(logfp);
     } else
         mexErrMsgTxt("Unknown identifier");

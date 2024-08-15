@@ -1,4 +1,4 @@
-% test curl of B resulting of ux 
+% test curl of B resulting from ux 
 
 rmaj = 5.0;
 phi = 4*pi/7;
