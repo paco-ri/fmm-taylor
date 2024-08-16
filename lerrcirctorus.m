@@ -1,11 +1,12 @@
-% lerrleft = load('lerrellipse0point1_130824.mat');
-% lerrright = load('lerrellipse0point1_130824_pt2.mat');
-% lerr = [lerrleft.lerr(:,1:3) lerrright.lerr(:,1) lerrleft.lerr(:,4:6) lerrright.lerr(:,2)];
+lerr = load('lerr_saved/ellipse_k0p1_140824.mat').lerr;
+lerr2 = load('lerr_saved/ellipse_k0p1_140824_2.mat').lerr;
+lerr3 = load('lerr_saved/ellipse_k0p1_140824_3.mat').lerr;
+lerr = [lerr lerr2 lerr3];
 
 % npts = n^2*nu*nv = 3*n^2*nu^2
-% h = sqrt(npts) = sqrt(3)*n*nu
+% h = sqrt(npts)
 
-numns = 1;
+numns = 3;
 numnus = 6;
 
 lerrcol = 4;
@@ -40,7 +41,8 @@ plot(h, h(1)^4*5e-2*h.^(-4), 'r--')
 
 lerrcol = 6;
 figure(2)
-loglog(sqrt(3)*lerr(1,1:numnus).*lerr(2,1:numnus), lerr(lerrcol,1:numnus), 'o-')
+loglog(sqrt(lerr(1,1:numnus).^2.*lerr(2,1:numnus).*lerr(3,1:numnus)), ...
+    lerr(lerrcol,1:numnus), 'o-')
 xlabel('1/h')
 ylabel('||B - B_0||_\infty/||B_0||_\infty on surface')
 hold on
@@ -52,9 +54,12 @@ end
 h = 40:80;
 plot(h, h(1)^2*8e-2*h.^(-2), 'b--')
 
-% h = 120:220;
-plot(h, h(1)^4*1e-3*h.^(-4), 'r--')
+h = 50:100;
+plot(h, h(1)^3*2e-2*h.^(-3), 'r--')
 
-legend('FMM+surfacefun, poly. order = p = 5', ...
-    'FMM+surfacefun, p = 7', ...
-    'O(h^{-4})', 'O(h^{-6})', 'Location', 'southwest')
+h = 60:120;
+plot(h, h(1)^4*1e-2*h.^(-4), 'k--')
+
+legend('FMM+surfacefun, poly. order = p = 4', ...
+    'FMM+surfacefun, p = 5', 'FMM+surfacefun, p = 6', ...
+    'O(h^{-2})', 'O(h^{-3})', 'O(h^{-4})', 'Location', 'southwest')

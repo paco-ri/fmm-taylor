@@ -12,7 +12,7 @@ optsqclh = [];
 optsqclh.format = 'rsc';
 
 % ===== Beltrami parameter =====
-zk = 0;%complex(0.5); 
+zk = complex(0.5); 
 
 % ===== Set geometry =====
 
