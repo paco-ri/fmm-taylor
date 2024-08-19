@@ -38,6 +38,7 @@ classdef TaylorState
             %     domparams [int(3)] parameters describing surface
             %     zk [double complex] Beltrami parameter
             %     flux [double] cross-sectional flux
+            %     tols [double or double(3)] quad. and GMRES tolerances
 
             if isa(domain, 'surfacemesh')
                 obj.dom = domain;
@@ -84,12 +85,12 @@ classdef TaylorState
                         obj.eps_laphelm = tols(3);
                     else
                     error(['Invalid call to TaylorState constructor. ' ...
-                        'Fifth argument should be tolerance(s).'])
+                        'Fifth argument should be 1 or 3 tolerance(s).'])
                     end
                 end
             else
                 error(['Invalid call to TaylorState constructor. ' ...
-                    'Fifth argument should be tolerance(s).'])
+                    'Fifth argument should be 1 or 3 tolerance(s).'])
             end
         end
 
