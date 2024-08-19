@@ -102,7 +102,7 @@ if abs(zk) < eps
     S0nx = [S0nx1 S0nx2 S0nx3];
     S0nx = array_to_surfacefun(S0nx,dom,S);
 
-    fluxalpha = 1i*intacyc(S0nx,n,nu,nv);
+    fluxalpha = 1i*TaylorState.intacyc(S0nx,n,nu,nv);
 else
     % Sk[mH]
     SkmH1 = helm3d.dirichlet.eval(S,mHvals(1,:),targinfo,epslh,zk, ...
@@ -125,7 +125,7 @@ else
 
     % A-cycle integral
     integrand = 1i.*( SkmH + (curlSkmH - curlS0mH)./zk );
-    fluxalpha = intacyc(integrand,n,nu,nv);
+    fluxalpha = TaylorState.intacyc(integrand,n,nu,nv);
 end
 
 end

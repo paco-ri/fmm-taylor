@@ -488,5 +488,7 @@ classdef TaylorState
         Balpha = mtxBalpha(S,dom,mH,zk,epstaylor,epslh,varargin)
         fluxsigma = mtxfluxsigma(S,dom,domparams,sigma,zk,epstaylor,epslh,varargin)
         fluxalpha = mtxfluxalpha(S,dom,domparams,mH,zk,epstaylor,epslh,varargin)
+        m0 = debyem0(sigma,lambda,varargin)
+        integral = intacyc(f,n,nu,nv)
     end
 end

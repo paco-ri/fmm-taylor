@@ -1,6 +1,6 @@
 % --- Geometry parameters ---
-n = 8; % polynomial order + 1
-nv = 10; % number of patches in poloidal direction
+n = 5; % polynomial order + 1
+nv = 5; % number of patches in poloidal direction
 nu = nv*3; % number of patches in toroidal direction
 a = 2.0; % minor radius, horiz. axis
 a0 = 5.0; % major radius
@@ -15,7 +15,7 @@ flux = 1.0;
 zk = 0.5;
 
 % --- Tolerances ---
-tol = 1e-12;
+tol = 1e-6;
 
 ts = TaylorState(dom,domparams,zk,flux,tol);
 ts = ts.solve(true);

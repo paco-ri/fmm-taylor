@@ -13,7 +13,7 @@ lind = 1;
 
 for n = ns
     for nv = nvs
-        fprintf('========\n n = %d, nv = %d \n', n, nv)
+        fprintf('\t========\n\tn = %d, nv = %d \n', n, nv)
         nu = nv*3; % number of patches in toroidal direction
         a = 2.0; % minor radius, horiz. axis
         a0 = 5.0; % major radius

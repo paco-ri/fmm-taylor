@@ -101,9 +101,9 @@ if abs(zk) < eps
     S0nx = [S0nx1 S0nx2 S0nx3];
     S0nx = array_to_surfacefun(S0nx,dom,S);
     
-    fluxsigma = -intacyc(S0nx,n,nu,nv);
+    fluxsigma = -TaylorState.intacyc(S0nx,n,nu,nv);
 else
-    m0 = debyem0(sigma,zk);
+    m0 = TaylorState.debyem0(sigma,zk);
     m0vals = surfacefun_to_array(m0,dom,S);
 
     % S_k[m_0]
@@ -124,7 +124,7 @@ else
     
     % A-cycle integral
     integrand = 1i.*Skm0 + (m0./2 + 1i.*curlSkm0)./zk;
-    fluxsigma = intacyc(integrand,n,nu,nv);
+    fluxsigma = TaylorState.intacyc(integrand,n,nu,nv);
 end
 
 end

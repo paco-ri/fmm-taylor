@@ -91,7 +91,7 @@ ngradSsigma = dot(n,gradSsigma);
 % construct Bsigma
 if abs(zk) > eps
     % compute m0
-    m0 = debyem0(sigma,zk);
+    m0 = TaylorState.debyem0(sigma,zk);
     m0vals = surfacefun_to_array(m0,dom,S);
 
     % compute n . Sk[m0]
