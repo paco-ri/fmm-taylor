@@ -1,11 +1,13 @@
-function fluxsigma = mtxfluxsigmanontaylor(S,dom,nodes,weights,sigma, ...
-    zk,epstaylor,epslh,varargin)
+function fluxsigma = mtxfluxsigmanontaylor(S,dom,params,nodes, ...
+    weights,sigma,zk,epstaylor,epslh,varargin)
 %MTXFLUXSIGMANONTAYLOR compute sigma-dep. terms of flux condition for
 %                      a non-Taylor-state magnetic field
 % 
 %   Required arguments:
 %     * S: surfer object (see fmm3dbie/matlab README for details)
 %     * dom: surfacemesh version of S (see surfacehps for details)
+%     * params: parameters describing cross-sectional surface [pol]
+%         pol: [int] set to 1 if computing poloidal flux
 %     * nodes: [double(3,*)] quadrature nodes for computing flux 
 %              Gauss-Legendre in r, trapezoidal in theta
 %     * weights: [double(*)] corresponding quadrature weights
@@ -32,6 +34,7 @@ function fluxsigma = mtxfluxsigmanontaylor(S,dom,nodes,weights,sigma, ...
 %             currently only supports quadrature corrections 
 %             computed in rsc format 
 
+pol = params;
 dpars = [1.0, 0];
 targinfo = [];
 targinfo.r = nodes;
@@ -76,7 +79,7 @@ if abs(zk) < eps
 else
     gradSsigma = taylor.dynamic.eval_gradSk(S,zk,sigmavals,epstaylor, ...
         targinfo,opts);
-    m0 = debyem0(sigma,zk);
+    m0 = TaylorState.debyem0(sigma,zk);
     m0vals = surfacefun_to_array(m0,dom,S);
     m0vals = m0vals.';
     curlSm0 = taylor.dynamic.eval_curlSk(S,zk,m0vals,epstaylor, ...
@@ -92,6 +95,6 @@ end
 % Compute flux
 % ASSUMES y^ IS THE NORMAL TO THE CROSS-SECTION
 % fluxsigma = dot(sigmaterms(2,:),weights);
-fluxsigma = sum(sigmaterms(2,:).*weights);
+fluxsigma = sum(sigmaterms(2+pol,:).*weights);
 
 end

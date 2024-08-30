@@ -1,3 +1,5 @@
+addpath('../')
+
 n = 4; 
 nv = 10;
 nu = nv*3;
@@ -19,10 +21,14 @@ f = surfacefunv(@(x,y,z) -sintheta(x,y,z).*cosphi(x,y,z), ...
 % hold on
 % plot(dom)
 % colorbar
+% 
+% g = surfacefunv(@(x,y,z) -costheta(x,y,z).^1.*sintheta(x,y,z).*cosphi(x,y,z), ...
+%     @(x,y,z) -costheta(x,y,z).^1.*sintheta(x,y,z).*sinphi(x,y,z), ...
+%     @(x,y,z) costheta(x,y,z).^1.*costheta(x,y,z), dom);
 
-g = surfacefunv(@(x,y,z) -costheta(x,y,z).^1.*sintheta(x,y,z).*cosphi(x,y,z), ...
-    @(x,y,z) -costheta(x,y,z).^1.*sintheta(x,y,z).*sinphi(x,y,z), ...
-    @(x,y,z) costheta(x,y,z).^1.*costheta(x,y,z), dom);
+g = surfacefunv(@(x,y,z) -costheta(x,y,z).*sinphi(x,y,z), ...
+    @(x,y,z) costheta(x,y,z).*cosphi(x,y,z), ...
+    @(x,y,z) 0.*z, dom);
 
 S = surfer.surfacemesh_to_surfer(dom);
 G = surfacefun_to_array(g,dom,S);
@@ -33,8 +39,8 @@ plot(norm(diff))
 hold on
 colorbar
 
-h = f + 2i.*f;
+h = f + 2i.*f + g - 1i.*g;
 
-integ = intacyc(h,n,nu,nv);
-% integ = intacyc(g,n,nu,nv);
+integ = TaylorState.intacyc(h,n,nv);
+integ = TaylorState.intbcyc(h,n,nu);
 disp(integ)

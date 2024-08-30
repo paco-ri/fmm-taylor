@@ -4,10 +4,12 @@ function fluxalpha = mtxfluxalpha(S,dom,domparams,mH,zk,epstaylor,epslh,varargin
 %   Required arguments:
 %     * S: surfer object (see fmm3dbie/matlab README for details)
 %     * dom: surfacemesh version of S (see surfacehps for details)
-%     * domparams: parameters describing dom [n, nu, nv]
+%     * domparams: parameters describing dom and circulation [n, nu, nv, io, aint]
 %         n: [int] polynomial order on each surface patch
 %         nu: [int] number of patches in toroidal direction
 %         nv: [int] number of patches in poloidal direction
+%         io: [int] if 1, negate vn because inner torus
+%         aint: [int] if 1, do A-cyc. integral; otherwise, B-cyc.
 %     * mH: [surfacefunv] density for which 
 %                  \oint -mH/2 + n x curl S0[mH]
 %              is computed
@@ -43,6 +45,8 @@ function fluxalpha = mtxfluxalpha(S,dom,domparams,mH,zk,epstaylor,epslh,varargin
 n = domparams(1);
 nu = domparams(2);
 nv = domparams(3);
+io = domparams(4);
+aint = domparams(5);
 dpars = [1.0, 0.0];
 if nargin < 8
     targinfo = S;
@@ -81,28 +85,41 @@ else
 end
 
 mHvals = surfacefun_to_array(mH,dom,S);
-mHvals = mHvals';
-vn = normal(dom);
+mHvals = mHvals.';
+vn = (-1)^io.*normal(dom);
 
 if abs(zk) < eps
     % n x curl S0[mH] - mH/2
     curlS0mH = taylor.static.eval_curlS0(S,mHvals,epstaylor,targinfo,opts);
-    curlS0mH = array_to_surfacefun(curlS0mH',dom,S);
+    curlS0mH = array_to_surfacefun(curlS0mH.',dom,S);
     nxcurlS0mH = cross(vn,curlS0mH);
     nxminusmH = nxcurlS0mH - mH./2;
     nxminusmHvals = surfacefun_to_array(nxminusmH,dom,S);
     
     % S0[n x curl S0[mH] - mH/2]
-    S0nx1 = lap3d.dirichlet.eval(S,nxminusmHvals(:,1),targinfo,epslh, ...
+    S0nx1 = lap3d.dirichlet.eval(S,real(nxminusmHvals(:,1)),targinfo,epslh, ...
         dpars,optslh);
-    S0nx2 = lap3d.dirichlet.eval(S,nxminusmHvals(:,2),targinfo,epslh, ...
+    S0nx1 = S0nx1 + ...
+        1i*lap3d.dirichlet.eval(S,imag(nxminusmHvals(:,1)),targinfo,epslh, ...
         dpars,optslh);
-    S0nx3 = lap3d.dirichlet.eval(S,nxminusmHvals(:,3),targinfo,epslh, ...
+    S0nx2 = lap3d.dirichlet.eval(S,real(nxminusmHvals(:,2)),targinfo,epslh, ...
+        dpars,optslh);
+    S0nx2 = S0nx2 + ...
+        1i*lap3d.dirichlet.eval(S,imag(nxminusmHvals(:,2)),targinfo,epslh, ...
+        dpars,optslh);
+    S0nx3 = lap3d.dirichlet.eval(S,real(nxminusmHvals(:,3)),targinfo,epslh, ...
+        dpars,optslh);
+    S0nx3 = S0nx3 + ...
+        1i*lap3d.dirichlet.eval(S,imag(nxminusmHvals(:,3)),targinfo,epslh, ...
         dpars,optslh);
     S0nx = [S0nx1 S0nx2 S0nx3];
     S0nx = array_to_surfacefun(S0nx,dom,S);
 
-    fluxalpha = 1i*TaylorState.intacyc(S0nx,n,nu,nv);
+    if aint
+        fluxalpha = 1i*TaylorState.intacyc(S0nx,n,nv);
+    else
+        fluxalpha = 1i*TaylorState.intbcyc(S0nx,n,nu);
+    end
 else
     % Sk[mH]
     SkmH1 = helm3d.dirichlet.eval(S,mHvals(1,:),targinfo,epslh,zk, ...
@@ -123,9 +140,13 @@ else
     curlS0mH = taylor.static.eval_curlS0(S,mHvals,eps);
     curlS0mH = array_to_surfacefun(curlS0mH.',dom,S);
 
-    % A-cycle integral
+    % A/B-cycle integral
     integrand = 1i.*( SkmH + (curlSkmH - curlS0mH)./zk );
-    fluxalpha = TaylorState.intacyc(integrand,n,nu,nv);
+    if aint
+        fluxalpha = TaylorState.intacyc(integrand,n,nv);
+    else
+        fluxalpha = TaylorState.intbcyc(integrand,n,nu);
+    end
 end
 
 end

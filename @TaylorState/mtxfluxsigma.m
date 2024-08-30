@@ -4,10 +4,12 @@ function fluxsigma = mtxfluxsigma(S,dom,domparams,sigma,zk,epstaylor,epslh,varar
 %   Required arguments:
 %     * S: surfer object (see fmm3dbie/matlab README for details)
 %     * dom: surfacemesh version of S (see surfacehps for details)
-%     * domparams: parameters describing dom [n, nu, nv]
+%     * domparams: parameters describing dom and circulation [n, nu, nv, io, aint]
 %         n: [int] polynomial order on each surface patch
 %         nu: [int] number of patches in toroidal direction
 %         nv: [int] number of patches in poloidal direction
+%         io: [int] if 1, negate vn because inner torus
+%         aint: [int] if 1, do A-cyc. integral; otherwise, B-cyc.
 %     * sigma: [surfacefun] density for which 
 %                  \oint S0[n times grad S0[sigma]]
 %              is computed
@@ -43,6 +45,8 @@ function fluxsigma = mtxfluxsigma(S,dom,domparams,sigma,zk,epstaylor,epslh,varar
 n = domparams(1);
 nu = domparams(2);
 nv = domparams(3);
+io = domparams(4);
+aint = domparams(5);
 dpars = [1.0, 0.0];
 if nargin < 8
     targinfo = S;
@@ -81,7 +85,7 @@ end
 
 sigmavals = surfacefun_to_array(sigma,dom,S);
 sigmavals = sigmavals.';
-vn = normal(dom);
+vn = (-1)^io.*normal(dom);
 
 if abs(zk) < eps
     % n x grad S_0[sigma]
@@ -92,16 +96,29 @@ if abs(zk) < eps
     nxvals = surfacefun_to_array(nxgradS0sigma,dom,S);
     
     % S_0[n x grad S_0[sigma]]
-    S0nx1 = lap3d.dirichlet.eval(S,nxvals(:,1),targinfo,epslh, ...
+    S0nx1 = lap3d.dirichlet.eval(S,real(nxvals(:,1)),targinfo,epslh, ...
         dpars,optslh);
-    S0nx2 = lap3d.dirichlet.eval(S,nxvals(:,2),targinfo,epslh, ...
+    S0nx1 = S0nx1 + ...
+        1i*lap3d.dirichlet.eval(S,imag(nxvals(:,1)),targinfo,epslh, ...
         dpars,optslh);
-    S0nx3 = lap3d.dirichlet.eval(S,nxvals(:,3),targinfo,epslh, ...
+    S0nx2 = lap3d.dirichlet.eval(S,real(nxvals(:,2)),targinfo,epslh, ...
+        dpars,optslh);
+    S0nx2 = S0nx2 + ...
+        1i*lap3d.dirichlet.eval(S,imag(nxvals(:,2)),targinfo,epslh, ...
+        dpars,optslh);
+    S0nx3 = lap3d.dirichlet.eval(S,real(nxvals(:,3)),targinfo,epslh, ...
+        dpars,optslh);
+    S0nx3 = S0nx3 + ...
+        1i*lap3d.dirichlet.eval(S,imag(nxvals(:,3)),targinfo,epslh, ...
         dpars,optslh);
     S0nx = [S0nx1 S0nx2 S0nx3];
     S0nx = array_to_surfacefun(S0nx,dom,S);
     
-    fluxsigma = -TaylorState.intacyc(S0nx,n,nu,nv);
+    if aint
+        fluxsigma = -TaylorState.intacyc(S0nx,n,nv);
+    else
+        fluxsigma = -TaylorState.intbcyc(S0nx,n,nu);
+    end
 else
     m0 = TaylorState.debyem0(sigma,zk);
     m0vals = surfacefun_to_array(m0,dom,S);
@@ -124,7 +141,11 @@ else
     
     % A-cycle integral
     integrand = 1i.*Skm0 + (m0./2 + 1i.*curlSkm0)./zk;
-    fluxsigma = TaylorState.intacyc(integrand,n,nu,nv);
+    if aint
+        fluxsigma = TaylorState.intacyc(integrand,n,nv);
+    else
+        fluxsigma = TaylorState.intbcyc(integrand,n,nu);
+    end
 end
 
 end

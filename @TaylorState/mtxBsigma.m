@@ -1,9 +1,11 @@
-function Bsigma = mtxBsigma(S,dom,sigma,zk,epstaylor,epslh,varargin)
+function Bsigma = mtxBsigma(S,dom,domparams,sigma,zk,epstaylor,epslh,varargin)
 %MTXBSIGMA compute sigma-dep. terms of surface magnetic field
 % 
 %   Required arguments:
 %     * S: surfer object (see fmm3dbie/matlab README for details)
 %     * dom: surfacemesh version of S (see surfacehps for details)
+%     * domparams: parameter describing dom and circulation [io]
+%         io: [int] if 1, negate vn because inner torus
 %     * sigma: [surfacefun] density for which 
 %                  sigma/2 + n . grad S0[sigma]
 %              is computed
@@ -36,15 +38,16 @@ function Bsigma = mtxBsigma(S,dom,sigma,zk,epstaylor,epslh,varargin)
 %             currently only supports quadrature corrections 
 %             computed in rsc format 
 
+io = domparams;
 dpars = [1.0,0];
 
-if nargin < 7
+if nargin < 8
     targinfo = S;
 else
     targinfo = varargin{1};
 end
 
-if nargin < 8
+if nargin < 9
     if abs(zk) < eps
         Q = taylor.static.get_quadrature_correction(S,epstaylor,targinfo);
     else
@@ -58,7 +61,7 @@ else
     opts = varargin{2};
 end
 
-if nargin < 9
+if nargin < 10
     if abs(zk) < eps
         Qlh = lap3d.dirichlet.get_quadrature_correction(S, ...
             epslh,dpars,targinfo,opts);
@@ -85,8 +88,8 @@ else
         targinfo,opts);
 end
 gradSsigma = array_to_surfacefun(gradSsigma.',dom,S); % note transpose 
-n = normal(dom);
-ngradSsigma = dot(n,gradSsigma);
+vn = (-1)^io.*normal(dom);
+ngradSsigma = dot(vn,gradSsigma);
 
 % construct Bsigma
 if abs(zk) > eps
@@ -109,7 +112,7 @@ if abs(zk) > eps
 
     % combine
     % m0terms = 1i.*dot(n,zk.*Sm0+curlSm0);
-    m0terms = 1i*zk.*dot(n,Sm0) + 1i.*dot(n,curlSm0);
+    m0terms = 1i*zk.*dot(vn,Sm0) + 1i.*dot(vn,curlSm0);
     Bsigma = sigma./2 + ngradSsigma - m0terms;
 else
     Bsigma = sigma./2 + ngradSsigma;

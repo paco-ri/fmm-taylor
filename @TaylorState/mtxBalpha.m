@@ -1,9 +1,11 @@
-function Balpha = mtxBalpha(S,dom,mH,zk,epstaylor,epslh,varargin)
+function Balpha = mtxBalpha(S,dom,domparams,mH,zk,epstaylor,epslh,varargin)
 %MTXBALPHA compute alpha coefficient for surface magnetic field
 % 
 %   Required arguments:
 %     * S: surfer object (see fmm3dbie/matlab README for details)
 %     * dom: surfacemesh version of S (see surfacehps for details)
+%     * domparams: parameter describing dom and circulation [io]
+%         io: [int] if 1, negate vn because inner torus
 %     * mH: [surfacefunv] density for which 
 %                  n . curl S0[mH]
 %           is computed. Note that there is no factor of i. 
@@ -36,14 +38,16 @@ function Balpha = mtxBalpha(S,dom,mH,zk,epstaylor,epslh,varargin)
 %             currently only supports quadrature corrections 
 %             computed in rsc format
 
+io = domparams;
 dpars = [1.0,0];
-if nargin < 7
+
+if nargin < 8
     targinfo = S;
 else
     targinfo = varargin{1};
 end
 
-if nargin < 8
+if nargin < 9
     if abs(zk) < eps
         Q = taylor.static.get_quadrature_correction(S,epstaylor, ...
             targinfo);
@@ -58,7 +62,7 @@ else
     opts = varargin{2};
 end
 
-if nargin < 9
+if nargin < 10
     if abs(zk) < eps
         Qlh = lap3d.dirichlet.get_quadrature_correction(S, ...
             epslh,dpars,targinfo,opts);
@@ -77,7 +81,7 @@ mHvals = surfacefun_to_array(mH,dom,S);
 mHvals = mHvals.';
 
 % evaluate layer potential
-n = normal(dom);
+vn = (-1)^io.*normal(dom);
 
 if abs(zk) > eps
     % compute curl Sk[mH]
@@ -96,11 +100,11 @@ if abs(zk) > eps
     SmH = array_to_surfacefun(SmH.',dom,S);
 
     % Balpha = dot(n,zk.*SmH + curlSmH);
-    Balpha = zk.*dot(n,SmH) + dot(n,curlSmH);
+    Balpha = zk.*dot(vn,SmH) + dot(vn,curlSmH);
 else
     curlSmH = taylor.static.eval_curlS0(S,mHvals,epstaylor,varargin{:});
     curlSmH = array_to_surfacefun(curlSmH.',dom,S);
-    Balpha = dot(n,curlSmH);
+    Balpha = dot(vn,curlSmH);
 end
 
 end

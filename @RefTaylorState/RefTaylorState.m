@@ -21,7 +21,7 @@ classdef RefTaylorState < TaylorState
     %     2. Compute flux here (rather than req. precompute)?
 
     properties
-        B0 % solution to curl B = k B
+        B0 % solution to curl B = k B in a cell array
         xs_nodes % cross-section (XS) quadrature nodes 
         xs_weights % cross-section quadrature weights 
         quad_opts_xs_taylor % near quad. for grad/curl Sk for xs_nodes 
@@ -61,31 +61,43 @@ classdef RefTaylorState < TaylorState
                 obj.eps_xs_laphelm = tols(5);
             end
             
-            if isa(B0, 'surfacefunv')
+            if obj.nsurfaces == 1 && isa(B0{1}, 'surfacefunv')
+                obj.B0 = B0;
+            elseif isa(B0{1}, 'surfacefunv') && isa(B0{2}, 'surfacefunv')
                 obj.B0 = B0;
             else
                 error(['Invalid call to RefTaylorState constructor. ' ...
-                    'Fourth argument should be a surfacefunv ' ...
-                    'corresponding with a solution to curl B = k B. '])
+                    'Fourth argument should be a cell array of ' ...
+                    'surfacefunv corresponding with a solution to ' ...
+                    'curl B = k B. '])
             end
 
-            [xs_nodes_r, xs_nodes_c] = size(xs_nodes);
-            [xs_weights_r, xs_weights_c] = size(xs_weights);
-            if xs_nodes_r == 3 
-                obj.xs_nodes = xs_nodes;
-                n_nodes = xs_nodes_c;
-            elseif xs_nodes_c == 3
-                obj.xs_nodes = xs_nodes.';
-                n_nodes = xs_nodes_r;
-            end
-            if xs_weights_r == 1 && xs_weights_c == n_nodes
-                obj.xs_weights = xs_weights;
-            elseif xs_weights_c == 1 && xs_weights_r == n_nodes
-                obj.xs_weights = xs_weights;
-            else
-                error(['Invalid call to RefTaylorState constructor. ' ...
-                    'Fifth argument, xs_nodes, and sixth argument, ' ...
-                    'xs_weights, are arrays with incompatible sizes. '])
+            obj.xs_nodes = cell(1,obj.nsurfaces);
+            obj.xs_weights = cell(1,obj.nsurfaces);
+            for i = 1:obj.nsurfaces
+                [xs_nodes_r, xs_nodes_c] = size(xs_nodes{i});
+                [xs_weights_r, xs_weights_c] = size(xs_weights{i});
+                if xs_nodes_r == 3 
+                    obj.xs_nodes{i} = xs_nodes{i};
+                    n_nodes = xs_nodes_c;
+                elseif xs_nodes_c == 3
+                    obj.xs_nodes{i} = xs_nodes{i}.';
+                    n_nodes = xs_nodes_r;
+                else
+                    error(['Invalid call to RefTaylorState constructor. ' ...
+                        'Fifth argument, xs_nodes, is a cell array of cross-' ...
+                        'section quadrature nodes. '])
+                end
+
+                if xs_weights_r == 1 && xs_weights_c == n_nodes
+                    obj.xs_weights{i} = xs_weights{i};
+                elseif xs_weights_c == 1 && xs_weights_r == n_nodes
+                    obj.xs_weights{i} = xs_weights{i};
+                else
+                    error(['Invalid call to RefTaylorState constructor. ' ...
+                        'Fifth argument, xs_nodes, and sixth argument, ' ...
+                        'xs_weights, are arrays with incompatible sizes. '])
+                end
             end
         end
 
@@ -110,20 +122,24 @@ classdef RefTaylorState < TaylorState
                 opts = [];
                 opts.format = format;
             end
-            
-            targinfo = [];
-            targinfo.r = obj.xs_nodes;
-            if abs(obj.zk) < eps
-                Q = taylor.static.get_quadrature_correction(obj.surf, ...
-                    obj.eps_taylor,targinfo,opts);
-            else
-                Q = taylor.dynamic.get_quadrature_correction(obj.surf, ...
-                    obj.zk,obj.eps_taylor,targinfo,opts);
+
+            obj.quad_opts_xs_taylor = cell(obj.nsurfaces);
+            for i = 1:obj.nsurfaces
+                targinfo = [];
+                targinfo.r = obj.xs_nodes{i};
+                for j = 1:obj.nsurfaces
+                    if abs(obj.zk) < eps
+                        Q = taylor.static.get_quadrature_correction(obj.surf{j}, ...
+                            obj.eps_taylor,targinfo,opts);
+                    else
+                        Q = taylor.dynamic.get_quadrature_correction(obj.surf{j}, ...
+                            obj.zk,obj.eps_taylor,targinfo,opts);
+                    end
+                    obj.quad_opts_xs_taylor{i,j} = [];
+                    obj.quad_opts_xs_taylor{i,j}.format = format;
+                    obj.quad_opts_xs_taylor{i,j}.precomp_quadrature = Q;
+                end
             end
-            
-            obj.quad_opts_xs_taylor = [];
-            obj.quad_opts_xs_taylor.format = format;
-            obj.quad_opts_xs_taylor.precomp_quadrature = Q;
         end
 
         function obj = get_quad_corr_xs_laphelm(obj,varargin)
@@ -147,20 +163,24 @@ classdef RefTaylorState < TaylorState
                 opts = [];
                 opts.format = format;
             end
-            
-            targinfo = [];
-            targinfo.r = obj.xs_nodes;
-            if abs(obj.zk) < eps
-                Q = lap3d.dirichlet.get_quadrature_correction(obj.surf, ...
-                    obj.eps_laphelm,[1.0,0],targinfo,opts);
-            else
-                Q = helm3d.dirichlet.get_quadrature_correction(obj.surf, ...
-                    obj.eps_laphelm,obj.zk,[1.0,0],targinfo,opts);
+
+            obj.quad_opts_xs_laphelm = cell(obj.nsurfaces);
+            for i = 1:obj.nsurfaces
+                targinfo = [];
+                targinfo.r = obj.xs_nodes{i};
+                for j = 1:obj.nsurfaces
+                    if abs(obj.zk) < eps
+                        Q = lap3d.dirichlet.get_quadrature_correction(obj.surf{j}, ...
+                            obj.eps_laphelm,[1.0,0],targinfo,opts);
+                    else
+                        Q = helm3d.dirichlet.get_quadrature_correction(obj.surf{j}, ...
+                            obj.eps_laphelm,obj.zk,[1.0,0],targinfo,opts);
+                    end
+                    obj.quad_opts_xs_laphelm{i,j} = [];
+                    obj.quad_opts_xs_laphelm{i,j}.format = format;
+                    obj.quad_opts_xs_laphelm{i,j}.precomp_quadrature = Q;
+                end
             end
-            
-            obj.quad_opts_xs_laphelm = [];
-            obj.quad_opts_xs_laphelm.format = format;
-            obj.quad_opts_xs_laphelm.precomp_quadrature = Q;
         end
 
         function wfunc = solveforW(obj,varargin)
@@ -173,20 +193,24 @@ classdef RefTaylorState < TaylorState
             else 
                 time = false;
             end
-            nB0 = dot(obj.vn,obj.B0);
-            b = surfacefun_to_array(nB0,obj.dom,obj.surf);
-            if time
-                t1 = tic;
+            wfunc = cell(1,obj.nsurfaces);
+            for i = 1:obj.nsurfaces
+                nB0 = dot(obj.vn{i},obj.B0{i});
+                b = surfacefun_to_array(nB0,obj.dom{i},obj.surf{i});
+                if time
+                    t1 = tic;
+                end
+                [W,~,~,iter] = gmres(@(s) TaylorState.gmresA(s, ...
+                    obj.dom{i},i-1,obj.surf{i},obj.zk,obj.eps_taylor, ...
+                    obj.eps_laphelm,obj.quad_opts_taylor{i}, ...
+                    obj.quad_opts_laphelm{i}),b,[],obj.eps_gmres,50);
+                if time
+                    t2 = toc(t1);
+                    fprintf('\tGMRES for A11*W = A12: %f s / %d iter. = %f s\n', ...
+                        t2, iter(2), t2/iter(2))
+                end
+                wfunc{i} = array_to_surfacefun(W,obj.dom{i},obj.surf{i});
             end
-            [W,~,~,iter] = gmres(@(s) TaylorState.gmresA(s,obj.dom,obj.surf, ...
-                obj.zk,obj.eps_taylor,obj.eps_laphelm, ...
-                obj.quad_opts_taylor,obj.quad_opts_laphelm),b,[],obj.eps_gmres,50);
-            if time
-                t2 = toc(t1);
-                fprintf('\tGMRES for A11*D = A12: %f s / %d iter. = %f s\n', ...
-                    t2, iter(2), t2/iter(2))
-            end
-            wfunc = array_to_surfacefun(W,obj.dom,obj.surf);
         end
 
         function obj = compute_sigma_alpha(obj,varargin)
@@ -202,21 +226,48 @@ classdef RefTaylorState < TaylorState
             end
             dfunc = solveforD(obj,time);
             wfunc = solveforW(obj,time);
-            fluxsigmaD = RefTaylorState.mtxfluxsigmanontaylor(obj.surf, ...
-                obj.dom,obj.xs_nodes,obj.xs_weights,dfunc,obj.zk,obj.eps_taylor, ...
-                obj.eps_laphelm,obj.surf,obj.quad_opts_xs_taylor, ...
-                obj.quad_opts_xs_laphelm);
-            fluxsigmaW = RefTaylorState.mtxfluxsigmanontaylor(obj.surf, ...
-                obj.dom,obj.xs_nodes,obj.xs_weights,wfunc,obj.zk,obj.eps_taylor, ...
-                obj.eps_laphelm,obj.surf,obj.quad_opts_xs_taylor, ...
-                obj.quad_opts_xs_laphelm);
-            fluxalpha = RefTaylorState.mtxfluxalphanontaylor(obj.surf, ...
-                obj.dom,obj.xs_nodes,obj.xs_weights,obj.mH,obj.zk,obj.eps_taylor, ...
-                obj.eps_laphelm,obj.surf,obj.quad_opts_xs_taylor, ...
-                obj.quad_opts_xs_laphelm);
-            obj.alpha = -1i*(obj.flux - fluxsigmaW)...
-                /(-fluxsigmaD + fluxalpha);
-            obj.sigma = 1i*obj.alpha.*dfunc - wfunc;
+
+            fluxsigmaD = zeros(obj.nsurfaces);
+            fluxsigmaW = zeros(obj.nsurfaces,1);
+            fluxalpha = zeros(obj.nsurfaces);
+
+            for j = 1:obj.nsurfaces
+                for k = 1:obj.nsurfaces
+                    % sign flip for integral on inner domain
+                    fluxsigmaD(j,k) = ...
+                        RefTaylorState.mtxfluxsigmanontaylor( ...
+                        obj.surf{k},obj.dom{k},j-1,obj.xs_nodes{j}, ...
+                        obj.xs_weights{j},dfunc{k},obj.zk,obj.eps_taylor, ...
+                        obj.eps_laphelm, ...
+                        obj.quad_opts_xs_taylor{j,k}, ...
+                        obj.quad_opts_xs_laphelm{j,k});
+                    fluxsigmaW(j) = fluxsigmaW(j) + ...
+                        RefTaylorState.mtxfluxsigmanontaylor( ...
+                        obj.surf{k},obj.dom{k},j-1,obj.xs_nodes{j}, ...
+                        obj.xs_weights{j},wfunc{k},obj.zk,obj.eps_taylor, ...
+                        obj.eps_laphelm, ...
+                        obj.quad_opts_xs_taylor{j,k}, ...
+                        obj.quad_opts_xs_laphelm{j,k});
+                    fluxalpha(j,k) = ...
+                        RefTaylorState.mtxfluxalphanontaylor( ...
+                        obj.surf{k},obj.dom{k},j-1,obj.xs_nodes{j}, ...
+                        obj.xs_weights{j},obj.mH{k},obj.zk,obj.eps_taylor, ...
+                        obj.eps_laphelm, ...
+                        obj.quad_opts_xs_taylor{j,k}, ...
+                        obj.quad_opts_xs_laphelm{j,k});
+                end
+            end
+
+            if obj.nsurfaces == 1
+                obj.alpha = -1i*(obj.flux - fluxsigmaW)...
+                    /(-fluxsigmaD + fluxalpha);
+                obj.sigma{1} = 1i*obj.alpha.*dfunc{1} - wfunc{1};
+            else
+                A = -fluxsigmaD + fluxalpha;
+                obj.alpha = A\(-1i*(obj.flux.' - fluxsigmaW));
+                obj.sigma{1} = 1i*obj.alpha(1).*dfunc{1} - wfunc{1};
+                obj.sigma{2} = 1i*obj.alpha(2).*dfunc{2} - wfunc{2};
+            end
         end
 
         function obj = solve(obj,varargin)
@@ -257,7 +308,7 @@ classdef RefTaylorState < TaylorState
                 fprintf('get XS Laplace/Helmholtz quad. corr.: %f s\n',t2)
                 t1 = tic;
             end
-            obj = obj.get_quad_corr_taylor();
+            obj = obj.get_quad_corr_xs_taylor();
             if time
                 t2 = toc(t1);
                 fprintf('get XS +taylor routine quad. corr.: %f s\n',t2)
@@ -275,9 +326,9 @@ classdef RefTaylorState < TaylorState
     end
 
     methods (Static)
-        fluxsigma = mtxfluxsigmanontaylor(S,dom,nodes,weights,sigma, ...
-            zk,epstaylor,epslh,varargin)
-        fluxalpha = mtxfluxalphanontaylor(S,dom,nodes,weights,mH,zk, ...
-            epstaylor,epslh,varargin)
+        fluxsigma = mtxfluxsigmanontaylor(S,dom,params,nodes,weights, ...
+            sigma,zk,epstaylor,epslh,varargin)
+        fluxalpha = mtxfluxalphanontaylor(S,dom,params,nodes,weights, ...
+            mH,zk,epstaylor,epslh,varargin)
     end
 end

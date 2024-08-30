@@ -1,8 +1,8 @@
 ro = 2.0;
-ao = 0.8;%7;
+ao = 1.0;%0.7;
 bo = 1.0;
 ri = 2.0;
-ai = 0.2;%3;
+ai = 0.55;%0.3;
 bi = 0.55;
 
 n = 6;
@@ -11,9 +11,12 @@ nu = 3*nv;
 npat = 2*nu*nv; % number of patches
 
 dom = toroidal_shell(ro,ao,bo,ri,ai,bi,n,nu,nv);
+domo = twisted_ellipse_torus(ao,ro,bo,n,nu,nv);
+domi = twisted_ellipse_torus(ai,ri,bi,n,nu,nv);
+doms = {domo,domi};
 
-% mesh(dom)
-% alpha 0.5
+mesh(dom)
+alpha 0.5
 
 ntheta = 1e3;
 rmin = 2.0;
@@ -30,12 +33,32 @@ nt = 8;
 np = 40;
 [tornodes, torweights] = toroidalfluxquad(nr,nt,ro,ao,bo,ri,ai,bi);
 [polnodes, polweights] = poloidalfluxquad(nr,np,ro,ao,bo,ri,ai,bi);
-plot3(tornodes(1,:),tornodes(2,:),tornodes(3,:),'.')
-hold on
-plot3(polnodes(1,:),polnodes(2,:),polnodes(3,:),'.')
-wireframe(dom)
-alpha 0.5
+% plot3(tornodes(1,:),tornodes(2,:),tornodes(3,:),'.')
+% hold on
+% plot3(polnodes(1,:),polnodes(2,:),polnodes(3,:),'.')
+% wireframe(dom)
+% alpha 0.5
 
+% compute fluxes
+flux = zeros(1,2);
+for j = 1:length(torweights)
+    B0int = reftaylor(nt,rmin,rmaj,jmag,zk,tornodes(:,j));
+    flux(1) = flux(1) + B0int(2)*torweights(j);
+end
+for j = 1:length(polweights)
+    B0int = reftaylor(nt,rmin,rmaj,jmag,zk,polnodes(:,j));
+    flux(2) = flux(2) + B0int(2)*polweights(j);
+end
+
+rts = TaylorState({domo,domi},[n nu nv],zk,flux,1e-6);
+rts = rts.solve();
+
+% interior point
+intpt = 1.15*[1.51171 1.51171 .137886];
+
+h = 1e-4;
+[errB, curlB, kB] = rts.fd_test(intpt,h);
+disp(errB)
 
 function B0 = reftaylorshell(dom,n,npat,ntheta,rmin,rmaj,jmag,lambda)
 

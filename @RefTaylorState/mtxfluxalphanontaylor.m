@@ -1,11 +1,13 @@
-function fluxalpha = mtxfluxalphanontaylor(S,dom,nodes,weights,mH, ...
-    zk,epstaylor,epslh,varargin)
+function fluxalpha = mtxfluxalphanontaylor(S,dom,params,nodes,weights, ...
+    mH,zk,epstaylor,epslh,varargin)
 %MTXFLUXALPHANONTAYLOR compute alpha coefficient in flux condition for
 %                      a non-Taylor-state magnetic field
 % 
 %   Required arguments:
 %     * S: surfer object (see fmm3dbie/matlab README for details)
 %     * dom: surfacemesh version of S (see surfacehps for details)
+%     * params: parameters describing cross-sectional surface [pol]
+%         pol: [int] set to 1 if computing poloidal flux
 %     * nodes: [double(3,*)] quadrature nodes for computing flux 
 %              Gauss-Legendre in r, trapezoidal in theta
 %     * weights: [double(*)] corresponding quadrature weights
@@ -32,6 +34,7 @@ function fluxalpha = mtxfluxalphanontaylor(S,dom,nodes,weights,mH, ...
 %             currently only supports quadrature corrections 
 %             computed in rsc format 
 
+pol = params;
 dpars = [1.0, 0];
 targinfo = [];
 targinfo.r = nodes;
@@ -89,6 +92,6 @@ end
 % Compute flux
 % ASSUMES y^ IS THE NORMAL TO THE CROSS-SECTION
 % fluxalpha = dot(mHterms(2,:),weights);
-fluxalpha = sum(mHterms(2,:).*weights);
+fluxalpha = sum(mHterms(2+pol,:).*weights);
 
 end

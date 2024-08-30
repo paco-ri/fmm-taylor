@@ -12,6 +12,7 @@ classdef TaylorState
     %   prescribed flux.
 
     properties
+        nsurfaces % number of tested toroidal surfaces (1 or 2)
         dom % surface as a surfacefun.surfacemesh
         surf % surface as an fmm3dbie.surfer
         domparams % parameters describing surface
@@ -39,15 +40,30 @@ classdef TaylorState
             %     zk [double complex] Beltrami parameter
             %     flux [double] cross-sectional flux
             %     tols [double or double(3)] quad. and GMRES tolerances
-
+            obj.nsurfaces = 0;
             if isa(domain, 'surfacemesh')
-                obj.dom = domain;
+                obj.dom = {domain};
                 surf = surfer.surfacemesh_to_surfer(domain);
-                obj.surf = surf;
-                obj.vn = normal(domain);
+                obj.surf = {surf};
+                obj.vn = {normal(domain)};
+                obj.nsurfaces = 1;
+            elseif length(domain) == 2
+                if isa(domain{1}, 'surfacemesh') && isa(domain{2}, 'surfacemesh')
+                    obj.dom = domain;
+                    surf = cell(1,2);
+                    surf{1} = surfer.surfacemesh_to_surfer(domain{1});
+                    surf{2} = surfer.surfacemesh_to_surfer(domain{2});
+                    obj.surf = surf;
+                    vn = cell(1,2);
+                    vn{1} = normal(domain{1});
+                    vn{2} = -normal(domain{2}); % flip inner normal
+                    obj.vn = vn;
+                    obj.nsurfaces = 2;
+                end
             else
                 error(['Invalid call to TaylorState constructor. ' ...
-                    'First argument should be a surfacemesh.'])
+                    'First argument should be a surfacemesh or a cell ' ...
+                    'array with two surfacemeshes.'])
             end
 
             if isnumeric(domparams)
@@ -66,10 +82,14 @@ classdef TaylorState
             end
 
             if isnumeric(flux)
-                obj.flux = flux;
+                if obj.nsurfaces == length(flux)
+                    obj.flux = flux;
+                end
             else
                 error(['Invalid call to TaylorState constructor. ' ...
-                    'Fourth argument should be the cross-sectional flux.'])
+                    'Fourth argument should be the cross-sectional ' ...
+                    'flux(es). There should be as many fluxes as ' ...
+                    'there are surfaces. '])
             end
             
             if isnumeric(tols)
@@ -78,8 +98,7 @@ classdef TaylorState
                     obj.eps_taylor = tols;
                     obj.eps_laphelm = tols;
                 else
-                    [tolsr, tolsc] = size(tols);
-                    if tolsr == 3 && tolsc == 1 || tolsr == 1 && tolsc == 3
+                    if length(tols)==3
                         obj.eps_gmres = tols(1);
                         obj.eps_taylor = tols(2);
                         obj.eps_laphelm = tols(3);
@@ -94,23 +113,24 @@ classdef TaylorState
             end
         end
 
-        function obj = compute_mH(obj,varargin)
-            %COMPUTE_MH Compute surface harmonic vector field 
-            %   Argument (optional)
-            %     dummy [surfacefunv] arbitrary surface vector field 
-            if nargin > 1 && isa(varargin{2},'surfacefunv')
-                dummy = varargin{1};
-            else
-                sinphi = @(x,y,z) y./sqrt(x.^2 + y.^2);
-                cosphi = @(x,y,z) x./sqrt(x.^2 + y.^2);
+        function obj = compute_mH(obj)
+            %COMPUTE_MH Compute surface harmonic vector field
+            sinphi = @(x,y,z) y./sqrt(x.^2 + y.^2);
+            cosphi = @(x,y,z) x./sqrt(x.^2 + y.^2);
+            obj.mH = cell(1,obj.nsurfaces);
+            for i = 1:obj.nsurfaces
                 phihat = surfacefunv(@(x,y,z) -sinphi(x,y,z), ...
                      @(x,y,z) cosphi(x,y,z), ...
-                     @(x,y,z) 0.*z, obj.dom);
-                dummy = cross(obj.vn, phihat); 
+                     @(x,y,z) 0.*z, obj.dom{i});
+                dummy = cross(obj.vn{i}, phihat); 
+                    
+                if i == 1
+                    [~, ~, vH] = hodge(dummy);
+                else
+                    [~, ~, vH] = TaylorState.hodge_inward(dummy);
+                end
+                obj.mH{i} = vH + 1i.*cross(obj.vn{i},vH);
             end
-                
-            [~, ~, vH] = hodge(dummy);
-            obj.mH = vH + 1i.*cross(obj.vn,vH);
         end
 
         function obj = get_quad_corr_taylor(obj,varargin)
@@ -135,17 +155,19 @@ classdef TaylorState
                 opts.format = format;
             end
             
-            if abs(obj.zk) < eps
-                Q = taylor.static.get_quadrature_correction(obj.surf, ...
-                    obj.eps_taylor,obj.surf,opts);
-            else
-                Q = taylor.dynamic.get_quadrature_correction(obj.surf, ...
-                    obj.zk,obj.eps_taylor,obj.surf,opts);
+            obj.quad_opts_taylor = cell(1,obj.nsurfaces);
+            for i = 1:obj.nsurfaces
+                if abs(obj.zk) < eps
+                    Q = taylor.static.get_quadrature_correction(obj.surf{i}, ...
+                        obj.eps_taylor,obj.surf{i},opts);
+                else
+                    Q = taylor.dynamic.get_quadrature_correction(obj.surf{i}, ...
+                        obj.zk,obj.eps_taylor,obj.surf{i},opts);
+                end
+                obj.quad_opts_taylor{i} = [];
+                obj.quad_opts_taylor{i}.format = format;
+                obj.quad_opts_taylor{i}.precomp_quadrature = Q;
             end
-            
-            obj.quad_opts_taylor = [];
-            obj.quad_opts_taylor.format = format;
-            obj.quad_opts_taylor.precomp_quadrature = Q;
         end
 
         function obj = get_quad_corr_laphelm(obj,varargin)
@@ -170,17 +192,19 @@ classdef TaylorState
                 opts.format = format;
             end
             
-            if abs(obj.zk) < eps
-                Q = lap3d.dirichlet.get_quadrature_correction(obj.surf, ...
-                    obj.eps_laphelm,[1.0,0],obj.surf,opts);
-            else
-                Q = helm3d.dirichlet.get_quadrature_correction(obj.surf, ...
-                    obj.eps_laphelm,obj.zk,[1.0,0],obj.surf,opts);
+            obj.quad_opts_laphelm = cell(1,obj.nsurfaces);
+            for i = 1:obj.nsurfaces
+                if abs(obj.zk) < eps
+                    Q = lap3d.dirichlet.get_quadrature_correction(obj.surf{i}, ...
+                        obj.eps_laphelm,[1.0,0],obj.surf{i},opts);
+                else
+                    Q = helm3d.dirichlet.get_quadrature_correction(obj.surf{i}, ...
+                        obj.eps_laphelm,obj.zk,[1.0,0],obj.surf{i},opts);
+                end
+                obj.quad_opts_laphelm{i} = [];
+                obj.quad_opts_laphelm{i}.format = format;
+                obj.quad_opts_laphelm{i}.precomp_quadrature = Q;
             end
-            
-            obj.quad_opts_laphelm = [];
-            obj.quad_opts_laphelm.format = format;
-            obj.quad_opts_laphelm.precomp_quadrature = Q;
         end
 
         function dfunc = solveforD(obj,varargin)
@@ -193,22 +217,28 @@ classdef TaylorState
             else 
                 time = false;
             end
-            Balpha = TaylorState.mtxBalpha(obj.surf,obj.dom,obj.mH,obj.zk, ...
-                obj.eps_taylor,obj.eps_laphelm,obj.surf, ...
-                obj.quad_opts_taylor,obj.quad_opts_laphelm);
-            b = surfacefun_to_array(Balpha,obj.dom,obj.surf);
-            if time
-                t1 = tic;
+            
+            dfunc = cell(1,obj.nsurfaces);
+            for i = 1:obj.nsurfaces
+                Balpha = TaylorState.mtxBalpha(obj.surf{i},obj.dom{i}, ...
+                    i-1,obj.mH{i},obj.zk,obj.eps_taylor, ...
+                    obj.eps_laphelm,obj.surf{i}, ...
+                    obj.quad_opts_taylor{i},obj.quad_opts_laphelm{i});
+                b = surfacefun_to_array(Balpha,obj.dom{i},obj.surf{i});
+                if time
+                    t1 = tic;
+                end
+                [D,~,~,iter] = gmres(@(s) TaylorState.gmresA(s, ...
+                    obj.dom{i},i-1,obj.surf{i},obj.zk,obj.eps_taylor, ...
+                    obj.eps_laphelm,obj.quad_opts_taylor{i}, ...
+                    obj.quad_opts_laphelm{i}),b,[],obj.eps_gmres,50);
+                if time
+                    t2 = toc(t1);
+                    fprintf('\tGMRES for A11*D = A12: %f s / %d iter. = %f s\n', ...
+                        t2, iter(2), t2/iter(2))
+                end
+                dfunc{i} = array_to_surfacefun(D,obj.dom{i},obj.surf{i}); 
             end
-            [D,~,~,iter] = gmres(@(s) TaylorState.gmresA(s,obj.dom,obj.surf, ...
-                obj.zk,obj.eps_taylor,obj.eps_laphelm, ...
-                obj.quad_opts_taylor,obj.quad_opts_laphelm),b,[],obj.eps_gmres,50);
-            if time
-                t2 = toc(t1);
-                fprintf('\tGMRES for A11*D = A12: %f s / %d iter. = %f s\n', ...
-                    t2, iter(2), t2/iter(2))
-            end
-            dfunc = array_to_surfacefun(D,obj.dom,obj.surf);
         end
 
         function obj = compute_sigma_alpha(obj,varargin)
@@ -222,16 +252,34 @@ classdef TaylorState
                 time = false;
             end
             dfunc = solveforD(obj,time);
-            fluxsigmaD = TaylorState.mtxfluxsigma(obj.surf,obj.dom, ...
-                obj.domparams,dfunc,obj.zk,obj.eps_taylor, ...
-                obj.eps_laphelm,obj.surf,obj.quad_opts_taylor, ...
-                obj.quad_opts_laphelm);
-            fluxalpha = TaylorState.mtxfluxalpha(obj.surf,obj.dom, ...
-                obj.domparams,obj.mH,obj.zk,obj.eps_taylor, ...
-                obj.eps_laphelm,obj.surf,obj.quad_opts_taylor, ...
-                obj.quad_opts_laphelm);
-            obj.alpha = obj.flux/(1i*fluxsigmaD + fluxalpha);
-            obj.sigma = 1i*obj.alpha.*dfunc;
+            fluxsigmaD = zeros(obj.nsurfaces);
+            fluxalpha = zeros(obj.nsurfaces);
+            for j = 1:obj.nsurfaces
+                for k = 1:obj.nsurfaces
+                    % sign flip for integral on inner domain
+                    params = [obj.domparams k-1 2-j];
+                    fluxsigmaD(j,k) = TaylorState.mtxfluxsigma( ...
+                        obj.surf{k},obj.dom{k},params,dfunc{k}, ...
+                        obj.zk,obj.eps_taylor,obj.eps_laphelm, ...
+                        obj.surf{k},obj.quad_opts_taylor{k}, ...
+                        obj.quad_opts_laphelm{k})*(-1)^(k-1);
+                    fluxalpha(j,k) = TaylorState.mtxfluxalpha( ...
+                        obj.surf{k},obj.dom{k},params,obj.mH{k}, ...
+                        obj.zk,obj.eps_taylor,obj.eps_laphelm, ...
+                        obj.surf{k},obj.quad_opts_taylor{k}, ...
+                        obj.quad_opts_laphelm{k})*(-1)^(k-1);
+                end
+            end
+            if obj.nsurfaces == 1
+                obj.alpha = obj.flux/(1i*fluxsigmaD + fluxalpha);
+                obj.sigma{1} = 1i*obj.alpha.*dfunc{1};
+            else
+                A = 1i*fluxsigmaD + fluxalpha;
+                obj.alpha = A\obj.flux.';
+                obj.sigma = cell(1,2);
+                obj.sigma{1} = 1i*obj.alpha(1).*dfunc{1}; 
+                obj.sigma{2} = 1i*obj.alpha(2).*dfunc{2};
+            end
         end
 
         function obj = compute_m0(obj,varargin)
@@ -247,37 +295,43 @@ classdef TaylorState
 
             pdo = [];
             pdo.lap = 1;
-
-            % resample
-            n = size(obj.sigma.vals{1,1},1);
-            if oversample
-                sigma1 = resample(obj.sigma,n+np);
-            else
-                sigma1 = obj.sigma;
-            end
-            dom1 = sigma1.domain;
-
-            % solve lap(u) = sigma
-            L = surfaceop(dom1, pdo, sigma1);
-            L.rankdef = true;
-            u = L.solve();
-
-            if oversample
-                vn1 = normal(dom1);
-            else
-                vn1 = obj.vn;
-            end
-            obj.m0 = 1i.*obj.zk.*(grad(u) + 1i.*cross(vn1, grad(u)));
-
-            if oversample
-                obj.m0 = resample(obj.m0,n);
+            
+            obj.m0 = cell(1,obj.nsurfaces);
+            for j = 1:obj.nsurfaces
+                % resample
+                n = size(obj.sigma{j}.vals{1,1},1);
+                if oversample
+                    sigma1 = resample(obj.sigma{j},n+np);
+                else
+                    sigma1 = obj.sigma{j};
+                end
+                dom1 = sigma1.domain;
+    
+                % solve lap(u) = sigma
+                L = surfaceop(dom1, pdo, sigma1);
+                L.rankdef = true;
+                u = L.solve();
+    
+                if oversample
+                    vn1 = normal(dom1).*(-1)^(j-1); % sign flip for inner
+                else
+                    vn1 = obj.vn{j};
+                end
+                obj.m0{j} = 1i.*obj.zk.*(grad(u) + 1i.*cross(vn1, grad(u)));
+    
+                if oversample
+                    obj.m0{j} = resample(obj.m0{j},n);
+                end
             end
         end
 
         function obj = compute_m(obj)
             %COMPUTE_M Compute the vector density m
             obj = obj.compute_m0();
-            obj.m = obj.m0 + obj.alpha.*obj.mH;
+            obj.m = cell(1,2);
+            for i = 1:obj.nsurfaces
+                obj.m{i} = obj.m0{i} + obj.alpha(i).*obj.mH{i};
+            end
         end
 
         function obj = solve(obj,varargin)
@@ -322,45 +376,54 @@ classdef TaylorState
 
         function B = surface_B(obj)
             %SURFACE_B Return the surface magnetic field as a surfacefunv 
-            sigmavals = surfacefun_to_array(obj.sigma,obj.dom,obj.surf);
-            mvals = surfacefun_to_array(obj.m,obj.dom,obj.surf);
-            if abs(obj.zk) < eps
-                gradSksigma = taylor.static.eval_gradS0(obj.surf, ...
-                    sigmavals.',obj.eps_taylor,obj.surf, ...
-                    obj.quad_opts_taylor);
-                gradSksigma = array_to_surfacefun(gradSksigma.', ...
-                    obj.dom,obj.surf);
-                curlSkm = taylor.static.eval_curlS0(obj.surf,mvals.', ...
-                    obj.eps_taylor,obj.surf,obj.quad_opts_taylor);
-                curlSkm = array_to_surfacefun(curlSkm.',obj.dom,obj.surf);
-
-                B = -obj.sigma.*obj.vn./2 + obj.m./2 - gradSksigma + ...
-                    1i.*curlSkm;
-            else
-                gradSksigma = taylor.dynamic.eval_gradSk(obj.surf, ...
-                    obj.zk,sigmavals.',obj.eps_taylor,obj.surf, ...
-                    obj.quad_opts_taylor);
-                gradSksigma = array_to_surfacefun(gradSksigma.', ...
-                    obj.dom,obj.surf);
-                curlSkm = taylor.dynamic.eval_curlSk(obj.surf,obj.zk, ...
-                    mvals.',obj.eps_taylor,obj.surf,obj.quad_opts_taylor);
-                curlSkm = array_to_surfacefun(curlSkm.',obj.dom,obj.surf);
-            
-                dpars = [1.0,0];
-                Skm1 = helm3d.dirichlet.eval(obj.surf,mvals(:,1), ...
-                    obj.surf,obj.eps_laphelm,obj.zk,dpars, ...
-                    obj.quad_opts_laphelm);
-                Skm2 = helm3d.dirichlet.eval(obj.surf,mvals(:,2), ...
-                    obj.surf,obj.eps_laphelm,obj.zk,dpars, ...
-                    obj.quad_opts_laphelm);
-                Skm3 = helm3d.dirichlet.eval(obj.surf,mvals(:,3), ...
-                    obj.surf,obj.eps_laphelm,obj.zk,dpars, ...
-                    obj.quad_opts_laphelm);
-                Skm = [Skm1 Skm2 Skm3];
-                Skm = array_to_surfacefun(Skm,obj.dom,obj.surf);
-            
-                B = -obj.sigma.*obj.vn./2 + obj.m./2 + 1i.*obj.zk.*Skm ...
-                    - gradSksigma + 1i.*curlSkm;
+            B = cell(1,obj.nsurfaces);
+            for j = 1:obj.nsurfaces
+                sigmavals = surfacefun_to_array(obj.sigma{j}, ...
+                    obj.dom{j},obj.surf{j});
+                mvals = surfacefun_to_array(obj.m{j},obj.dom{j}, ...
+                    obj.surf{j});
+                if abs(obj.zk) < eps
+                    gradSksigma = taylor.static.eval_gradS0( ...
+                        obj.surf{j},sigmavals.',obj.eps_taylor, ...
+                        obj.surf{j},obj.quad_opts_taylor);
+                    gradSksigma = array_to_surfacefun(gradSksigma.', ...
+                        obj.dom{j},obj.surf{j});
+                    curlSkm = taylor.static.eval_curlS0(obj.surf{j}, ...
+                        mvals.',obj.eps_taylor,obj.surf{j}, ...
+                        obj.quad_opts_taylor);
+                    curlSkm = array_to_surfacefun(curlSkm.',obj.dom{j}, ...
+                        obj.surf{j});
+    
+                    B{j} = -obj.sigma{j}.*obj.vn{j}./2 + obj.m{j}./2 ...
+                        - gradSksigma + 1i.*curlSkm;
+                else
+                    gradSksigma = taylor.dynamic.eval_gradSk( ...
+                        obj.surf{j},obj.zk,sigmavals.',obj.eps_taylor, ...
+                        obj.surf{j},obj.quad_opts_taylor);
+                    gradSksigma = array_to_surfacefun(gradSksigma.', ...
+                        obj.dom{j},obj.surf{j});
+                    curlSkm = taylor.dynamic.eval_curlSk(obj.surf{j}, ...
+                        obj.zk,mvals.',obj.eps_taylor,obj.surf{j}, ...
+                        obj.quad_opts_taylor);
+                    curlSkm = array_to_surfacefun(curlSkm.',obj.dom{j}, ...
+                        obj.surf{j});
+                
+                    dpars = [1.0,0];
+                    Skm1 = helm3d.dirichlet.eval(obj.surf{j}, ...
+                        mvals(:,1),obj.surf{j},obj.eps_laphelm,obj.zk, ...
+                        dpars,obj.quad_opts_laphelm);
+                    Skm2 = helm3d.dirichlet.eval(obj.surf{j}, ...
+                        mvals(:,2),obj.surf{j},obj.eps_laphelm,obj.zk, ...
+                        dpars,obj.quad_opts_laphelm);
+                    Skm3 = helm3d.dirichlet.eval(obj.surf{j}, ...
+                        mvals(:,3),obj.surf{j},obj.eps_laphelm,obj.zk, ...
+                        dpars,obj.quad_opts_laphelm);
+                    Skm = [Skm1 Skm2 Skm3];
+                    Skm = array_to_surfacefun(Skm,obj.dom{j},obj.surf{j});
+                
+                    B{j} = -obj.sigma{j}.*obj.vn{j}./2 + obj.m{j}./2 ... 
+                        + 1i.*obj.zk.*Skm - gradSksigma + 1i.*curlSkm;
+                end
             end
         end
 
@@ -385,51 +448,62 @@ classdef TaylorState
 
             targinfo = [];
             targinfo.r = intpts;
-
-            opts_int = [];
-            opts_int.format = 'rsc';
-            if abs(obj.zk) < eps
-                Q = taylor.static.get_quadrature_correction(obj.surf, ...
-                    obj.eps_taylor,targinfo,opts_int);
-            else
-                Q = taylor.dynamic.get_quadrature_correction(obj.surf, ...
-                    obj.zk,obj.eps_taylor,targinfo,opts_int);
-            end
-            opts_int.precomp_quadrature = Q;
-
-            sigmavals = surfacefun_to_array(obj.sigma,obj.dom,obj.surf);
-            mvals = surfacefun_to_array(obj.m,obj.dom,obj.surf);
-            if abs(obj.zk) < eps
-                gradSksigma = taylor.static.eval_gradS0(obj.surf, ...
-                    sigmavals.',obj.eps_taylor,targinfo,opts_int);
-                curlSkm = taylor.static.eval_curlS0(obj.surf,mvals.', ...
-                    obj.eps_taylor,targinfo,opts_int);
             
-                B = -gradSksigma + 1i.*curlSkm;
-            else
-                gradSksigma = taylor.dynamic.eval_gradSk(obj.surf, ...
-                    obj.zk,sigmavals.',obj.eps_taylor,targinfo,opts_int);
-                curlSkm = taylor.dynamic.eval_curlSk(obj.surf, ...
-                    obj.zk,mvals.',obj.eps_taylor,targinfo,opts_int);
-            
-                dpars = [1.0, 0.0];
-                opts_int_lh = [];
-                opts_int_lh.format = 'rsc';
-                Qlh = helm3d.dirichlet.get_quadrature_correction( ...
-                    obj.surf,obj.eps_laphelm,obj.zk,dpars,targinfo, ...
-                    opts_int_lh);
-                opts_int_lh.precomp_quadrature = Qlh;
+            B = 0;
+            for j = 1:obj.nsurfaces
+                opts_int = [];
+                opts_int.format = 'rsc';
+                if abs(obj.zk) < eps
+                    Q = taylor.static.get_quadrature_correction( ...
+                        obj.surf{j},obj.eps_taylor,targinfo,opts_int);
+                else
+                    Q = taylor.dynamic.get_quadrature_correction( ...
+                        obj.surf{j},obj.zk,obj.eps_taylor,targinfo, ...
+                        opts_int);
+                end
+                opts_int.precomp_quadrature = Q;
 
-                Skm1 = helm3d.dirichlet.eval(obj.surf,mvals(:,1), ...
-                    targinfo,obj.eps_laphelm,obj.zk,dpars,opts_int_lh);
-                Skm2 = helm3d.dirichlet.eval(obj.surf,mvals(:,2), ...
-                    targinfo,obj.eps_laphelm,obj.zk,dpars,opts_int_lh);
-                Skm3 = helm3d.dirichlet.eval(obj.surf,mvals(:,3), ...
-                    targinfo,obj.eps_laphelm,obj.zk,dpars,opts_int_lh);
-                Skm = [Skm1 Skm2 Skm3];
-                Skm = Skm.';
-            
-                B = 1i.*obj.zk.*Skm - gradSksigma + 1i.*curlSkm;
+                sigmavals = surfacefun_to_array(obj.sigma{j}, ...
+                    obj.dom{j},obj.surf{j});
+                mvals = surfacefun_to_array(obj.m{j},obj.dom{j}, ...
+                    obj.surf{j});
+                if abs(obj.zk) < eps
+                    gradSksigma = taylor.static.eval_gradS0( ...
+                        obj.surf{j},sigmavals.',obj.eps_taylor, ...
+                        targinfo,opts_int);
+                    curlSkm = taylor.static.eval_curlS0(obj.surf{j}, ...
+                        mvals.',obj.eps_taylor,targinfo,opts_int);
+                
+                    B = B - gradSksigma + 1i.*curlSkm;
+                else
+                    gradSksigma = taylor.dynamic.eval_gradSk( ...
+                        obj.surf{j},obj.zk,sigmavals.',obj.eps_taylor, ...
+                        targinfo,opts_int);
+                    curlSkm = taylor.dynamic.eval_curlSk(obj.surf{j}, ...
+                        obj.zk,mvals.',obj.eps_taylor,targinfo,opts_int);
+                
+                    dpars = [1.0, 0.0];
+                    opts_int_lh = [];
+                    opts_int_lh.format = 'rsc';
+                    Qlh = helm3d.dirichlet.get_quadrature_correction( ...
+                        obj.surf{j},obj.eps_laphelm,obj.zk,dpars, ...
+                        targinfo,opts_int_lh);
+                    opts_int_lh.precomp_quadrature = Qlh;
+    
+                    Skm1 = helm3d.dirichlet.eval(obj.surf{j}, ...
+                        mvals(:,1),targinfo,obj.eps_laphelm,obj.zk, ...
+                        dpars,opts_int_lh);
+                    Skm2 = helm3d.dirichlet.eval(obj.surf{j}, ...
+                        mvals(:,2),targinfo,obj.eps_laphelm,obj.zk, ...
+                        dpars,opts_int_lh);
+                    Skm3 = helm3d.dirichlet.eval(obj.surf{j}, ...
+                        mvals(:,3),targinfo,obj.eps_laphelm,obj.zk, ...
+                        dpars,opts_int_lh);
+                    Skm = [Skm1 Skm2 Skm3];
+                    Skm = Skm.';
+                
+                    B = B + 1i.*obj.zk.*Skm - gradSksigma + 1i.*curlSkm;
+                end
             end
         end
 
@@ -483,12 +557,14 @@ classdef TaylorState
     end
 
     methods (Static)
-        Bsigma = mtxBsigma(S,dom,sigma,zk,epstaylor,epslh,varargin)
-        A = gmresA(s,dom,S,zk,epstaylor,epslh,opts,optslh)
+        Bsigma = mtxBsigma(S,dom,domparams,sigma,zk,epstaylor,epslh,varargin)
+        A = gmresA(s,dom,domparams,S,zk,epstaylor,epslh,opts,optslh)
         Balpha = mtxBalpha(S,dom,mH,zk,epstaylor,epslh,varargin)
         fluxsigma = mtxfluxsigma(S,dom,domparams,sigma,zk,epstaylor,epslh,varargin)
         fluxalpha = mtxfluxalpha(S,dom,domparams,mH,zk,epstaylor,epslh,varargin)
         m0 = debyem0(sigma,lambda,varargin)
-        integral = intacyc(f,n,nu,nv)
+        integrala = intacyc(f,n,nv)
+        integralb = intbcyc(f,n,nu)
+        [u, v, w, curlfree, divfree] = hodge_inward(f)
     end
 end

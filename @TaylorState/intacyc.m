@@ -1,4 +1,4 @@
-function integral = intacyc(f, n, nu, nv)
+function integrala = intacyc(f, n, nv)
 %INTACYC integrate a function along an A-cycle
 %   Detailed explanation goes here
 
@@ -60,6 +60,6 @@ for i = 1:nv
 end
 
 axv = dot(conj(avals),xv,2);
-integral = dot(awts,axv);
+integrala = dot(awts,axv);
 
 end
