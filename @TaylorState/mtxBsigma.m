@@ -42,13 +42,13 @@ dpars = [1.0,0];
 % torus case
 if length(dom) == 1
 
-    if nargin < 8
+    if nargin < 7
         targinfo = S{1};
     else
         targinfo = varargin{1}{1};
     end
 
-    if nargin < 9
+    if nargin < 8
         if abs(zk) < eps
             Q = taylor.static.get_quadrature_correction(S{1},epstaylor, ...
                 targinfo);
@@ -63,7 +63,7 @@ if length(dom) == 1
         opts = varargin{2}{1};
     end
 
-    if nargin < 10
+    if nargin < 9
         if abs(zk) < eps
             Qlh = lap3d.dirichlet.get_quadrature_correction(S{1}, ...
             epslh,dpars,targinfo);
@@ -86,7 +86,7 @@ if length(dom) == 1
     gradSsigma = array_to_surfacefun(gradSsigma.',dom{1},S{1}); % note transpose 
     vn = normal(dom{1});
     ngradSsigma = dot(vn,gradSsigma);
-    sigma = array_to_surfacefun(sigmavals.',dom{1},S{1});
+    sigma = array_to_surfacefun(sigmavals,dom{1},S{1});
 
     % construct Bsigma
     if abs(zk) > eps
@@ -110,16 +110,16 @@ if length(dom) == 1
         % combine
         % m0terms = 1i.*dot(n,zk.*Sm0+curlSm0);
         m0terms = 1i*zk.*dot(vn,Sm0) + 1i.*dot(vn,curlSm0);
-        Bsigma = sigma./2 + ngradSsigma - m0terms;
+        Bsigma = {sigma./2 + ngradSsigma - m0terms};
     else
-        Bsigma = sigma./2 + ngradSsigma;
+        Bsigma = {sigma./2 + ngradSsigma};
     end
 
 % toroidal shell case    
 else
     
     % targinfoo = outer surface, targinfoi = inner surface
-    if nargin < 8
+    if nargin < 7
         targinfoo = S{1};
         targinfoi = S{2};
     else
@@ -128,7 +128,7 @@ else
     end
 
     % near quadrature corrections for +taylor routines
-    if nargin < 9
+    if nargin < 8
         if abs(zk) < eps
             Qo = taylor.static.get_quadrature_correction(S{1}, ...
                 epstaylor,targinfoo);
@@ -153,7 +153,7 @@ else
 
     % near quadrature corrections for Helmholtz layer potential
     % only needed if zk != 0 
-    if nargin < 10
+    if nargin < 9
         if abs(zk) < eps
             Qlho = helm3d.dirichlet.get_quadrature_correction(S{1}, ...
                 epslh,zk,dpars,targinfoo);

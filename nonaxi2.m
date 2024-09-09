@@ -1,5 +1,5 @@
-ns = 7;
-nvs = 10;%[5 6 7 8 9];% 10];
+ns = [5 6];
+nvs = [5 6 7];% 8 9];% 10];
 lerr = zeros([17 size(ns,2)*size(nvs,2)]);
 lind = 1;
 
