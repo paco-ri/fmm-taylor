@@ -47,6 +47,7 @@ nu = domparams(2);
 nv = domparams(3);
 io = domparams(4);
 aint = domparams(5);
+bd = domparams(6);
 dpars = [1.0, 0.0];
 if nargin < 8
     targinfo = S;
@@ -93,7 +94,7 @@ if abs(zk) < eps
     curlS0mH = taylor.static.eval_curlS0(S,mHvals,epstaylor,targinfo,opts);
     curlS0mH = array_to_surfacefun(curlS0mH.',dom,S);
     nxcurlS0mH = cross(vn,curlS0mH);
-    nxminusmH = nxcurlS0mH - mH./2;
+    nxminusmH = nxcurlS0mH - bd.*mH./2;
     nxminusmHvals = surfacefun_to_array(nxminusmH,dom,S);
     
     % S0[n x curl S0[mH] - mH/2]

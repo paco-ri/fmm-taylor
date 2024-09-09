@@ -1,12 +1,11 @@
-function Bsigma = mtxBsigma(S,dom,domparams,sigma,zk,epstaylor,epslh,varargin)
+function Bsigma = mtxBsigma(S,dom,sigmavals,zk,epstaylor,epslh, ...
+    varargin)
 %MTXBSIGMA compute sigma-dep. terms of surface magnetic field
 % 
 %   Required arguments:
 %     * S: surfer object (see fmm3dbie/matlab README for details)
 %     * dom: surfacemesh version of S (see surfacehps for details)
-%     * domparams: parameter describing dom and circulation [io]
-%         io: [int] if 1, negate vn because inner torus
-%     * sigma: [surfacefun] density for which 
+%     * sigmavals: [double complex(*)] density for which 
 %                  sigma/2 + n . grad S0[sigma]
 %              is computed
 %     * zk: [dcomplex] wavenumber
@@ -38,84 +37,231 @@ function Bsigma = mtxBsigma(S,dom,domparams,sigma,zk,epstaylor,epslh,varargin)
 %             currently only supports quadrature corrections 
 %             computed in rsc format 
 
-io = domparams;
 dpars = [1.0,0];
 
-if nargin < 8
-    targinfo = S;
-else
-    targinfo = varargin{1};
-end
+% torus case
+if length(dom) == 1
 
-if nargin < 9
-    if abs(zk) < eps
-        Q = taylor.static.get_quadrature_correction(S,epstaylor,targinfo);
+    if nargin < 8
+        targinfo = S{1};
     else
-        Q = taylor.dynamic.get_quadrature_correction(S,zk, ...
-            epstaylor,targinfo);
+        targinfo = varargin{1}{1};
     end
-    opts = [];
-    opts.format = 'rsc';
-    opts.precomp_quadrature = Q;
-else
-    opts = varargin{2};
-end
 
-if nargin < 10
-    if abs(zk) < eps
-        Qlh = lap3d.dirichlet.get_quadrature_correction(S, ...
-            epslh,dpars,targinfo,opts);
+    if nargin < 9
+        if abs(zk) < eps
+            Q = taylor.static.get_quadrature_correction(S{1},epstaylor, ...
+                targinfo);
+        else
+            Q = taylor.dynamic.get_quadrature_correction(S{1},zk, ...
+                epstaylor,targinfo);
+        end
+        opts = [];
+        opts.format = 'rsc';
+        opts.precomp_quadrature = Q;
     else
-        Qlh = helm3d.dirichlet.get_quadrature_correction(S, ...
-            epslh,zk,dpars,targinfo,opts);
+        opts = varargin{2}{1};
     end
-    optslh = [];
-    optslh.format = 'rsc';
-    optslh.precomp_quadrature = Qlh;
-else
-    optslh = varargin{3};
-end
 
-sigmavals = surfacefun_to_array(sigma,dom,S);
-sigmavals = sigmavals.';
-
-% evaulate layer potential
-if abs(zk) < eps
-    gradSsigma = taylor.static.eval_gradS0(S,sigmavals,epstaylor, ...
-        targinfo,opts);
-else
-    gradSsigma = taylor.dynamic.eval_gradSk(S,zk,sigmavals,epstaylor, ...
-        targinfo,opts);
-end
-gradSsigma = array_to_surfacefun(gradSsigma.',dom,S); % note transpose 
-vn = (-1)^io.*normal(dom);
-ngradSsigma = dot(vn,gradSsigma);
-
-% construct Bsigma
-if abs(zk) > eps
-    % compute m0
-    m0 = TaylorState.debyem0(sigma,zk);
-    m0vals = surfacefun_to_array(m0,dom,S);
-
-    % compute n . Sk[m0]
-    Sm0 = complex(zeros(size(m0vals)));
-    for j=1:3
-        Sm0(:,j) = helm3d.dirichlet.eval(S,m0vals(:,j),targinfo,epslh, ...
-            zk,[1.0 0],optslh);
+    if nargin < 10
+        if abs(zk) < eps
+            Qlh = lap3d.dirichlet.get_quadrature_correction(S{1}, ...
+            epslh,dpars,targinfo);
+            optslh = [];
+            optslh.format = 'rsc';
+            optslh.precomp_quadrature = Qlh;
+        end
+    else
+        optslh = varargin{3};
     end
-    Sm0 = array_to_surfacefun(Sm0,dom,S);
 
-    % compute n . curl Sk[m0]
-    curlSm0 = taylor.dynamic.eval_curlSk(S,zk,m0vals.',epstaylor, ...
-        targinfo,opts);
-    curlSm0 = array_to_surfacefun(curlSm0.',dom,S);
+    % evaluate layer potential
+    if abs(zk) < eps
+        gradSsigma = taylor.static.eval_gradS0(S{1},sigmavals, ...
+            epstaylor,targinfo,opts);
+    else
+        gradSsigma = taylor.dynamic.eval_gradSk(S{1},zk,sigmavals, ...
+            epstaylor,targinfo,opts);
+    end
+    gradSsigma = array_to_surfacefun(gradSsigma.',dom{1},S{1}); % note transpose 
+    vn = normal(dom{1});
+    ngradSsigma = dot(vn,gradSsigma);
+    sigma = array_to_surfacefun(sigmavals.',dom{1},S{1});
 
-    % combine
-    % m0terms = 1i.*dot(n,zk.*Sm0+curlSm0);
-    m0terms = 1i*zk.*dot(vn,Sm0) + 1i.*dot(vn,curlSm0);
-    Bsigma = sigma./2 + ngradSsigma - m0terms;
+    % construct Bsigma
+    if abs(zk) > eps
+        % compute m0
+        m0 = TaylorState.debyem0(sigma,zk);
+        m0vals = surfacefun_to_array(m0,dom{1},S{1});
+
+        % compute n . Sk[m0]
+        Sm0 = complex(zeros(size(m0vals)));
+        for j=1:3
+            Sm0(:,j) = helm3d.dirichlet.eval(S{1},m0vals(:,j),targinfo, ...
+                epslh,zk,[1.0 0],optslh);
+        end
+        Sm0 = array_to_surfacefun(Sm0,dom{1},S{1});
+
+        % compute n . curl Sk[m0]
+        curlSm0 = taylor.dynamic.eval_curlSk(S{1},zk,m0vals.', ...
+            epstaylor,targinfo,opts);
+        curlSm0 = array_to_surfacefun(curlSm0.',dom{1},S{1});
+
+        % combine
+        % m0terms = 1i.*dot(n,zk.*Sm0+curlSm0);
+        m0terms = 1i*zk.*dot(vn,Sm0) + 1i.*dot(vn,curlSm0);
+        Bsigma = sigma./2 + ngradSsigma - m0terms;
+    else
+        Bsigma = sigma./2 + ngradSsigma;
+    end
+
+% toroidal shell case    
 else
-    Bsigma = sigma./2 + ngradSsigma;
+    
+    % targinfoo = outer surface, targinfoi = inner surface
+    if nargin < 8
+        targinfoo = S{1};
+        targinfoi = S{2};
+    else
+        targinfoo = varargin{1}{1};
+        targinfoi = varargin{1}{2};
+    end
+
+    % near quadrature corrections for +taylor routines
+    if nargin < 9
+        if abs(zk) < eps
+            Qo = taylor.static.get_quadrature_correction(S{1}, ...
+                epstaylor,targinfoo);
+            Qi = taylor.static.get_quadrature_correction(S{2}, ...
+                epstaylor,targinfoi);
+        else
+            Qo = taylor.dynamic.get_quadrature_correction(S{1},zk, ...
+                epstaylor,targinfoo);
+            Qi = taylor.dynamic.get_quadrature_correction(S{2},zk, ...
+                epstaylor,targinfoi);
+        end
+        optso = [];
+        optso.format = 'rsc';
+        optso.precomp_quadrature = Qo;
+        optsi = [];
+        optsi.format = 'rsc';
+        optsi.precomp_quadrature = Qi;
+    else
+        optso = varargin{2}{1};
+        optsi = varargin{2}{2};
+    end
+
+    % near quadrature corrections for Helmholtz layer potential
+    % only needed if zk != 0 
+    if nargin < 10
+        if abs(zk) < eps
+            Qlho = helm3d.dirichlet.get_quadrature_correction(S{1}, ...
+                epslh,zk,dpars,targinfoo);
+            Qlhi = helm3d.dirichlet.get_quadrature_correction(S{2}, ...
+                epslh,zk,dpars,targinfoi);
+            optslho = [];
+            optslho.format = 'rsc';
+            optslho.precomp_quadrature = Qlho;
+            optslhi = [];
+            optslhi.format = 'rsc';
+            optslhi.precomp_quadrature = Qlhi;
+        end
+    else
+        optslho = varargin{3}{1};
+        optslhi = varargin{3}{2};
+    end
+
+    % split sigmavals into halves. top half is on outer surface, etc.
+    npts = length(sigmavals)/2;
+    sigmavalso = sigmavals(1:npts);
+    sigmavalsi = sigmavals(npts+1:end);
+
+    % evaluate layer potential
+    if abs(zk) < eps
+        gradSsigmao = taylor.static.eval_gradS0(S{1},sigmavalso, ...
+            epstaylor,targinfoo,optso);
+        gradSsigmai = taylor.static.eval_gradS0(S{2},sigmavalsi, ...
+            epstaylor,targinfoi,optsi);
+        gradSsigmai2o = taylor.static.eval_gradS0(S{2},sigmavalsi, ...
+            epstaylor,targinfoo);
+        gradSsigmao2i = taylor.static.eval_gradS0(S{1},sigmavalso, ...
+            epstaylor,targinfoi);
+    else
+        gradSsigmao = taylor.dynamic.eval_gradSk(S{1},zk,sigmavals, ...
+            epstaylor,targinfoo,optso);
+        gradSsigmai = taylor.dynamic.eval_gradSk(S{2},zk,sigmavalsi, ...
+            epstaylor,targinfoi,optsi);
+        gradSsigmai2o = taylor.dynamic.eval_gradSk(S{2},zk,sigmavalsi, ...
+            epstaylor,targinfoo);
+        gradSsigmao2i = taylor.dynamic.eval_gradSk(S{1},zk,sigmavalso, ...
+            epstaylor,targinfoi);
+    end
+    gradSsigmao = array_to_surfacefun(gradSsigmao.',dom{1},S{1}); % note transpose 
+    gradSsigmai = array_to_surfacefun(gradSsigmai.',dom{2},S{2});
+    gradSsigmai2o = array_to_surfacefun(gradSsigmai2o.',dom{1},S{1});
+    gradSsigmao2i = array_to_surfacefun(gradSsigmao2i.',dom{2},S{2});
+    vno = normal(dom{1});
+    vni = -1.*normal(dom{2}); % note negative sign 
+    nogradSsigmao = dot(vno,gradSsigmao);
+    nigradSsigmai = dot(vni,gradSsigmai);
+    nogradSsigmai2o = dot(vno,gradSsigmai2o);
+    nigradSsigmao2i = dot(vni,gradSsigmao2i);
+
+    sigmao = array_to_surfacefun(sigmavalso,dom{1},S{1});
+    sigmai = array_to_surfacefun(sigmavalsi,dom{2},S{2});
+
+    % construct Bsigma
+    if abs(zk) > eps
+        % compute m0
+        m0o = TaylorState.debyem0(sigmao,zk);
+        m0i = TaylorState.debyem0(sigmai,zk);
+        m0ovals = surfacefun_to_array(m0o,dom{1},S{1});
+        m0ivals = surfacefun_to_array(m0i,dom{2},S{2});
+
+        % compute n . Sk[m0]
+        Sm0o = complex(zeros(size(m0ovals)));
+        Sm0i = complex(zeros(size(m0ivals)));
+        Sm0i2o = complex(zeros(size(m0ovals)));
+        Sm0o2i = complex(zeros(size(m0ivals)));
+        for j=1:3
+            Sm0o(:,j) = helm3d.dirichlet.eval(S{1},m0ovals(:,j), ...
+                targinfoo,epslh,zk,dpars,optslho);
+            Sm0i(:,j) = helm3d.dirichlet.eval(S{2},m0ivals(:,j), ...
+                targinfoi,epslh,zk,dpars,optslhi);
+            Sm0i2o(:,j) = helm3d.dirichlet.eval(S{2},m0ovals(:,j), ...
+                targinfoo,epslh,zk,dpars);
+            Sm0o2i(:,j) = helm3d.dirichlet.eval(S{2},m0ivals(:,j), ...
+                targinfoi,epslh,zk,dpars);
+        end
+        Sm0o = array_to_surfacefun(Sm0o,dom{1},S{1});
+        Sm0i = array_to_surfacefun(Sm0i,dom{2},S{2});
+        Sm0i2o = array_to_surfacefun(Sm0i2o,dom{1},S{1});
+        Sm0o2i = array_to_surfacefun(Sm0o2i,dom{2},S{2});
+
+        % compute n . curl Sk[m0]
+        curlSm0o = taylor.dynamic.eval_curlSk(S{1},zk,m0valso.', ...
+            epstaylor,targinfoo,optso);
+        curlSm0i = taylor.dynamic.eval_curlSk(S{2},zk,m0valsi.', ...
+            epstaylor,targinfoi,optsi);
+        curlSm0i2o = taylor.dynamic.eval_curlSk(S{2},zk,m0valsi.', ...
+            epstaylor,targinfoo);
+        curlSm0o2i = taylor.dynamic.eval_curlSk(S{1},zk,m0valso.', ...
+            epstaylor,targinfoi);
+        curlSm0o = array_to_surfacefun(curlSm0o.',dom{1},S{1});
+        curlSm0i = array_to_surfacefun(curlSm0i.',dom{2},S{2});
+        curlSm0i2o = array_to_surfacefun(curlSm0i2o.',dom{1},S{1});
+        curlSm0o2i = array_to_surfacefun(curlSm0o2i.',dom{2},S{2});
+
+        % combine
+        m0termso = 1i.*dot(vno, zk.*(Sm0o + Sm0i2o) + curlSm0o + curlSm0i2o);
+        m0termsi = 1i.*dot(vni, zk.*(Sm0i + Sm0o2i) + curlSm0i + curlSm0o2i);
+        Bsigma = {sigmao./2 + nogradSsigmao + nogradSsigmai2o - m0termso, ...
+            sigmai./2 + nigradSsigmai + nigradSsigmao2i - m0termsi};
+    else
+        Bsigma = {sigmao./2 + nogradSsigmao + nogradSsigmai2o, ...
+            sigmai./2 + nigradSsigmai + nigradSsigmao2i};
+    end
+
 end
 
 end

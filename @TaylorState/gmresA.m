@@ -1,5 +1,15 @@
-function A = gmresA(s,dom,io,S,zk,epstaylor,epslh,opts,optslh)
-sigma = array_to_surfacefun(s,dom,S);
-Bsigma = TaylorState.mtxBsigma(S,dom,io,sigma,zk,epstaylor,epslh,S,opts,optslh);
-A = surfacefun_to_array(Bsigma,dom,S);
+function A = gmresA(s,dom,S,zk,epstaylor,epslh,opts,optslh)
+
+% cell arrays: S, dom, opts, optslh
+Bsigma = TaylorState.mtxBsigma(S,dom,s,zk,epstaylor, ...
+    epslh,S,opts,optslh);
+
+if length(dom) == 1
+    A = surfacefun_to_array(Bsigma{1},dom{1},S{1});
+else
+    Ao = surfacefun_to_array(Bsigma{1},dom{1},S{1});
+    Ai = surfacefun_to_array(Bsigma{2},dom{2},S{2});
+    A = [Ao; Ai];
+end
+
 end

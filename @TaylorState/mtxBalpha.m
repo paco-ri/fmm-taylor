@@ -38,6 +38,17 @@ function Balpha = mtxBalpha(S,dom,domparams,mH,zk,epstaylor,epslh,varargin)
 %             currently only supports quadrature corrections 
 %             computed in rsc format
 
+
+
+
+
+%%%% 6 Sept 2024. FIX THIS!!!
+
+
+
+
+
+
 io = domparams;
 dpars = [1.0,0];
 

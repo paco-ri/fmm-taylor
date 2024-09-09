@@ -2,8 +2,8 @@ r = 2.0;
 ao = 1.0;
 ai = 0.6;
 
-n = 6;
-nv = 8;
+n = 5;
+nv = 5;
 nu = 3*nv;
 
 domo = circulartorus(n,nu,nv,ao,r);
@@ -46,10 +46,12 @@ end
 % alpha .5
 % plot(domi)
 
-flux = [1.0,0.0];
+flux = [1.0,1.0];
 tol = 1e-7;
 ts = TaylorState(doms,[n,nu,nv],zk,flux,tol);
 % ts = TaylorState(domo,[n,nu,nv],zk,torflux,1e-6);
+% ts = TaylorState(doms,[n,nu,nv],zk,[torflux,polflux],tol);
+
 % rts = RefTaylorState(doms,[n,nu,nv],zk,[torflux,polflux],{B0o,B0i}, ...
     % {tornodes,polnodes},{torweights,polweights},tol);
 % rts = RefTaylorState(domo,[n,nu,nv],zk,torflux,{B0o,B0i}, ...
@@ -61,6 +63,7 @@ ts = ts.solve(true);
 % B = rts.surface_B();
 
 % plot(norm(B0o-B{1}));
+% colorbar
 
 % interior point
 intpt = [2.8*cos(pi/12) 2.8*sin(pi/12) 0.01];
@@ -71,15 +74,21 @@ disp(errB)
 
 % [errB2, curlB2, kB2] = rts.fd_test(intpt,h);
 % disp(errB2)
-% 
+
+fprintf('true flux = [%f,%f]\n', torflux, polflux)
 intBtor = ts.interior_B(tornodes);
 torfluxcheck = sum(intBtor(2,:).*torweights);
 intBpol = ts.interior_B(polnodes);
 polfluxcheck = sum(intBpol(3,:).*polweights);
+fprintf('TS flux = [%f+i%f,%f+i%f]\n', real(torfluxcheck), ...
+    imag(torfluxcheck), real(polfluxcheck), imag(polfluxcheck))
+
 % intBtor = rts.interior_B(tornodes);
 % torfluxcheck = sum(intBtor(2,:).*torweights);
 % intBpol = rts.interior_B(polnodes);
 % polfluxcheck = sum(intBpol(3,:).*polweights);
+% fprintf('RTS flux = [%f+i%f,%f+i%f]\n', real(torfluxcheck), ...
+%     imag(torfluxcheck), real(polfluxcheck), imag(polfluxcheck))
 
 function [qnodes, qweights] = toroidalfluxquad(nr,nt,ro,ao,ri,ai)
 %TOROIDALFLUXQUAD Computes quadrature for toroidal cross-section
