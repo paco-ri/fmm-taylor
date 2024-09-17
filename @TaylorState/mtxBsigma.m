@@ -101,8 +101,6 @@ if length(dom) == 1
         Sm0 = array_to_surfacefun(Sm0,dom{1},S{1});
 
         % compute n . grad Sk[sigma] and n . curl Sk[m0]
-        % gradSsigma = taylor.dynamic.eval_gradSk(S{1},zk,sigmavals, ...
-        %     epstaylor,targinfo,opts);
         [gradSsigma, curlSm0] = taylor.dynamic.eval_gradcurlSk(S{1},zk, ...
             sigmavals,m0vals.',epstaylor,targinfo,opts);
         gradSsigma = array_to_surfacefun(gradSsigma.',dom{1},S{1}); 
