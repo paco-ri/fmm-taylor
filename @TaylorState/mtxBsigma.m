@@ -1,4 +1,4 @@
-function Bsigma = mtxBsigma(S,dom,sigmavals,zk,epstaylor,epslh, ...
+function Bsigma = mtxBsigma(S,dom,L,sigmavals,zk,epstaylor,epslh, ...
     varargin)
 %MTXBSIGMA compute sigma-dep. terms of surface magnetic field
 % 
@@ -42,13 +42,14 @@ dpars = [1.0,0];
 % torus case
 if length(dom) == 1
 
-    if nargin < 7
+    nreqarg = 7;
+    if nargin < nreqarg + 1
         targinfo = S{1};
     else
         targinfo = varargin{1}{1};
     end
 
-    if nargin < 8
+    if nargin < nreqarg + 2
         if abs(zk) < eps
             Q = taylor.static.get_quadrature_correction(S{1},epstaylor, ...
                 targinfo);
@@ -63,7 +64,7 @@ if length(dom) == 1
         opts = varargin{2}{1};
     end
 
-    if nargin < 9
+    if nargin < nreqarg + 3
         if abs(zk) < eps
             Qlh = lap3d.dirichlet.get_quadrature_correction(S{1}, ...
             epslh,dpars,targinfo);
@@ -72,26 +73,23 @@ if length(dom) == 1
             optslh.precomp_quadrature = Qlh;
         end
     else
-        optslh = varargin{3};
+        optslh = varargin{3}{1};
     end
 
-    % evaluate layer potential
-    if abs(zk) < eps
-        gradSsigma = taylor.static.eval_gradS0(S{1},sigmavals, ...
-            epstaylor,targinfo,opts);
-    else
-        gradSsigma = taylor.dynamic.eval_gradSk(S{1},zk,sigmavals, ...
-            epstaylor,targinfo,opts);
-    end
-    gradSsigma = array_to_surfacefun(gradSsigma.',dom{1},S{1}); % note transpose 
     vn = normal(dom{1});
-    ngradSsigma = dot(vn,gradSsigma);
     sigma = array_to_surfacefun(sigmavals,dom{1},S{1});
 
-    % construct Bsigma
-    if abs(zk) > eps
+    if abs(zk) < eps
+        % compute n . grad Sk[sigma]
+        gradSsigma = taylor.static.eval_gradS0(S{1},sigmavals, ...
+            epstaylor,targinfo,opts);
+        gradSsigma = array_to_surfacefun(gradSsigma.',dom{1},S{1}); 
+        ngradSsigma = dot(vn,gradSsigma);
+
+        Bsigma = {sigma./2 + ngradSsigma};
+    else
         % compute m0
-        m0 = TaylorState.debyem0(sigma,zk);
+        m0 = TaylorState.debyem0(sigma,zk,L{1},vn);
         m0vals = surfacefun_to_array(m0,dom{1},S{1});
 
         % compute n . Sk[m0]
@@ -102,17 +100,19 @@ if length(dom) == 1
         end
         Sm0 = array_to_surfacefun(Sm0,dom{1},S{1});
 
-        % compute n . curl Sk[m0]
-        curlSm0 = taylor.dynamic.eval_curlSk(S{1},zk,m0vals.', ...
-            epstaylor,targinfo,opts);
+        % compute n . grad Sk[sigma] and n . curl Sk[m0]
+        % gradSsigma = taylor.dynamic.eval_gradSk(S{1},zk,sigmavals, ...
+        %     epstaylor,targinfo,opts);
+        [gradSsigma, curlSm0] = taylor.dynamic.eval_gradcurlSk(S{1},zk, ...
+            sigmavals,m0vals.',epstaylor,targinfo,opts);
+        gradSsigma = array_to_surfacefun(gradSsigma.',dom{1},S{1}); 
+        ngradSsigma = dot(vn,gradSsigma);
         curlSm0 = array_to_surfacefun(curlSm0.',dom{1},S{1});
 
         % combine
         % m0terms = 1i.*dot(n,zk.*Sm0+curlSm0);
         m0terms = 1i*zk.*dot(vn,Sm0) + 1i.*dot(vn,curlSm0);
         Bsigma = {sigma./2 + ngradSsigma - m0terms};
-    else
-        Bsigma = {sigma./2 + ngradSsigma};
     end
 
 % toroidal shell case    
@@ -213,8 +213,8 @@ else
     % construct Bsigma
     if abs(zk) > eps
         % compute m0
-        m0o = TaylorState.debyem0(sigmao,zk);
-        m0i = TaylorState.debyem0(sigmai,zk);
+        m0o = TaylorState.debyem0(sigmao,zk,L{1},vno);
+        m0i = TaylorState.debyem0(sigmai,zk,L{2},vni);
         m0ovals = surfacefun_to_array(m0o,dom{1},S{1});
         m0ivals = surfacefun_to_array(m0i,dom{2},S{2});
 

@@ -27,4 +27,4 @@ h = 1e-6;
 center = [rmaj*cos(phi)+.2 rmaj*sin(phi)-.1 .5];
 
 [errB, curlB, kB] = ts.fd_test(center,h);
-disp(errB)
+fprintf('at interior pt norm(curl B - k B) = %f\n',norm(errB));

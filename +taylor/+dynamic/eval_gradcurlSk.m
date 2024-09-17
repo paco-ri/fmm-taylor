@@ -1,8 +1,10 @@
-function curlj = eval_curlS0(S,rjvec,eps,varargin)
-%EVAL_CURLS0 compute curl S0[j]
+function [gradrho, curlj] = eval_gradcurlSk(S,zk,rho,rjvec,eps,varargin)
+%EVALGRADCURLSK compute grad Sk[rho] and curl Sk[j]
 %
 %  Input arguments:
 %    * S: surfer object, see README.md in matlab for details
+%    * zk: wavenumber k for layer potential Sk
+%    * rho: layer potential density for which grad S0[rho] is computed
 %    * rjvec: layer potential density for which curl S0[rjvec] is computed
 %    * eps: precision requested
 %    * targinfo: target info (optional)
@@ -17,18 +19,13 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
 %    * opts: options struct
 %        opts.nonsmoothonly - use smooth quadrature rule for evaluating
 %           layer potential (false)
-%        opts.precomp_quadrature: precomputed quadrature corrections struct
+%        opts.precomp_quadrature: precomputed quadrature corrections struct 
 %           currently only supports quadrature corrections
-%           computed in rsc format 
+%           computed in rsc format
 % 
 
-    if(nargin < 5) 
+    if(nargin < 7) 
       opts = [];
-      if(nargin < 4)
-        targinfo = S;
-      else
-        targinfo = varargin{1};
-      end
     else
       opts = varargin{2};
     end
@@ -61,7 +58,7 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
     [npatches,~] = size(norders);
     npatp1 = npatches+1;
 
-    if(nargin < 4)
+    if(nargin < 6)
       targinfo = [];
       targinfo.r = S.r;
       targinfo.du = S.du;
@@ -70,7 +67,7 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
       patch_id  = zeros(npts,1);
       uvs_targ = zeros(2,npts);
       mex_id_ = 'get_patch_id_uvs(i int[x], i int[x], i int[x], i int[x], i int[x], io int[x], io double[xx])';
-[patch_id, uvs_targ] = gradcurlS0(mex_id_, npatches, norders, ixyzs, iptype, npts, patch_id, uvs_targ, 1, npatches, npatp1, npatches, 1, npts, 2, npts);
+[patch_id, uvs_targ] = gradcurlSk(mex_id_, npatches, norders, ixyzs, iptype, npts, patch_id, uvs_targ, 1, npatches, npatp1, npatches, 1, npts, 2, npts);
       targinfo.patch_id = patch_id;
       targinfo.uvs_targ = uvs_targ;
       opts = [];
@@ -97,7 +94,7 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
 %  if nkernel is >1
 %
 
-        [Q] = taylor.static.get_quadrature_correction(S,eps,targinfo,opts_quad);
+        [Q] = taylor.dynamic.get_quadrature_correction(S,zk,eps,targinfo,opts_quad);
       else
         opts_qcorr = [];
         opts_qcorr.type = 'double';
@@ -122,11 +119,12 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
     iquad = Q.iquad;
     wnear = Q.wnear;
 
+    gradrho = complex(zeros(3,ntarg));
     curlj = complex(zeros(3,ntarg));
 
 % Call layer potential evaluator
-    mex_id_ = 'lpcomp_curllap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i dcomplex[xx], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx])';
-[curlj] = gradcurlS0(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps, nnz, row_ptr, col_ind, iquad, nquad, wnear, rjvec, novers, nptso, ixyzso, srcover, wover, curlj, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, ntargp1, nnz, nnzp1, 1, nquad, 3, 3, npts, npatches, 1, npatp1, 12, nptso, nptso, 3, ntarg);
+    mex_id_ = 'lpcomp_gradcurlhelm_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i dcomplex[xx], i dcomplex[xx], i dcomplex[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx], io dcomplex[xx])';
+[curlj, gradrho] = gradcurlSk(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps, zk, nnz, row_ptr, col_ind, iquad, nquad, wnear, rjvec, rho, novers, nptso, ixyzso, srcover, wover, curlj, gradrho, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, 1, ntargp1, nnz, nnzp1, 1, nquad, 3, 3, npts, npts, npatches, 1, npatp1, 12, nptso, nptso, 3, ntarg, 3, ntarg);
     
 end
 

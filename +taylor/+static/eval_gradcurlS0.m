@@ -1,8 +1,9 @@
-function curlj = eval_curlS0(S,rjvec,eps,varargin)
-%EVAL_CURLS0 compute curl S0[j]
+function [gradrho, curlj] = eval_gradcurlS0(S,rho,rjvec,eps,varargin)
+%EVALGRADCURLS0 compute grad S0[rho] and curl S0[j]
 %
 %  Input arguments:
 %    * S: surfer object, see README.md in matlab for details
+%    * rho: layer potential density for which grad S0[rho] is computed
 %    * rjvec: layer potential density for which curl S0[rjvec] is computed
 %    * eps: precision requested
 %    * targinfo: target info (optional)
@@ -17,18 +18,13 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
 %    * opts: options struct
 %        opts.nonsmoothonly - use smooth quadrature rule for evaluating
 %           layer potential (false)
-%        opts.precomp_quadrature: precomputed quadrature corrections struct
+%        opts.precomp_quadrature: precomputed quadrature corrections struct 
 %           currently only supports quadrature corrections
-%           computed in rsc format 
+%           computed in rsc format
 % 
 
-    if(nargin < 5) 
+    if(nargin < 6) 
       opts = [];
-      if(nargin < 4)
-        targinfo = S;
-      else
-        targinfo = varargin{1};
-      end
     else
       opts = varargin{2};
     end
@@ -61,7 +57,7 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
     [npatches,~] = size(norders);
     npatp1 = npatches+1;
 
-    if(nargin < 4)
+    if(nargin < 5)
       targinfo = [];
       targinfo.r = S.r;
       targinfo.du = S.du;
@@ -122,11 +118,12 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
     iquad = Q.iquad;
     wnear = Q.wnear;
 
+    gradrho = complex(zeros(3,ntarg));
     curlj = complex(zeros(3,ntarg));
 
 % Call layer potential evaluator
-    mex_id_ = 'lpcomp_curllap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i dcomplex[xx], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx])';
-[curlj] = gradcurlS0(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps, nnz, row_ptr, col_ind, iquad, nquad, wnear, rjvec, novers, nptso, ixyzso, srcover, wover, curlj, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, ntargp1, nnz, nnzp1, 1, nquad, 3, 3, npts, npatches, 1, npatp1, 12, nptso, nptso, 3, ntarg);
+    mex_id_ = 'lpcomp_virtualcasing_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i dcomplex[xx], i dcomplex[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx], io dcomplex[xx])';
+[curlj, gradrho] = gradcurlS0(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps, nnz, row_ptr, col_ind, iquad, nquad, wnear, rjvec, rho, novers, nptso, ixyzso, srcover, wover, curlj, gradrho, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, ntargp1, nnz, nnzp1, 1, nquad, 3, 3, npts, npts, npatches, 1, npatp1, 12, nptso, nptso, 3, ntarg, 3, ntarg);
     
 end
 

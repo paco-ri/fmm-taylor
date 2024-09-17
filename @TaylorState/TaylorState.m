@@ -22,8 +22,9 @@ classdef TaylorState
         mH % surface harmonic vector field on surface 
         quad_opts_taylor % near quadrature correction for grad and curl Sk
         quad_opts_laphelm % near quad. corr. for Sk
+        L % surfaceop for Laplace-Beltrami operator on surf
         sigma % scalar density in integral equation solution
-        alpha % mH coefficient in integral equation solution 
+        alpha % mH coefficient in integral equation solution
         m0 % sigma-dependent part of vector density m 
         m % vector density in integral equation solution 
         eps_gmres % GMRES tolerance 
@@ -90,6 +91,15 @@ classdef TaylorState
                     'Fourth argument should be the cross-sectional ' ...
                     'flux(es). There should be as many fluxes as ' ...
                     'there are surfaces. '])
+            end
+
+            obj.L = cell(1,obj.nsurfaces);
+            pdo = [];
+            pdo.lap = 1;
+            for i = 1:obj.nsurfaces
+                obj.L{i} = surfaceop(obj.dom{i}, pdo);
+                obj.L{i}.rankdef = true;
+                obj.L{i}.build();
             end
             
             if isnumeric(tols)
@@ -242,12 +252,13 @@ classdef TaylorState
                 t1 = tic;
             end
             [D,~,~,iter] = gmres(@(s) TaylorState.gmresA(s,obj.dom, ...
-                obj.surf,obj.zk,obj.eps_taylor,obj.eps_laphelm, ...
+                obj.surf,obj.L,obj.zk,obj.eps_taylor,obj.eps_laphelm, ...
                 obj.quad_opts_taylor,obj.quad_opts_laphelm), b, [], ...
                 obj.eps_gmres, 50);
             if time
                 t2 = toc(t1);
-                fprintf('\tGMRES for A11*D = A12: %f s / %d iter. = %f s\n', ...
+                fprintf(['\t(GMRES for A11*D = A12 (part of "compute ' ...
+                    'sigma and alpha"): %f s / %d iter. = %f s\n)'], ...
                     t2, iter(2), t2/iter(2))
             end
             for i = 1:obj.nsurfaces
@@ -269,12 +280,13 @@ classdef TaylorState
             dfunc = solveforD(obj,time);
             fluxsigmaD = zeros(obj.nsurfaces);
             fluxalpha = zeros(obj.nsurfaces);
+
             for j = 1:obj.nsurfaces
                 for k = 1:obj.nsurfaces
                     % sign flip for integral on inner domain
                     % params = [obj.domparams k-1 2-j];
                     fluxsigmaD(j,k) = TaylorState.mtxfluxsigma( ...
-                        obj.surf{k},obj.dom{k}, ...
+                        obj.surf{k},obj.dom{k},obj.L{k}, ...
                         [obj.domparams 0 2-j],dfunc{k}, ...
                         obj.zk,obj.eps_taylor,obj.eps_laphelm, ...
                         obj.surf{k},obj.quad_opts_taylor{k}, ...
@@ -282,9 +294,9 @@ classdef TaylorState
                     if obj.nsurfaces == 2
                         fluxsigmaD(j,k) = fluxsigmaD(j,k) - ...
                             TaylorState.mtxfluxsigma(obj.surf{k}, ...
-                            obj.dom{k},[obj.domparams 0 2-j],dfunc{k}, ...
-                            obj.zk,obj.eps_taylor,obj.eps_laphelm, ...
-                            obj.surf{3-k});
+                            obj.dom{k},obj.L{k},[obj.domparams 0 2-j], ...
+                            dfunc{k},obj.zk,obj.eps_taylor, ...
+                            obj.eps_laphelm,obj.surf{3-k});
                     end
                     fluxalpha(j,k) = TaylorState.mtxfluxalpha( ...
                         obj.surf{k},obj.dom{k}, ...
@@ -326,36 +338,21 @@ classdef TaylorState
                 oversample = true;
                 np = varargin{2};
             end
-
-            pdo = [];
-            pdo.lap = 1;
+            
+            % deal with oversampling later 
             
             obj.m0 = cell(1,obj.nsurfaces);
+            % for j = 1:obj.nsurfaces
+            %     if oversample
+            %         obj.m0{j} = TaylorState.debyem0(obj.sigma{j},obj.zk,np);
+            %     else
+            %         obj.m0{j} = TaylorState.debyem0(obj.sigma{j},obj.zk);
+            %     end
+            % end
             for j = 1:obj.nsurfaces
-                % resample
-                n = size(obj.sigma{j}.vals{1,1},1);
-                if oversample
-                    sigma1 = resample(obj.sigma{j},n+np);
-                else
-                    sigma1 = obj.sigma{j};
-                end
-                dom1 = sigma1.domain;
-    
-                % solve lap(u) = sigma
-                L = surfaceop(dom1, pdo, sigma1);
-                L.rankdef = true;
-                u = L.solve();
-    
-                if oversample
-                    vn1 = normal(dom1).*(-1)^(j-1); % sign flip for inner
-                else
-                    vn1 = obj.vn{j};
-                end
-                obj.m0{j} = 1i.*obj.zk.*(grad(u) + 1i.*cross(vn1, grad(u)));
-    
-                if oversample
-                    obj.m0{j} = resample(obj.m0{j},n);
-                end
+                obj.m0{j} = TaylorState.debyem0(obj.sigma{j},obj.zk, ...
+                    obj.L{j},obj.vn{j});
+                    % obj.L{j},obj.vn{j});
             end
         end
 
@@ -606,11 +603,11 @@ classdef TaylorState
 
     methods (Static)
         Bsigma = mtxBsigma(S,dom,sigma,zk,epstaylor,epslh,varargin)
-        A = gmresA(s,dom,S,zk,epstaylor,epslh,opts,optslh)
+        A = gmresA(s,dom,S,L,zk,epstaylor,epslh,opts,optslh)
         Balpha = mtxBalpha(S,dom,mH,zk,epstaylor,epslh,varargin)
-        fluxsigma = mtxfluxsigma(S,dom,domparams,sigma,zk,epstaylor,epslh,varargin)
+        fluxsigma = mtxfluxsigma(S,dom,L,domparams,sigma,zk,epstaylor,epslh,varargin)
         fluxalpha = mtxfluxalpha(S,dom,domparams,mH,zk,epstaylor,epslh,varargin)
-        m0 = debyem0(sigma,lambda,varargin)
+        m0 = debyem0(sigma,lambda,L,vn)
         integrala = intacyc(f,n,nv)
         integralb = intbcyc(f,n,nu)
         [u, v, w, curlfree, divfree] = hodge_inward(f)

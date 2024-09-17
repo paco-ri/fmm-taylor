@@ -1,7 +1,7 @@
-function A = gmresA(s,dom,S,zk,epstaylor,epslh,opts,optslh)
+function A = gmresA(s,dom,S,L,zk,epstaylor,epslh,opts,optslh)
 
 % cell arrays: S, dom, opts, optslh
-Bsigma = TaylorState.mtxBsigma(S,dom,s,zk,epstaylor, ...
+Bsigma = TaylorState.mtxBsigma(S,dom,L,s,zk,epstaylor, ...
     epslh,S,opts,optslh);
 
 if length(dom) == 1

@@ -1,4 +1,4 @@
-function fluxsigma = mtxfluxsigma(S,dom,domparams,sigma,zk,epstaylor,epslh,varargin)
+function fluxsigma = mtxfluxsigma(S,dom,L,domparams,sigma,zk,epstaylor,epslh,varargin)
 %MTXFLUXSIGMA compute sigma-dep. terms of flux condition
 % 
 %   Required arguments:
@@ -48,13 +48,14 @@ nv = domparams(3);
 io = domparams(4);
 aint = domparams(5);
 dpars = [1.0, 0.0];
-if nargin < 8
+nreqarg = 8;
+if nargin < nreqarg + 1
     targinfo = S;
 else
     targinfo = varargin{1};
 end
 
-if nargin < 9
+if nargin < nreqarg + 2
     if abs(zk) < eps
         Q = taylor.static.get_quadrature_correction(S,epstaylor,targinfo);
     else
@@ -68,7 +69,7 @@ else
     opts = varargin{2};
 end
 
-if nargin < 10
+if nargin < nreqarg + 3
     if abs(zk) < eps
         Qlh = lap3d.dirichlet.get_quadrature_correction(S, ...
             epslh,dpars,targinfo,opts);
@@ -120,7 +121,7 @@ if abs(zk) < eps
         fluxsigma = -TaylorState.intbcyc(S0nx,n,nu);
     end
 else
-    m0 = TaylorState.debyem0(sigma,zk);
+    m0 = TaylorState.debyem0(sigma,zk,L,vn);
     m0vals = surfacefun_to_array(m0,dom,S);
 
     % S_k[m_0]
