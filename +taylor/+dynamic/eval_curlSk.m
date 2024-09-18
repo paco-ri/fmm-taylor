@@ -50,7 +50,7 @@ function curlj = eval_curlSk(S,zk,rjvec,eps,varargin)
         fprintf('Invalid precomputed quadrature format\n');
         fprintf('Ignoring quadrature corrections\n');
         opts_qcorr = [];
-        opts_qcorr.type = 'double';
+        opts_qcorr.type = 'complex';
         Q = init_empty_quadrature_correction(targinfo,opts_qcorr);
       end
     end
@@ -101,7 +101,7 @@ function curlj = eval_curlSk(S,zk,rjvec,eps,varargin)
         [Q] = taylor.dynamic.get_quadrature_correction(S,zk,eps,targinfo,opts_quad);
       else
         opts_qcorr = [];
-        opts_qcorr.type = 'double';
+        opts_qcorr.type = 'complex';
         Q = init_empty_quadrature_correction(targinfo,opts_qcorr);
       end
     end

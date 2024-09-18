@@ -92,20 +92,20 @@ if length(dom) == 1
         m0 = TaylorState.debyem0(sigma,zk,L{1},vn);
         m0vals = surfacefun_to_array(m0,dom{1},S{1});
 
-        % compute n . Sk[m0]
-        % Sm0 = complex(zeros(size(m0vals)));
-        % for j=1:3
-        %     Sm0(:,j) = helm3d.dirichlet.eval(S{1},m0vals(:,j),targinfo, ...
-        %         epslh,zk,[1.0 0],optslh);
-        % end
-        % Sm0 = array_to_surfacefun(Sm0,dom{1},S{1});
-        Sm0 = helper.helm_dir_vec_eval(S{1},m0vals.',targinfo,epslh,zk, ...
-            dpars,optslh);
-        Sm0 = array_to_surfacefun(Sm0.',dom{1},S{1});
-
-        % compute n . grad Sk[sigma] and n . curl Sk[m0]
-        [gradSsigma, curlSm0] = taylor.dynamic.eval_gradcurlSk(S{1},zk, ...
-            sigmavals,m0vals.',epstaylor,targinfo,opts);
+        % % compute n . Sk[m0]
+        % Sm0 = taylor.helper.helm_dir_vec_eval(S{1},m0vals.',targinfo, ...
+        %     epslh,zk,dpars,optslh);
+        % Sm0 = array_to_surfacefun(Sm0.',dom{1},S{1});
+        % 
+        % % compute n . grad Sk[sigma] and n . curl Sk[m0]
+        % [gradSsigma, curlSm0] = taylor.dynamic.eval_gradcurlSk(S{1},zk, ...
+        %     sigmavals,m0vals.',epstaylor,targinfo,opts);
+        % gradSsigma = array_to_surfacefun(gradSsigma.',dom{1},S{1}); 
+        % ngradSsigma = dot(vn,gradSsigma);
+        % curlSm0 = array_to_surfacefun(curlSm0.',dom{1},S{1});
+        [Sm0, gradSsigma, curlSm0] = taylor.helper.mtxBsigma_eval(S{1}, ...
+            m0vals.',sigmavals,m0vals.',targinfo,[epstaylor,epslh],zk, ...
+            dpars,opts,optslh);
         gradSsigma = array_to_surfacefun(gradSsigma.',dom{1},S{1}); 
         ngradSsigma = dot(vn,gradSsigma);
         curlSm0 = array_to_surfacefun(curlSm0.',dom{1},S{1});

@@ -87,14 +87,8 @@ if length(dom) == 1
         curlSmH = array_to_surfacefun(curlSmH.',dom{1},S{1});
     
         % compute Sk[mH]
-        % SmH = complex(zeros(size(mHvals)));
-        % for j=1:3
-        %     SmH(j,:) = helm3d.dirichlet.eval(S{1},mHvals(j,:),targinfo, ...
-        %         epslh,zk,dpars,optslh);
-        % end
-        % SmH = array_to_surfacefun(SmH.',dom{1},S{1});
-        SmH = helper.helm_dir_vec_eval(S{1},mHvals,targinfo,epslh,zk, ...
-            dpars,optslh);
+        SmH = taylor.helper.helm_dir_vec_eval(S{1},mHvals,targinfo, ...
+            epslh,zk,dpars,optslh);
         SmH = array_to_surfacefun(SmH.',dom{1},S{1});
     
         Balpha = {dot(vn,zk.*SmH + curlSmH)};
