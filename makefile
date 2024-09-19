@@ -22,5 +22,5 @@ matlab:
 	mkdir -p +taylor/+helper/
 	$(MWRAP_INSTALL) -c99complex -list -mex helper -mb helper.mw
 	$(MWRAP_INSTALL) -c99complex -mex helper -c helper.c helper.mw
-	mex helper.c $(FMM3DBIE_STATIC_INSTALL) $(HELPER) $(MAGNETODYNAMICS) -compatibleArrayDims -DMWF77_UNDERSCORE1 "CFLAGS=-std=gnu17 -Wno-implicit-function-declaration -fPIC" -output helper -lm -lstdc++ -ldl -lgfortran -lgomp -lmwblas -lmwlapack
+	mex -v helper.c $(FMM3DBIE_STATIC_INSTALL) $(HELPER) $(MAGNETODYNAMICS) -compatibleArrayDims -DMWF77_UNDERSCORE1 "CFLAGS=-std=gnu17 -Wno-implicit-function-declaration -fPIC" -output helper -lm -lstdc++ -ldl -lgfortran -lgomp -lmwblas -lmwlapack
 

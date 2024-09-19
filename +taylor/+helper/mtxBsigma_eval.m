@@ -55,9 +55,9 @@ function [p, gradrho, curlj] = mtxBsigma_eval(S,sigma,rho,rjvec,targinfo,eps,zk,
     end
 
     if(nargin < 10)
-      optslh = [];
+      optshelm = [];
     else
-      optslh = varargin{2};
+      optshelm = varargin{2};
     end
 
     nonsmoothonly = false;
@@ -65,9 +65,9 @@ function [p, gradrho, curlj] = mtxBsigma_eval(S,sigma,rho,rjvec,targinfo,eps,zk,
       nonsmoothonly = opts.nonsmoothonly;
     end
 
-    nonsmoothonlylh = false;
-    if(isfield(optslh,'nonsmoothonly'))
-      nonsmoothonlylh = optslh.nonsmoothonly;
+    nonsmoothonlyhelm = false;
+    if(isfield(optshelm,'nonsmoothonly'))
+      nonsmoothonlyhelm = optshelm.nonsmoothonly;
     end
 
     isprecompq = false;
@@ -76,10 +76,10 @@ function [p, gradrho, curlj] = mtxBsigma_eval(S,sigma,rho,rjvec,targinfo,eps,zk,
       Q = opts.precomp_quadrature;
     end
 
-    isprecompqlh = false;
-    if isfield(optslh, 'precomp_quadrature')
-      isprecompqlh = true;
-      Qlh = optslh.precomp_quadrature; 
+    isprecompqhelm = false;
+    if isfield(optshelm, 'precomp_quadrature')
+      isprecompqhelm = true;
+      Qhelm = optshelm.precomp_quadrature; 
     end
     
     if(isprecompq)
@@ -92,13 +92,13 @@ function [p, gradrho, curlj] = mtxBsigma_eval(S,sigma,rho,rjvec,targinfo,eps,zk,
       end
     end
 
-    if(isprecompqlh)
-      if ~(strcmpi(Qlh.format,'rsc'))
+    if(isprecompqhelm)
+      if ~(strcmpi(Qhelm.format,'rsc'))
         fprintf('Invalid precomputed quadrature format\n');
         fprintf('Ignoring quadrature corrections\n');
         opts_qcorr = [];
         opts_qcorr.type = 'complex';
-        Qlh = init_empty_quadrature_correction(targinfo,opts_qcorr);
+        Qhelm = init_empty_quadrature_correction(targinfo,opts_qcorr);
       end
     end
 
@@ -137,37 +137,37 @@ function [p, gradrho, curlj] = mtxBsigma_eval(S,sigma,rho,rjvec,targinfo,eps,zk,
       end
     end
 
-    if ~isprecompqlh
-      if ~nonsmoothonlylh
+    if ~isprecompqhelm
+      if ~nonsmoothonlyhelm
         opts_quad = [];
         opts_quad.format = 'rsc';
-        [Qlh] = helm3d.dirichlet.get_quadrature_correction(S,eps(2),zk,rep_pars,targinfo,opts_quad);
+        [Qhelm] = helm3d.dirichlet.get_quadrature_correction(S,eps(2),zk,rep_pars,targinfo,opts_quad);
       else
         opts_qcorr = [];
         opts_qcorr.type = 'complex';
-        Qlh = init_empty_quadrature_correction(targinfo,opts_qcorr);
+        Qhelm = init_empty_quadrature_correction(targinfo,opts_qcorr);
       end
     end
 
     nquad = Q.iquad(end)-1;
-    nquadlh = Qlh.iquad(end)-1;
+    nquadhelm = Qhelm.iquad(end)-1;
     nnz = length(Q.col_ind);
-    nnzlh = length(Qlh.col_ind);
+    nnzhelm = length(Qhelm.col_ind);
     nnzp1 = nnz+1;
-    nnzlhp1 = nnzlh+1; 
+    nnzhelmp1 = nnzhelm+1; 
 
     [novers] = get_oversampling_parameters(S,Q,eps(1));
-    [noverslh] = get_oversampling_parameters(S,Qlh,eps(2));
+    [novershelm] = get_oversampling_parameters(S,Qhelm,eps(2));
     Sover = oversample(S,novers);
-    Soverlh = oversample(S,noverslh);
+    Soverhelm = oversample(S,novershelm);
 
 
 % Extract oversampled arrays
 
     [srcover,~,~,ixyzso,~,wover] = extract_arrays(Sover);
-    [srcoverlh,~,~,ixyzsolh,~,woverlh] = extract_arrays(Soverlh);
+    [srcoverhelm,~,~,ixyzsohelm,~,woverhelm] = extract_arrays(Soverhelm);
     nptso = Sover.npts;
-    nptsolh = Soverlh.npts; 
+    nptsohelm = Soverhelm.npts; 
 
 % Extract quadrature arrays
     row_ptr = Q.row_ptr;
@@ -175,10 +175,10 @@ function [p, gradrho, curlj] = mtxBsigma_eval(S,sigma,rho,rjvec,targinfo,eps,zk,
     iquad = Q.iquad;
     wnear = Q.wnear;
 
-    row_ptr_lh = Qlh.row_ptr;
-    col_ind_lh = Qlh.col_ind;
-    iquadlh = Qlh.iquad;
-    wnearlh = Qlh.wnear;
+    row_ptr_helm = Qhelm.row_ptr;
+    col_ind_helm = Qhelm.col_ind;
+    iquadhelm = Qhelm.iquad;
+    wnearhelm = Qhelm.wnear;
 
     ndim = size(sigma,1);
     p = complex(zeros(ndim,ntarg));
@@ -201,8 +201,12 @@ function [p, gradrho, curlj] = mtxBsigma_eval(S,sigma,rho,rjvec,targinfo,eps,zk,
     idensflag = 0;
     ipotflag = 0;
     ndim_p = 1;
+    eps_helm = eps(2);
+    eps_gc = eps(1);
 % Call the layer potential evaluator
-    mex_id_ = 'mtxbsigma_eval_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i double[x], i int[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i dcomplex[xx], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i double[x], i double[x], i int[x], i double[x], i int[x], i int[x], i dcomplex[xx], i int[x], i int[x], i dcomplex[xx], i dcomplex[x], io dcomplex[xx], io dcomplex[xx], io dcomplex[xx])';
-[p, curlj, gradrho] = helper(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps, ndd, dpars, ndz, zpars, ndi, ipars, nnz, nnzlh, row_ptr, row_ptr_lh, col_ind, col_ind_lh, iquad, iquadlh, nquad, nquadlh, nker, wnear, wnearlh, novers, noverslh, nptso, nptsolh, ixyzso, ixyzsolh, srcover, srcoverlh, wover, woverlh, lwork, work, idensflag, ndim, sigma, ipotflag, ndim_p, rjvec, rho, p, curlj, gradrho, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 2, 1, ndd, 1, ndz, 1, ndi, 1, 1, ntargp1, ntargp1, nnz, nnzlh, nnzp1, nnzlhp1, 1, 1, 1, nquad, 3, nquadlh, npatches, npatches, 1, 1, npatp1, npatp1, 12, nptso, 12, nptsolh, nptso, nptsolh, 1, lwork, 1, 1, ndim, npts, 1, 1, 3, npts, npts, ndim, ntarg, 3, ntarg, 3, ntarg);
+    mex_id_ = 'lpcomp_gradcurlhelm_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i dcomplex[xx], i dcomplex[xx], i dcomplex[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx], io dcomplex[xx])';
+[curlj, gradrho] = helper(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps_gc, zk, nnz, row_ptr, col_ind, iquad, nquad, wnear, rjvec, rho, novers, nptso, ixyzso, srcover, wover, curlj, gradrho, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, 1, ntargp1, nnz, nnzp1, 1, nquad, 3, 3, npts, npts, npatches, 1, npatp1, 12, nptso, nptso, 3, ntarg, 3, ntarg);
+    mex_id_ = 'helm_comb_dir_eval_addsub_vec(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i double[x], i int[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i dcomplex[x], i int[x], i int[x], i int[x], i double[xx], i double[x], i int[x], i double[x], i int[x], i int[x], i dcomplex[xx], i int[x], i int[x], io dcomplex[xx])';
+[p] = helper(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps_helm, ndd, dpars, ndz, zpars, ndi, ipars, nnzhelm, row_ptr_helm, col_ind_helm, iquadhelm, nquadhelm, nker, wnearhelm, novershelm, nptsohelm, ixyzsohelm, srcoverhelm, woverhelm, lwork, work, idensflag, ndim, sigma, ipotflag, ndim_p, p, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, ndd, 1, ndz, 1, ndi, 1, ntargp1, nnzhelm, nnzhelmp1, 1, 1, nquadhelm, npatches, 1, npatp1, 12, nptsohelm, nptsohelm, 1, lwork, 1, 1, ndim, npts, 1, 1, ndim, ntarg);
 end
 
