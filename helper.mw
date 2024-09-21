@@ -350,10 +350,16 @@ function [p, gradrho, curlj] = mtxBsigma_eval(S,sigma,rho,rjvec,targinfo,eps,zk,
     idensflag = 0;
     ipotflag = 0;
     ndim_p = 1;
-    eps_helm = eps(2);
-    eps_gc = eps(1);
-% Call the layer potential evaluator
-    # FORTRAN lpcomp_gradcurlhelm_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps_gc, dcomplex[1] zk, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, dcomplex[nquad,3] wnear, dcomplex[3,npts] rjvec, dcomplex[npts] rho, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout dcomplex[3,ntarg] curlj, inout dcomplex[3,ntarg] gradrho);
+    n2 = 2;
+    n3 = 3;
+    eps_helm = eps(1);
+    eps_gc = eps(2); 
+    % Call the layer potential evaluator
     # FORTRAN helm_comb_dir_eval_addsub_vec(int[1] npatches,int[npatches] norders, int[npatp1] ixyzs,int[npatches] iptype, int[1] npts,double[n9,npts] srccoefs,double[n12,npts] srcvals,int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps_helm,int[1] ndd, double[ndd] dpars, int[1] ndz, dcomplex[ndz] zpars, int[1] ndi, int[ndi] ipars, int[1] nnzhelm, int[ntargp1] row_ptr_helm, int[nnzhelm] col_ind_helm, int[nnzhelmp1] iquadhelm, int[1] nquadhelm,int[1] nker,dcomplex[nquadhelm] wnearhelm,  int[npatches] novershelm, int[1] nptsohelm, int[npatp1] ixyzsohelm,double[12,nptsohelm] srcoverhelm, double[nptsohelm] woverhelm, int[1] lwork, double[lwork] work, int[1] idensflag, int[1] ndim, dcomplex[ndim,npts] sigma, int[1] ipotflag, int[1] ndim_p, inout dcomplex[ndim,ntarg] p);   
-end
+
+    # FORTRAN lpcomp_gradcurlhelm_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps_gc, dcomplex[1] zk, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, dcomplex[nquad,3] wnear, dcomplex[3,npts] rjvec, dcomplex[npts] rho, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout dcomplex[3,ntarg] curlj, inout dcomplex[3,ntarg] gradrho);
+
+    %     # FORTRAN mtxbsigma_eval_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[n2] eps, int[1] ndd, double[ndd] dpars, int[1] ndz, dcomplex[ndz] zpars, int[1] ndi, int[ndi] ipars, int[1] nnz, int[1] nnzhelm, int[ntargp1] row_ptr, int[ntargp1] row_ptr_helm, int[nnz] col_ind, int[nnzhelm] col_ind_helm, int[nnzp1] iquad, int[nnzhelmp1] iquadhelm, int[1] nquad, int[1] nquadhelm, int[1] nker, dcomplex[nquad,3] wnear, dcomplex[nquadhelm] wnearhelm, int[npatp1] novers, int[npatp1] novershelm, int[1] nptso, int[1] nptsohelm, int[npatp1] ixyzso, int[npatp1] ixyzsohelm, double[n12,nptso] srcover, double[n12,nptsohelm] srcoverhelm, double[nptso] wover, double[nptsohelm] woverhelm, int[1] lwork, double[lwork] work, int[1] idensflag, int[1] ndim, dcomplex[ndim,npts] sigma, int[1] ipotflag, int[1] ndim_p, dcomplex[n3,npts] rjvec, dcomplex[npts] rho, inout dcomplex[ndim,ntarg] p, inout dcomplex[n3,ntarg] curlj, inout dcomplex[n3,ntarg] gradrho); 
+    
+    end
 

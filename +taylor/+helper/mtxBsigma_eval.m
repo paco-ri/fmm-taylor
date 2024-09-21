@@ -201,12 +201,18 @@ function [p, gradrho, curlj] = mtxBsigma_eval(S,sigma,rho,rjvec,targinfo,eps,zk,
     idensflag = 0;
     ipotflag = 0;
     ndim_p = 1;
-    eps_helm = eps(2);
-    eps_gc = eps(1);
-% Call the layer potential evaluator
-    mex_id_ = 'lpcomp_gradcurlhelm_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i dcomplex[xx], i dcomplex[xx], i dcomplex[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx], io dcomplex[xx])';
-[curlj, gradrho] = helper(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps_gc, zk, nnz, row_ptr, col_ind, iquad, nquad, wnear, rjvec, rho, novers, nptso, ixyzso, srcover, wover, curlj, gradrho, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, 1, ntargp1, nnz, nnzp1, 1, nquad, 3, 3, npts, npts, npatches, 1, npatp1, 12, nptso, nptso, 3, ntarg, 3, ntarg);
+    n2 = 2;
+    n3 = 3;
+    eps_helm = eps(1);
+    eps_gc = eps(2); 
+    % Call the layer potential evaluator
     mex_id_ = 'helm_comb_dir_eval_addsub_vec(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i double[x], i int[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i dcomplex[x], i int[x], i int[x], i int[x], i double[xx], i double[x], i int[x], i double[x], i int[x], i int[x], i dcomplex[xx], i int[x], i int[x], io dcomplex[xx])';
 [p] = helper(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps_helm, ndd, dpars, ndz, zpars, ndi, ipars, nnzhelm, row_ptr_helm, col_ind_helm, iquadhelm, nquadhelm, nker, wnearhelm, novershelm, nptsohelm, ixyzsohelm, srcoverhelm, woverhelm, lwork, work, idensflag, ndim, sigma, ipotflag, ndim_p, p, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, ndd, 1, ndz, 1, ndi, 1, ntargp1, nnzhelm, nnzhelmp1, 1, 1, nquadhelm, npatches, 1, npatp1, 12, nptsohelm, nptsohelm, 1, lwork, 1, 1, ndim, npts, 1, 1, ndim, ntarg);
-end
+
+    mex_id_ = 'lpcomp_gradcurlhelm_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i dcomplex[xx], i dcomplex[xx], i dcomplex[x], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx], io dcomplex[xx])';
+[curlj, gradrho] = helper(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps_gc, zk, nnz, row_ptr, col_ind, iquad, nquad, wnear, rjvec, rho, novers, nptso, ixyzso, srcover, wover, curlj, gradrho, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, 1, ntargp1, nnz, nnzp1, 1, nquad, 3, 3, npts, npts, npatches, 1, npatp1, 12, nptso, nptso, 3, ntarg, 3, ntarg);
+
+    %     # FORTRAN mtxbsigma_eval_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[n2] eps, int[1] ndd, double[ndd] dpars, int[1] ndz, dcomplex[ndz] zpars, int[1] ndi, int[ndi] ipars, int[1] nnz, int[1] nnzhelm, int[ntargp1] row_ptr, int[ntargp1] row_ptr_helm, int[nnz] col_ind, int[nnzhelm] col_ind_helm, int[nnzp1] iquad, int[nnzhelmp1] iquadhelm, int[1] nquad, int[1] nquadhelm, int[1] nker, dcomplex[nquad,3] wnear, dcomplex[nquadhelm] wnearhelm, int[npatp1] novers, int[npatp1] novershelm, int[1] nptso, int[1] nptsohelm, int[npatp1] ixyzso, int[npatp1] ixyzsohelm, double[n12,nptso] srcover, double[n12,nptsohelm] srcoverhelm, double[nptso] wover, double[nptsohelm] woverhelm, int[1] lwork, double[lwork] work, int[1] idensflag, int[1] ndim, dcomplex[ndim,npts] sigma, int[1] ipotflag, int[1] ndim_p, dcomplex[n3,npts] rjvec, dcomplex[npts] rho, inout dcomplex[ndim,ntarg] p, inout dcomplex[n3,ntarg] curlj, inout dcomplex[n3,ntarg] gradrho); 
+    
+    end
 
