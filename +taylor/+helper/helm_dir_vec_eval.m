@@ -73,8 +73,8 @@ function p = helm_dir_vec_eval(S,sigma,targinfo,eps,zk,rep_pars,varargin)
     [srcvals,srccoefs,norders,ixyzs,iptype,wts] = extract_arrays(S);
     [n12,npts] = size(srcvals);
     [n9,~] = size(srccoefs);
-    [npatches,~] = size(norders);
-    npatp1 = npatches+1;
+    [npat,~] = size(norders);
+    npatp1 = npat+1;
 
     ff = 'rsc';
 
@@ -142,7 +142,7 @@ function p = helm_dir_vec_eval(S,sigma,targinfo,eps,zk,rep_pars,varargin)
     ndim_p = 1;
 % Call the layer potential evaluator
     mex_id_ = 'helm_comb_dir_eval_addsub_vec(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i double[x], i int[x], i dcomplex[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i int[x], i dcomplex[x], i int[x], i int[x], i int[x], i double[xx], i double[x], i int[x], i double[x], i int[x], i int[x], i dcomplex[xx], i int[x], i int[x], io dcomplex[xx])';
-[p] = helper(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps, ndd, dpars, ndz, zpars, ndi, ipars, nnz, row_ptr, col_ind, iquad, nquad, nker, wnear, novers, nptso, ixyzso, srcover, wover, lwork, work, idensflag, ndim, sigma, ipotflag, ndim_p, p, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, ndd, 1, ndz, 1, ndi, 1, ntargp1, nnz, nnzp1, 1, 1, nquad, npatches, 1, npatp1, 12, nptso, nptso, 1, lwork, 1, 1, ndim, npts, 1, 1, ndim, ntarg);
+[p] = helper(mex_id_, npat, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps, ndd, dpars, ndz, zpars, ndi, ipars, nnz, row_ptr, col_ind, iquad, nquad, nker, wnear, novers, nptso, ixyzso, srcover, wover, lwork, work, idensflag, ndim, sigma, ipotflag, ndim_p, p, 1, npat, npatp1, npat, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, ndd, 1, ndz, 1, ndi, 1, ntargp1, nnz, nnzp1, 1, 1, nquad, npat, 1, npatp1, 12, nptso, nptso, 1, lwork, 1, 1, ndim, npts, 1, 1, ndim, ntarg);
 end
 
 

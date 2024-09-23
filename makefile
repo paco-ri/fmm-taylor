@@ -1,14 +1,14 @@
-# MWRAP_INSTALL = ${HOME}/mwrap/mwrap
-# FMM3DBIE_STATIC_INSTALL = ${HOME}/fmm3dbie/lib-static/libfmm3dbie_matlab.a
-# MAGNETOSTATICS = ${HOME}/fmm_taylor/virtual-casing-helmholtz/src/magneto-static-routs.o
-# MAGNETODYNAMICS = ${HOME}/fmm_taylor/virtual-casing-helmholtz/src/magneto-dynamic-routs.o
-# HELPER = ${HOME}/fmm_taylor/virtual-casing-helmholtz/src/fmm-helper-routs.o
+MWRAP_INSTALL = ${HOME}/mwrap/mwrap
+FMM3DBIE_STATIC_INSTALL = ${HOME}/fmm3dbie/lib-static/libfmm3dbie_matlab.a
+MAGNETOSTATICS = ${HOME}/fmm_taylor/virtual-casing-helmholtz/src/magneto-static-routs.o
+MAGNETODYNAMICS = ${HOME}/fmm_taylor/virtual-casing-helmholtz/src/magneto-dynamic-routs.o
+HELPER = ${HOME}/fmm_taylor/virtual-casing-helmholtz/src/fmm-helper-routs.o
 
-MWRAP_INSTALL = ${HOME}/Documents/fmm_taylor/mwrap/mwrap
-FMM3DBIE_STATIC_INSTALL = ${HOME}/Documents/fmm_taylor/fmm3dbie/lib-static/libfmm3dbie_matlab.a
-MAGNETOSTATICS = ${HOME}/Documents/fmm_taylor/virtual-casing/src/magneto-static-routs.o
-MAGNETODYNAMICS = ${HOME}/Documents/fmm_taylor/virtual-casing/src/magneto-dynamic-routs.o
-HELPER = ${HOME}/Documents/fmm_taylor/virtual-casing/src/fmm-helper-routs.o
+# MWRAP_INSTALL = ${HOME}/Documents/fmm_taylor/mwrap/mwrap
+# FMM3DBIE_STATIC_INSTALL = ${HOME}/Documents/fmm_taylor/fmm3dbie/lib-static/libfmm3dbie_matlab.a
+# MAGNETOSTATICS = ${HOME}/Documents/fmm_taylor/virtual-casing/src/magneto-static-routs.o
+# MAGNETODYNAMICS = ${HOME}/Documents/fmm_taylor/virtual-casing/src/magneto-dynamic-routs.o
+# HELPER = ${HOME}/Documents/fmm_taylor/virtual-casing/src/fmm-helper-routs.o
 
 matlab:
 	mkdir -p +taylor/+static/
