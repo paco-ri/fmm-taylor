@@ -3,7 +3,8 @@ function fluxsigma = mtxfluxsigma(S,dom,L,domparams,sigma,zk,epstaylor,epslh,var
 % 
 %   Required arguments:
 %     * S: surfer object (see fmm3dbie/matlab README for details)
-%     * dom: surfacemesh version of S (see surfacehps for details)
+%     * dom: surfacemesh version of S (see surfacefun for details)
+%     * L: surfaceop on S (see surfacefun for details)
 %     * domparams: parameters describing dom and circulation [n, nu, nv, io, aint]
 %         n: [int] polynomial order on each surface patch
 %         nu: [int] number of patches in toroidal direction

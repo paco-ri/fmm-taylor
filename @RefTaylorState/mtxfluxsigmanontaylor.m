@@ -1,11 +1,12 @@
-function fluxsigma = mtxfluxsigmanontaylor(S,dom,params,nodes, ...
+function fluxsigma = mtxfluxsigmanontaylor(S,dom,L,params,nodes, ...
     weights,sigma,zk,epstaylor,epslh,varargin)
 %MTXFLUXSIGMANONTAYLOR compute sigma-dep. terms of flux condition for
 %                      a non-Taylor-state magnetic field
 % 
 %   Required arguments:
 %     * S: surfer object (see fmm3dbie/matlab README for details)
-%     * dom: surfacemesh version of S (see surfacehps for details)
+%     * dom: surfacemesh version of S (see surfacefun for details)
+%     * L: surfaceop on S (see surfacefun for details)
 %     * params: parameters describing cross-sectional surface [pol]
 %         pol: [int] set to 1 if computing poloidal flux
 %     * nodes: [double(3,*)] quadrature nodes for computing flux 
@@ -79,7 +80,8 @@ if abs(zk) < eps
 else
     gradSsigma = taylor.dynamic.eval_gradSk(S,zk,sigmavals,epstaylor, ...
         targinfo,opts);
-    m0 = TaylorState.debyem0(sigma,zk);
+    vn = normal(dom);
+    m0 = TaylorState.debyem0(sigma,zk,L,vn);
     m0vals = surfacefun_to_array(m0,dom,S);
     m0vals = m0vals.';
     curlSm0 = taylor.dynamic.eval_curlSk(S,zk,m0vals,epstaylor, ...

@@ -16,6 +16,7 @@ classdef TaylorState
         dom % surface as a surfacefun.surfacemesh
         surf % surface as an fmm3dbie.surfer
         domparams % parameters describing surface
+        nptspersurf % number of points on each surface
         zk % Beltrami parameter 
         flux % cross-sectional flux
         vn % outward unit normal vector on surface 
@@ -74,6 +75,9 @@ classdef TaylorState
                     'Second argument should be an array of three ' ...
                     'integers.'])
             end
+
+            obj.nptspersurf = obj.domparams(1)^2*obj.domparams(2)...
+                *obj.domparams(3);
 
             if isnumeric(zk)
                 obj.zk = complex(zk);
@@ -229,16 +233,7 @@ classdef TaylorState
             end
             
             dfunc = cell(1,obj.nsurfaces);
-            nptspersurf = obj.domparams(1)^2*obj.domparams(2)*obj.domparams(3);
-            b = zeros(nptspersurf,obj.nsurfaces);
-            % for i = 1:obj.nsurfaces
-            %     Balpha = TaylorState.mtxBalpha(obj.surf{i},obj.dom{i}, ...
-            %         i-1,obj.mH{i},obj.zk,obj.eps_taylor, ...
-            %         obj.eps_laphelm,obj.surf{i}, ...
-            %         obj.quad_opts_taylor{i},obj.quad_opts_laphelm{i});
-            %     b(:,i) = surfacefun_to_array(Balpha,obj.dom{i}, ...
-            %         obj.surf{i});
-            % end
+            b = zeros(obj.nptspersurf,obj.nsurfaces);
             Balpha = TaylorState.mtxBalpha(obj.surf,obj.dom, ...
                 obj.mH,obj.zk,obj.eps_taylor, ...
                 obj.eps_laphelm,obj.surf, ...
@@ -247,7 +242,7 @@ classdef TaylorState
                 b(:,i) = surfacefun_to_array(Balpha{i},obj.dom{i}, ...
                     obj.surf{i});
             end
-            b = reshape(b,nptspersurf*obj.nsurfaces,1);
+            b = reshape(b,obj.nptspersurf*obj.nsurfaces,1);
             if time
                 t1 = tic;
             end
@@ -262,8 +257,9 @@ classdef TaylorState
                     t2, iter(2), t2/iter(2))
             end
             for i = 1:obj.nsurfaces
-                dfunc{i} = array_to_surfacefun(D(1:nptspersurf), ...
-                    obj.dom{i},obj.surf{i});
+                inds = obj.nptspersurf*(i-1)+1:obj.nptspersurf*i;
+                dfunc{i} = array_to_surfacefun(D(inds),obj.dom{i}, ...
+                    obj.surf{i});
             end
         end
 
@@ -319,6 +315,7 @@ classdef TaylorState
                 obj.sigma{1} = 1i*obj.alpha.*dfunc{1};
             else
                 A = 1i*fluxsigmaD + fluxalpha;
+                disp('injected A!!!!')
                 % injection 30/08/24
                 A = 1i.*[-1.9138 0; 0 1.6378*1i];
                 obj.alpha = A\obj.flux.';

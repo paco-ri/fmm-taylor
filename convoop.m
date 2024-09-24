@@ -39,6 +39,9 @@ for n = ns
             flux = flux + B0eval(2)*qweights(i);
         end
         
+        B0 = {B0};
+        qnodes = {qnodes};
+        qweights = {qweights};
         ts = RefTaylorState(dom,domparams,zk,flux,B0,qnodes,qweights,tol);
         ts = ts.solve(true);
         B = ts.surface_B();
@@ -46,7 +49,7 @@ for n = ns
         lerr(1,lind) = n; % number of points on each patch
         lerr(2,lind) = nv; % geom. param. 
         lerr(3,lind) = nu; % geom. param. 
-        lerr(4,lind) = vecinfnorm(B0-B)/vecinfnorm(B0); 
+        lerr(4,lind) = vecinfnorm(B0{1}-B{1})/vecinfnorm(B0{1}); 
 
         lind = lind + 1;
     end
