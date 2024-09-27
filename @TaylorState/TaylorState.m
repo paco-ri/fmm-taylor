@@ -277,10 +277,13 @@ classdef TaylorState
             fluxsigmaD = zeros(obj.nsurfaces);
             fluxalpha = zeros(obj.nsurfaces);
 
+            % j: A- or B-cycle
+            % k: outer or inner surface
             for j = 1:obj.nsurfaces
                 for k = 1:obj.nsurfaces
                     % sign flip for integral on inner domain
                     % params = [obj.domparams k-1 2-j];
+                    %        = [n nv nu io aint]
                     fluxsigmaD(j,k) = TaylorState.mtxfluxsigma( ...
                         obj.surf{k},obj.dom{k},obj.L{k}, ...
                         [obj.domparams 0 2-j],dfunc{k}, ...
@@ -290,7 +293,7 @@ classdef TaylorState
                     if obj.nsurfaces == 2
                         fluxsigmaD(j,k) = fluxsigmaD(j,k) - ...
                             TaylorState.mtxfluxsigma(obj.surf{k}, ...
-                            obj.dom{k},obj.L{k},[obj.domparams 0 2-j], ...
+                            obj.dom{k},obj.L{k},[obj.domparams 1 2-j], ...
                             dfunc{k},obj.zk,obj.eps_taylor, ...
                             obj.eps_laphelm,obj.surf{3-k});
                     end
@@ -315,9 +318,6 @@ classdef TaylorState
                 obj.sigma{1} = 1i*obj.alpha.*dfunc{1};
             else
                 A = 1i*fluxsigmaD + fluxalpha;
-                disp('injected A!!!!')
-                % injection 30/08/24
-                A = 1i.*[-1.9138 0; 0 1.6378*1i];
                 obj.alpha = A\obj.flux.';
                 obj.sigma = cell(1,2);
                 obj.sigma{1} = 1i*obj.alpha(1).*dfunc{1}; 

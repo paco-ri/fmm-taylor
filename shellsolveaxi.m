@@ -2,15 +2,15 @@ r = 2.0;
 ao = 1.0;
 ai = 0.6;
 
-n = 8;
-nv = 8;
+n = 5;
+nv = 5;
 nu = 3*nv;
 
 domo = circulartorus(n,nu,nv,ao,r);
 domi = circulartorus(n,nu,nv,ai,r);
 doms = {domo, domi};
 
-onesurf = true;
+onesurf = false;
 if onesurf
     ai = 0;
 end
