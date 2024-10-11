@@ -6,6 +6,7 @@ a = 2.0; % minor radius, horiz. axis
 a0 = 5.0; % major radius
 b = 3.0; % minor radius vert. axis
 dom = twisted_ellipse_torus(a,a0,b,n,nu,nv); % surfacemesh
+% dom = circulartorus(n,nu,nv,a,a0);
 domparams = [n, nu, nv];
 
 % --- Specify flux ---

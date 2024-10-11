@@ -115,6 +115,10 @@ if abs(zk) < eps
         dpars,optslh);
     S0nx = [S0nx1 S0nx2 S0nx3];
     S0nx = array_to_surfacefun(S0nx,dom,S);
+
+    S0nx = taylor.helper.lap_dir_vec_eval(S,nxvals.',targinfo,epslh, ...
+        dpars,optslh);
+    S0nx = array_to_surfacefun(S0nx.',dom,S);
     
     if aint
         fluxsigma = -TaylorState.intacyc(S0nx,n,nv);

@@ -51,11 +51,11 @@ end
 % alpha .5
 % plot(domi)
 
-flux = [1.0,1.0];
+flux = [1.0,0.0];
 tol = 1e-7;
 ts = TaylorState(doms,[n,nu,nv],zk,flux,tol);
 if onesurf
-    ts = TaylorState(domo,[n,nu,nv],zk,torflux,1e-6);
+    ts = TaylorState(domo,[n,nu,nv],zk,flux(1),1e-6);
 end
 % ts = TaylorState(doms,[n,nu,nv],zk,[torflux,polflux],tol);
 
@@ -82,7 +82,8 @@ disp(errB)
 % [errB2, curlB2, kB2] = rts.fd_test(intpt,h);
 % disp(errB2)
 
-fprintf('true flux = [%f,%f]\n', torflux, polflux)
+% fprintf('true flux = [%f,%f]\n', torflux, polflux)
+fprintf('true flux = [%f,%f]\n', flux(1), flux(2))
 intBtor = ts.interior_B(tornodes);
 torfluxcheck = sum(intBtor(2,:).*torweights);
 intBpol = ts.interior_B(polnodes);

@@ -28,19 +28,19 @@ f = surfacefunv(@(x,y,z) -sintheta(x,y,z).*cosphi(x,y,z), ...
 
 g = surfacefunv(@(x,y,z) -costheta(x,y,z).*sinphi(x,y,z), ...
     @(x,y,z) costheta(x,y,z).*cosphi(x,y,z), ...
-    @(x,y,z) 0.*z, dom);
+    @(x,y,z) 1.*z, dom);
 
 S = surfer.surfacemesh_to_surfer(dom);
 G = surfacefun_to_array(g,dom,S);
 gg = array_to_surfacefun(G,dom,S);
 diff = g - gg;
 
-plot(norm(diff))
-hold on
-colorbar
+% plot(norm(diff))
+% hold on
+% colorbar
 
-h = f + 2i.*f + g - 1i.*g;
-
+% h = f + 2i.*f + g - 1i.*g;
+h = surfacefunv(@(x,y,z) 1.*x, @(x,y,z) 1i.*x+z, @(x,y,z) 1.*z, dom);
 integ = TaylorState.intacyc(h,n,nv);
 integ = TaylorState.intbcyc(h,n,nu);
 disp(integ)
