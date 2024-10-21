@@ -15,7 +15,7 @@ if onesurf
     ai = 0;
 end
 
-zk = 0;%.5;
+zk = 0.0;%0.5;
 
 % Reference Taylor State
 ntheta = 1e3;
@@ -72,12 +72,12 @@ ts = ts.solve(true);
 % plot(norm(B0o-B{1}));
 % colorbar
 
+% Finite difference test
 % interior point
-intpt = [2.8*cos(pi/12) 2.8*sin(pi/12) 0.01];
-
-h = 1e-6;
-[errB, curlB, kB] = ts.fd_test(intpt,h);
-disp(errB)
+% intpt = [2.8*cos(pi/12) 2.8*sin(pi/12) 0.01];
+% h = 1e-6;
+% [errB, curlB, kB] = ts.fd_test(intpt,h);
+% disp(errB)
 
 % [errB2, curlB2, kB2] = rts.fd_test(intpt,h);
 % disp(errB2)
@@ -140,8 +140,8 @@ function [qnodes, qweights] = poloidalfluxquad(nr,np,ro,ao,ri,ai)
 %     nr: [int] number of r nodes
 %     np: [int] number of phi nodes
 %   Returns:
-%     qnodes: [double(3,nr*nt)] quadrature nodes
-%     qweights: [double(1,nr*nt)] quadrature weights
+%     qnodes: [double(3,nr*np)] quadrature nodes
+%     qweights: [double(1,nr*np)] quadrature weights
 
 [rnodes, rweights] = chebpts(nr,[0 1],1);
 qnodes = zeros([3 nr*np]);

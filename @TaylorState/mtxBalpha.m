@@ -162,46 +162,9 @@ else
     mHvalsi = surfacefun_to_array(mH{2},dom{2},S{2});
     mHvalsi = mHvalsi.';
     vno = normal(dom{1});
-    vni = -normal(dom{2});
+    vni = -1.*normal(dom{2});
     
-    if abs(zk) > eps
-        % compute curl Sk[mH]
-        curlSmHo = taylor.dynamic.eval_curlSk(S{1},zk,mHvalso,epstaylor, ...
-            targinfoo,optso);
-        curlSmHo = array_to_surfacefun(curlSmHo.',dom{1},S{1});
-        curlSmHi = taylor.dynamic.eval_curlSk(S{2},zk,mHvalsi,epstaylor, ...
-            targinfoi,optsi);
-        curlSmHi = array_to_surfacefun(curlSmHi.',dom{2},S{2});
-        curlSmHi2o = taylor.dynamic.eval_curlSk(S{2},zk,mHvalsi,epstaylor, ...
-            targinfoo);
-        curlSmHi2o = array_to_surfacefun(curlSmHi2o.',dom{1},S{1});
-        curlSmHo2i = taylor.dynamic.eval_curlSk(S{1},zk,mHvalso,epstaylor, ...
-            targinfoi);
-        curlSmHo2i = array_to_surfacefun(curlSmHo2i.',dom{2},S{2});
-    
-        % compute Sk[mH]
-        SmHo = complex(zeros(size(mHvalso)));
-        SmHi = complex(zeros(size(mHvalsi)));
-        SmHi2o = complex(zeros(size(mHvalso)));
-        SmHo2i = complex(zeros(size(mHvalsi)));
-        for j=1:3
-            SmHo(j,:) = helm3d.dirichlet.eval(S{1},mHvalso(j,:),targinfoo, ...
-                epslh,zk,dpars,optslho);
-            SmHi(j,:) = helm3d.dirichlet.eval(S{2},mHvalsi(j,:),targinfoi, ...
-                epslh,zk,dpars,optslhi);
-            SmHi2o(j,:) = helm3d.dirichlet.eval(S{2},mHvalsi(j,:),targinfoo, ...
-                epslh,zk,dpars);
-            SmHo2i(j,:) = helm3d.dirichlet.eval(S{1},mHvalso(j,:),targinfoi, ...
-                epslh,zk,dpars);
-        end
-        SmHo = array_to_surfacefun(SmHo.',dom{1},S{1});
-        SmHi = array_to_surfacefun(SmHi.',dom{2},S{2});
-        SmHi2o = array_to_surfacefun(SmHi2o.',dom{1},S{1});
-        SmHo2i = array_to_surfacefun(SmHo2i.',dom{2},S{2});
-    
-        Balpha = {dot(vno,zk.*SmHo + curlSmHo + zk.*SmHi2o + curlSmHi2o), ...
-            dot(vni,zk.*SmHi + curlSmHi + zk.*SmHo2i + curlSmHo2i)};
-    else
+    if abs(zk) < eps
         curlSmHo = taylor.static.eval_curlS0(S{1},mHvalso,epstaylor, ...
             targinfoo,optso);
         curlSmHo = array_to_surfacefun(curlSmHo.',dom{1},S{1});
@@ -217,8 +180,40 @@ else
 
         Balpha = {dot(vno,curlSmHo + curlSmHi2o), ...
             dot(vni,curlSmHi + curlSmHo2i)};
-    end
+    else
+        % compute curl Sk[mH]
+        curlSmHo = taylor.dynamic.eval_curlSk(S{1},zk,mHvalso,epstaylor, ...
+            targinfoo,optso);
+        curlSmHi = taylor.dynamic.eval_curlSk(S{2},zk,mHvalsi,epstaylor, ...
+            targinfoi,optsi);
+        curlSmHi2o = taylor.dynamic.eval_curlSk(S{2},zk,mHvalsi,epstaylor, ...
+            targinfoo);
+        curlSmHo2i = taylor.dynamic.eval_curlSk(S{1},zk,mHvalso,epstaylor, ...
+            targinfoi);
 
+        curlSmHo = array_to_surfacefun(curlSmHo.',dom{1},S{1});
+        curlSmHi = array_to_surfacefun(curlSmHi.',dom{2},S{2});
+        curlSmHi2o = array_to_surfacefun(curlSmHi2o.',dom{1},S{1});
+        curlSmHo2i = array_to_surfacefun(curlSmHo2i.',dom{2},S{2});
+    
+        % compute Sk[mH]
+        SmHo = taylor.helper.helm_dir_vec_eval(S{1},mHvalso, ...
+            targinfoo,epslh,zk,dpars,optslho);
+        SmHi = taylor.helper.helm_dir_vec_eval(S{2},mHvalsi, ...
+            targinfoi,epslh,zk,dpars,optslhi);
+        SmHi2o = taylor.helper.helm_dir_vec_eval(S{2},mHvalsi, ...
+            targinfoo,epslh,zk,dpars);
+        SmHo2i = taylor.helper.helm_dir_vec_eval(S{1},mHvalso, ...
+            targinfoi,epslh,zk,dpars);
+        
+        SmHo = array_to_surfacefun(SmHo.',dom{1},S{1});
+        SmHi = array_to_surfacefun(SmHi.',dom{2},S{2});
+        SmHi2o = array_to_surfacefun(SmHi2o.',dom{1},S{1});
+        SmHo2i = array_to_surfacefun(SmHo2i.',dom{2},S{2});
+    
+        Balpha = {dot(vno,zk.*SmHo + curlSmHo + zk.*SmHi2o + curlSmHi2o), ...
+            dot(vni,zk.*SmHi + curlSmHi + zk.*SmHo2i + curlSmHo2i)};
+    end
 end
 
 end

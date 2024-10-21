@@ -190,7 +190,7 @@ else
         gradSsigmao2i = taylor.static.eval_gradS0(S{1},sigmavalso, ...
             epstaylor,targinfoi);
     else
-        gradSsigmao = taylor.dynamic.eval_gradSk(S{1},zk,sigmavals, ...
+        gradSsigmao = taylor.dynamic.eval_gradSk(S{1},zk,sigmavalso, ...
             epstaylor,targinfoo,optso);
         gradSsigmai = taylor.dynamic.eval_gradSk(S{2},zk,sigmavalsi, ...
             epstaylor,targinfoi,optsi);
@@ -199,12 +199,15 @@ else
         gradSsigmao2i = taylor.dynamic.eval_gradSk(S{1},zk,sigmavalso, ...
             epstaylor,targinfoi);
     end
-    gradSsigmao = array_to_surfacefun(gradSsigmao.',dom{1},S{1}); % note transpose 
+
+    gradSsigmao = array_to_surfacefun(gradSsigmao.',dom{1},S{1});
     gradSsigmai = array_to_surfacefun(gradSsigmai.',dom{2},S{2});
     gradSsigmai2o = array_to_surfacefun(gradSsigmai2o.',dom{1},S{1});
     gradSsigmao2i = array_to_surfacefun(gradSsigmao2i.',dom{2},S{2});
+
     vno = normal(dom{1});
     vni = -1.*normal(dom{2}); % note negative sign 
+
     nogradSsigmao = dot(vno,gradSsigmao);
     nigradSsigmai = dot(vni,gradSsigmai);
     nogradSsigmai2o = dot(vno,gradSsigmai2o);
@@ -214,32 +217,30 @@ else
     sigmai = array_to_surfacefun(sigmavalsi,dom{2},S{2});
 
     % construct Bsigma
-    if abs(zk) > eps
+    if abs(zk) < eps
+        Bsigma = {sigmao./2 + nogradSsigmao + nogradSsigmai2o, ...
+            sigmai./2 + nigradSsigmai + nigradSsigmao2i};
+    else
         % compute m0
         m0o = TaylorState.debyem0(sigmao,zk,L{1},vno);
         m0i = TaylorState.debyem0(sigmai,zk,L{2},vni);
-        m0ovals = surfacefun_to_array(m0o,dom{1},S{1});
-        m0ivals = surfacefun_to_array(m0i,dom{2},S{2});
+        m0valso = surfacefun_to_array(m0o,dom{1},S{1});
+        m0valsi = surfacefun_to_array(m0i,dom{2},S{2});
 
         % compute n . Sk[m0]
-        Sm0o = complex(zeros(size(m0ovals)));
-        Sm0i = complex(zeros(size(m0ivals)));
-        Sm0i2o = complex(zeros(size(m0ovals)));
-        Sm0o2i = complex(zeros(size(m0ivals)));
-        for j=1:3
-            Sm0o(:,j) = helm3d.dirichlet.eval(S{1},m0ovals(:,j), ...
-                targinfoo,epslh,zk,dpars,optslho);
-            Sm0i(:,j) = helm3d.dirichlet.eval(S{2},m0ivals(:,j), ...
-                targinfoi,epslh,zk,dpars,optslhi);
-            Sm0i2o(:,j) = helm3d.dirichlet.eval(S{2},m0ovals(:,j), ...
-                targinfoo,epslh,zk,dpars);
-            Sm0o2i(:,j) = helm3d.dirichlet.eval(S{2},m0ivals(:,j), ...
-                targinfoi,epslh,zk,dpars);
-        end
-        Sm0o = array_to_surfacefun(Sm0o,dom{1},S{1});
-        Sm0i = array_to_surfacefun(Sm0i,dom{2},S{2});
-        Sm0i2o = array_to_surfacefun(Sm0i2o,dom{1},S{1});
-        Sm0o2i = array_to_surfacefun(Sm0o2i,dom{2},S{2});
+        Sm0o = taylor.helper.helm_dir_vec_eval(S{1},m0valso.', ...
+            targinfoo,epslh,zk,dpars,optslho);
+        Sm0i = taylor.helper.helm_dir_vec_eval(S{2},m0valsi.', ...
+            targinfoi,epslh,zk,dpars,optslhi);
+        Sm0i2o = taylor.helper.helm_dir_vec_eval(S{2},m0valsi.', ...
+            targinfoo,epslh,zk,dpars);
+        Sm0o2i = taylor.helper.helm_dir_vec_eval(S{1},m0valso.', ...
+            targinfoi,epslh,zk,dpars);
+
+        Sm0o = array_to_surfacefun(Sm0o.',dom{1},S{1});
+        Sm0i = array_to_surfacefun(Sm0i.',dom{2},S{2});
+        Sm0i2o = array_to_surfacefun(Sm0i2o.',dom{1},S{1});
+        Sm0o2i = array_to_surfacefun(Sm0o2i.',dom{2},S{2});
 
         % compute n . curl Sk[m0]
         curlSm0o = taylor.dynamic.eval_curlSk(S{1},zk,m0valso.', ...
@@ -250,6 +251,7 @@ else
             epstaylor,targinfoo);
         curlSm0o2i = taylor.dynamic.eval_curlSk(S{1},zk,m0valso.', ...
             epstaylor,targinfoi);
+
         curlSm0o = array_to_surfacefun(curlSm0o.',dom{1},S{1});
         curlSm0i = array_to_surfacefun(curlSm0i.',dom{2},S{2});
         curlSm0i2o = array_to_surfacefun(curlSm0i2o.',dom{1},S{1});
@@ -260,9 +262,6 @@ else
         m0termsi = 1i.*dot(vni, zk.*(Sm0i + Sm0o2i) + curlSm0i + curlSm0o2i);
         Bsigma = {sigmao./2 + nogradSsigmao + nogradSsigmai2o - m0termso, ...
             sigmai./2 + nigradSsigmai + nigradSsigmao2i - m0termsi};
-    else
-        Bsigma = {sigmao./2 + nogradSsigmao + nogradSsigmai2o, ...
-            sigmai./2 + nigradSsigmai + nigradSsigmao2i};
     end
 
 end

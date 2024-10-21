@@ -58,7 +58,7 @@ classdef TaylorState
                     obj.surf = surf;
                     vn = cell(1,2);
                     vn{1} = normal(domain{1});
-                    vn{2} = -normal(domain{2}); % flip inner normal
+                    vn{2} = -1.*normal(domain{2}); % flip inner normal
                     obj.vn = vn;
                     obj.nsurfaces = 2;
                 end
@@ -343,6 +343,9 @@ classdef TaylorState
                 obj.sigma{1} = 1i*obj.alpha.*dfunc{1};
             else
                 A = 1i*fluxsigmaD + fluxalpha;
+                % adding stuff to bottom row
+                A(2,1) = A(2,1) + 1.0;
+                A(2,2) = A(2,2) + 2.0;
                 obj.alpha = A\obj.flux.';
                 obj.sigma = cell(1,2);
                 obj.sigma{1} = 1i*obj.alpha(1).*dfunc{1}; 
@@ -572,6 +575,19 @@ classdef TaylorState
                     B = B + 1i.*obj.zk.*Skm - gradSksigma + 1i.*curlSkm;
                 end
             end
+            % experimenting 15 Oct 2024
+            % idx = 2;
+            % sigmavals = surfacefun_to_array(obj.sigma{idx}, ...
+            %     obj.dom{idx},obj.surf{idx});
+            % mvals = surfacefun_to_array(obj.m{idx},obj.dom{idx}, ...
+            %     obj.surf{idx});
+            % gradSksigma = taylor.static.eval_gradS0( ...
+            %     obj.surf{idx},sigmavals.',obj.eps_taylor, ...
+            %     targinfo);
+            % curlSkm = taylor.static.eval_curlS0(obj.surf{idx}, ...
+            %     mvals.',obj.eps_taylor,targinfo);
+            % B = -gradSksigma;
+            % B = 1i.*curlSkm;
         end
 
         function [errB, curlB, kB] = fd_test(obj,intpt,h)
