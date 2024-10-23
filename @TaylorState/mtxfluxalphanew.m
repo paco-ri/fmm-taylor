@@ -178,6 +178,7 @@ else
         optsi.format = 'rsc';
         optsi.precomp_quadrature = Qi;
     else
+        opts = varargin{2};
         optso = varargin{2}{1};
         optsi = varargin{2}{2};
     end
@@ -201,6 +202,7 @@ else
         optslhi.format = 'rsc';
         optslhi.precomp_quadrature = Qlhi;
     else
+        optslh = varargin{3};
         optslho = varargin{3}{1};
         optslhi = varargin{3}{2};
     end
@@ -296,15 +298,7 @@ else
             - TaylorState.intbcyc(S0nxi,n,nu) ...
             + TaylorState.intbcyc(S0nxi2i2o,n,nu) ...
             - TaylorState.intbcyc(S0nxi2o2i,n,nu));
-        % 18 Oct 2024 trying "double coupling"
-        % fluxalpha(1,1) = 1i*(TaylorState.intacyc(S0nxo,n,nv) ...
-        %     + TaylorState.intacyc(S0nxi2o2o,n,nv));
-        % fluxalpha(1,2) = 1i*(-TaylorState.intacyc(S0nxo2i2i,n,nv) ...
-        %     - TaylorState.intacyc(S0nxi,n,nv));
-        % fluxalpha(2,1) = 1i*(TaylorState.intbcyc(S0nxo,n,nu) ...
-        %     + TaylorState.intbcyc(S0nxi2o2o,n,nu));
-        % fluxalpha(2,2) = 1i*(-TaylorState.intbcyc(S0nxo2i2i,n,nu) ...
-        %     - TaylorState.intbcyc(S0nxi,n,nu));
+        % fluxalpha(2,:) = -1.*fluxalpha(2,:);
     else
         % Sk[mH]
         SkmHo = taylor.helper.helm_dir_vec_eval(So,mHvalso, ...

@@ -232,34 +232,45 @@ classdef TaylorState
                 time = false;
             end
             
-            dfunc = cell(1,obj.nsurfaces);
-            b = zeros(obj.nptspersurf,obj.nsurfaces);
             Balpha = TaylorState.mtxBalpha(obj.surf,obj.dom, ...
                 obj.mH,obj.zk,obj.eps_taylor, ...
                 obj.eps_laphelm,obj.surf, ...
                 obj.quad_opts_taylor,obj.quad_opts_laphelm);
+            b = zeros(obj.nsurfaces*obj.nptspersurf,obj.nsurfaces);
             for i = 1:obj.nsurfaces
-                b(:,i) = surfacefun_to_array(Balpha{i},obj.dom{i}, ...
-                    obj.surf{i});
+                for j = 1:obj.nsurfaces
+                    inds = obj.nptspersurf*(i-1)+1:obj.nptspersurf*i;
+                    b(inds,j) = surfacefun_to_array(Balpha{i,j},...
+                        obj.dom{i},obj.surf{i});
+                end
             end
-            b = reshape(b,obj.nptspersurf*obj.nsurfaces,1);
             if time
                 t1 = tic;
             end
-            [D,~,~,iter] = gmres(@(s) TaylorState.gmresA(s,obj.dom, ...
-                obj.surf,obj.L,obj.zk,obj.eps_taylor,obj.eps_laphelm, ...
-                obj.quad_opts_taylor,obj.quad_opts_laphelm), b, [], ...
-                obj.eps_gmres, 50);
+            D = zeros(obj.nsurfaces*obj.nptspersurf,obj.nsurfaces);
+            totiter = 0;
+            for i = 1:obj.nsurfaces
+                [D(:,i),~,~,iter] = gmres(@(s) TaylorState.gmresA(s,obj.dom, ...
+                    obj.surf,obj.L,obj.zk,obj.eps_taylor,obj.eps_laphelm, ...
+                    obj.quad_opts_taylor,obj.quad_opts_laphelm), b(:,i), [], ...
+                    obj.eps_gmres, 50);
+                totiter = totiter+iter(2);
+            end
             if time
                 t2 = toc(t1);
                 fprintf(['\t(GMRES for A11*D = A12 (part of "compute ' ...
                     'sigma and alpha"): %f s / %d iter. = %f s)\n'], ...
-                    t2, iter(2), t2/iter(2))
+                    t2, totiter, t2/totiter)
             end
+            % dfunc = cell(1,obj.nsurfaces);
+            dfunc = cell(obj.nsurfaces);
             for i = 1:obj.nsurfaces
                 inds = obj.nptspersurf*(i-1)+1:obj.nptspersurf*i;
-                dfunc{i} = array_to_surfacefun(D(inds),obj.dom{i}, ...
-                    obj.surf{i});
+                % dfunc{i} = array_to_surfacefun(D(:,i),obj.dom{i}, ...
+                %     obj.surf{i});
+                for j = 1:obj.nsurfaces
+                    dfunc{i,j} = array_to_surfacefun(D(inds,j),obj.dom{i},obj.surf{i});
+                end
             end
         end
 
@@ -343,13 +354,10 @@ classdef TaylorState
                 obj.sigma{1} = 1i*obj.alpha.*dfunc{1};
             else
                 A = 1i*fluxsigmaD + fluxalpha;
-                % adding stuff to bottom row
-                A(2,1) = A(2,1) + 1.0;
-                A(2,2) = A(2,2) + 2.0;
                 obj.alpha = A\obj.flux.';
                 obj.sigma = cell(1,2);
-                obj.sigma{1} = 1i*obj.alpha(1).*dfunc{1}; 
-                obj.sigma{2} = 1i*obj.alpha(2).*dfunc{2};
+                obj.sigma{1} = 1i*(obj.alpha(1).*dfunc{1,1} + obj.alpha(2).*dfunc{1,2}); 
+                obj.sigma{2} = 1i*(obj.alpha(1).*dfunc{2,1} + obj.alpha(2).*dfunc{2,2});
             end
         end
 

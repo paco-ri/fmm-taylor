@@ -177,6 +177,7 @@ else
         optsi.format = 'rsc';
         optsi.precomp_quadrature = Qi;
     else
+        opts = varargin{2};
         optso = varargin{2}{1};
         optsi = varargin{2}{2};
     end
@@ -200,102 +201,139 @@ else
         optslhi.format = 'rsc';
         optslhi.precomp_quadrature = Qlhi;
     else
+        optslh = varargin{3};
         optslho = varargin{3}{1};
         optslhi = varargin{3}{2};
     end
 
     % ====
     
-    sigmavalso = surfacefun_to_array(sigma{1},domo,So);
-    sigmavalso = sigmavalso.';
-    sigmavalsi = surfacefun_to_array(sigma{2},domi,Si);
-    sigmavalsi = sigmavalsi.';
-    vno = vn{1};
-    vni = vn{2};
+    sig = cell(2);
+    for i = 1:2
+        for j = 1:2
+            sig{i,j} = surfacefun_to_array(sigma{i,j},dom{i},S{i});
+        end
+    end
 
     if abs(zk) < eps
         % n x grad S_0[sigma]
-        gradS0sigmao = taylor.static.eval_gradS0(So,sigmavalso, ...
-            epstaylor,targinfoo,optso);
-        gradS0sigmao = array_to_surfacefun(gradS0sigmao.',domo,So);
-        nxgradS0sigmao = cross(vno,gradS0sigmao);
-        nxvalso = surfacefun_to_array(nxgradS0sigmao,domo,So);
-
-        gradS0sigmai = taylor.static.eval_gradS0(Si,sigmavalsi, ...
-            epstaylor,targinfoi,optsi);
-        gradS0sigmai = array_to_surfacefun(gradS0sigmai.',domi,Si);
-        nxgradS0sigmai = cross(vni,gradS0sigmai);
-        nxvalsi = surfacefun_to_array(nxgradS0sigmai,domi,Si);
-
-        gradS0sigmao2i = taylor.static.eval_gradS0(So,sigmavalso, ...
-            epstaylor,targinfoi);
-        gradS0sigmao2i = array_to_surfacefun(gradS0sigmao2i.',domi,Si);
-        nxgradS0sigmao2i = cross(vni,gradS0sigmao2i);
-        nxvalso2i = surfacefun_to_array(nxgradS0sigmao2i,domi,Si);
-
-        gradS0sigmai2o = taylor.static.eval_gradS0(Si,sigmavalsi, ...
-            epstaylor,targinfoo);
-        gradS0sigmai2o = array_to_surfacefun(gradS0sigmai2o.',domo,So);
-        nxgradS0sigmai2o = cross(vno,gradS0sigmai2o);
-        nxvalsi2o = surfacefun_to_array(nxgradS0sigmai2o,domo,So);
+        nxgradS0 = cell(2,2,2);
+        for i = 1:2
+            for j = 1:2
+                for k = 1:2
+                    if j == k
+                        gradS0sig = taylor.static.eval_gradS0(S{i}, ...
+                            sig{i,j},epstaylor,S{k},opts{k});
+                    else
+                        gradS0sig = taylor.static.eval_gradS0(S{i}, ...
+                            sig{i,j},epstaylor,S{k});
+                    end
+                    gradS0sig = array_to_surfacefun(gradS0sig.', ...
+                        dom{k},S{k});
+                    nxgradS0{i,j,k} = cross(vn{k},gradS0sig);
+                    nxgradS0{i,j,k} = surfacefun_to_array(...
+                        nxgradS0{i,j,k},dom{k},S{k});
+                end
+            end
+        end
+        % gradS0sigooo = taylor.static.eval_gradS0(So,sigoo, ...
+        %     epstaylor,targinfoo,optso);
+        % gradS0sigooo = array_to_surfacefun(gradS0sigooo.',domo,So);
+        % nxooo = cross(vno,gradS0sigooo);
+        % nxooo = surfacefun_to_array(nxooo,domo,So);
+        % 
+        % gradS0sigooi = taylor.static.eval_gradS0(So,sigoo, ...
+        %     epstaylor,targinfoi);
+        % gradS0sigooi = array_to_surfacefun(gradS0sigooi.',domi,Si);
+        % nxooi = cross(vni,gradS0sigooi);
+        % nxooi = surfacefun_to_array(nxooi,domo,So);
         
         % S_0[n x grad S_0[sigma]]
-        S0nxo = taylor.helper.lap_dir_vec_eval(So,nxvalso.',targinfoo, ...
-            epslh,dpars,optslho);
-        S0nxo = array_to_surfacefun(S0nxo.',domo,So);
-        S0nxi = taylor.helper.lap_dir_vec_eval(Si,nxvalsi.',targinfoi, ...
-            epslh,dpars,optslhi);
-        S0nxi = array_to_surfacefun(S0nxi.',domi,Si);
-
-        % 18 Oct 2024 trying "double coupling"
-        S0nxo2i2i = taylor.helper.lap_dir_vec_eval(Si,nxvalso2i.',targinfoi, ...
-            epslh,dpars,optslhi);
-        S0nxo2i2i = array_to_surfacefun(S0nxo2i2i.',domi,Si);
-        S0nxi2o2o = taylor.helper.lap_dir_vec_eval(So,nxvalsi2o.',targinfoo, ...
-            epslh,dpars,optslho);
-        S0nxi2o2o = array_to_surfacefun(S0nxi2o2o.',domo,So);
-
-        S0nxo2o2i = taylor.helper.lap_dir_vec_eval(So,nxvalso.',targinfoi, ...
-            epslh,dpars);
-        S0nxo2o2i = array_to_surfacefun(S0nxo2o2i.',domi,Si);
-        S0nxi2i2o = taylor.helper.lap_dir_vec_eval(Si,nxvalsi.',targinfoo, ...
-            epslh,dpars);
-        S0nxi2i2o = array_to_surfacefun(S0nxi2i2o.',domo,So);
-
-        S0nxo2i2o = taylor.helper.lap_dir_vec_eval(Si,nxvalso2i.',targinfoo, ...
-            epslh,dpars);
-        S0nxo2i2o = array_to_surfacefun(S0nxo2i2o.',domo,So);
-        S0nxi2o2i = taylor.helper.lap_dir_vec_eval(So,nxvalsi2o.',targinfoi, ...
-            epslh,dpars);
-        S0nxi2o2i = array_to_surfacefun(S0nxi2o2i.',domi,Si);
+        S0nx = cell(2,2,2,2);
+        for i = 1:2
+            for j = 1:2
+                for k = 1:2
+                    for l = 1:2
+                        if k == l
+                            S0nx{i,j,k,l} = ...
+                                taylor.helper.lap_dir_vec_eval( ...
+                                S{k},nxgradS0{i,j,k}.',S{l},epslh, ...
+                                dpars,optslh{l});
+                        else
+                            S0nx{i,j,k,l} = ...
+                                taylor.helper.lap_dir_vec_eval( ...
+                                S{k},nxgradS0{i,j,k}.',S{l},epslh, ...
+                                dpars);
+                        end
+                        S0nx{i,j,k,l} = array_to_surfacefun( ...
+                            S0nx{i,j,k,l}.',dom{l},S{l});
+                    end
+                end
+            end
+        end
+        % S0nxo = taylor.helper.lap_dir_vec_eval(So,nxvalso.',targinfoo, ...
+        %     epslh,dpars,optslho);
+        % S0nxo = array_to_surfacefun(S0nxo.',domo,So);
+        % S0nxi = taylor.helper.lap_dir_vec_eval(Si,nxvalsi.',targinfoi, ...
+        %     epslh,dpars,optslhi);
+        % S0nxi = array_to_surfacefun(S0nxi.',domi,Si);
+        % 
+        % % 18 Oct 2024 trying "double coupling"
+        % S0nxo2i2i = taylor.helper.lap_dir_vec_eval(Si,nxvalso2i.',targinfoi, ...
+        %     epslh,dpars,optslhi);
+        % S0nxo2i2i = array_to_surfacefun(S0nxo2i2i.',domi,Si);
+        % S0nxi2o2o = taylor.helper.lap_dir_vec_eval(So,nxvalsi2o.',targinfoo, ...
+        %     epslh,dpars,optslho);
+        % S0nxi2o2o = array_to_surfacefun(S0nxi2o2o.',domo,So);
+        % 
+        % S0nxo2o2i = taylor.helper.lap_dir_vec_eval(So,nxvalso.',targinfoi, ...
+        %     epslh,dpars);
+        % S0nxo2o2i = array_to_surfacefun(S0nxo2o2i.',domi,Si);
+        % S0nxi2i2o = taylor.helper.lap_dir_vec_eval(Si,nxvalsi.',targinfoo, ...
+        %     epslh,dpars);
+        % S0nxi2i2o = array_to_surfacefun(S0nxi2i2o.',domo,So);
+        % 
+        % S0nxo2i2o = taylor.helper.lap_dir_vec_eval(Si,nxvalso2i.',targinfoo, ...
+        %     epslh,dpars);
+        % S0nxo2i2o = array_to_surfacefun(S0nxo2i2o.',domo,So);
+        % S0nxi2o2i = taylor.helper.lap_dir_vec_eval(So,nxvalsi2o.',targinfoi, ...
+        %     epslh,dpars);
+        % S0nxi2o2i = array_to_surfacefun(S0nxi2o2i.',domi,Si);
 
         fluxsigma = zeros(2);
         % note negative sign
-        fluxsigma(1,1) = -TaylorState.intacyc(S0nxo,n,nv) ...
-            + TaylorState.intacyc(S0nxo2i2i,n,nv) ...
-            - TaylorState.intacyc(S0nxo2i2o,n,nv) ...
-            + TaylorState.intacyc(S0nxo2o2i,n,nv);
-        fluxsigma(1,2) = -TaylorState.intacyc(S0nxi2o2o,n,nv) ...
-            + TaylorState.intacyc(S0nxi,n,nv) ...
-            - TaylorState.intacyc(S0nxi2i2o,n,nv) ...
-            + TaylorState.intacyc(S0nxi2o2i,n,nv);
-        fluxsigma(2,1) = -TaylorState.intbcyc(S0nxo,n,nu) ...
-            + TaylorState.intbcyc(S0nxo2i2i,n,nu) ...
-            - TaylorState.intbcyc(S0nxo2i2o,n,nu) ...
-            + TaylorState.intbcyc(S0nxo2o2i,n,nu);
-        fluxsigma(2,2) = -TaylorState.intbcyc(S0nxi2o2o,n,nu) ...
-            + TaylorState.intbcyc(S0nxi,n,nu) ...
-            - TaylorState.intbcyc(S0nxi2i2o,n,nu) ...
-            + TaylorState.intbcyc(S0nxi2o2i,n,nu);
-        % 17 Oct 2024 testing alternate splitting
+        % sum over i,k,l
+        % l = which surface the fn is on
+        for j = 1:2
+            for i = 1:2
+                for k = 1:2
+                    for l = 1:2
+                        fluxsigma(1,j) = fluxsigma(1,j) ...
+                            + (-1)^l.*TaylorState.intacyc( ...
+                            S0nx{i,j,k,l},n,nv);
+                        fluxsigma(2,j) = fluxsigma(2,j) ...
+                            + (-1)^l.*TaylorState.intbcyc( ...
+                            S0nx{i,j,k,l},n,nu);
+                    end
+                end
+            end
+        end
         % fluxsigma(1,1) = -TaylorState.intacyc(S0nxo,n,nv) ...
-        %     - TaylorState.intacyc(S0nxi2o,n,nv);
-        % fluxsigma(1,2) = TaylorState.intacyc(S0nxo2i,n,nv) ...
-        %     + TaylorState.intacyc(S0nxi,n,nv);
+        %     + TaylorState.intacyc(S0nxo2i2i,n,nv) ...
+        %     - TaylorState.intacyc(S0nxo2i2o,n,nv) ...
+        %     + TaylorState.intacyc(S0nxo2o2i,n,nv);
+        % fluxsigma(1,2) = -TaylorState.intacyc(S0nxi2o2o,n,nv) ...
+        %     + TaylorState.intacyc(S0nxi,n,nv) ...
+        %     - TaylorState.intacyc(S0nxi2i2o,n,nv) ...
+        %     + TaylorState.intacyc(S0nxi2o2i,n,nv);
         % fluxsigma(2,1) = -TaylorState.intbcyc(S0nxo,n,nu) ...
-        %     - TaylorState.intbcyc(S0nxi2o,n,nu);
-        % fluxsigma(2,2) = TaylorState.intbcyc(S0nxo2i,n,nu) ...
-        %     + TaylorState.intbcyc(S0nxi,n,nu);
+        %     + TaylorState.intbcyc(S0nxo2i2i,n,nu) ...
+        %     - TaylorState.intbcyc(S0nxo2i2o,n,nu) ...
+        %     + TaylorState.intbcyc(S0nxo2o2i,n,nu);
+        % fluxsigma(2,2) = -TaylorState.intbcyc(S0nxi2o2o,n,nu) ...
+        %     + TaylorState.intbcyc(S0nxi,n,nu) ...
+        %     - TaylorState.intbcyc(S0nxi2i2o,n,nu) ...
+        %     + TaylorState.intbcyc(S0nxi2o2i,n,nu);
     else
         m0o = TaylorState.debyem0(sigma{1},zk,L{1},vn{1});
         m0i = TaylorState.debyem0(sigma{2},zk,L{2},vn{2});

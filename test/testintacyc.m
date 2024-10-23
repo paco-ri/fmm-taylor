@@ -40,7 +40,7 @@ diff = g - gg;
 % colorbar
 
 % h = f + 2i.*f + g - 1i.*g;
-h = surfacefunv(@(x,y,z) 1.*x, @(x,y,z) 1i.*x+z, @(x,y,z) 1.*z, dom);
-integ = TaylorState.intacyc(h,n,nv);
+h = surfacefunv(@(x,y,z) 1.*x, @(x,y,z) 1i.*x+x.^3, @(x,y,z) 1.*z, dom);
+% integ = TaylorState.intacyc(h,n,nv);
 integ = TaylorState.intbcyc(h,n,nu);
 disp(integ)

@@ -41,7 +41,7 @@ end
 polflux = 0;
 for i = 1:nr*np
     B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,polnodes(:,i));
-    polflux = polflux + B0eval(3)*polweights(i);
+    polflux = polflux + B0eval(3)*polweights(i); % note sign
 end
 
 % plot3(tornodes(1,:),tornodes(2,:),tornodes(3,:),'.')
@@ -51,7 +51,7 @@ end
 % alpha .5
 % plot(domi)
 
-flux = [1.0,0.0];
+flux = [1.0,1.0];
 tol = 1e-7;
 ts = TaylorState(doms,[n,nu,nv],zk,flux,tol);
 if onesurf
@@ -87,7 +87,7 @@ fprintf('true flux = [%f,%f]\n', flux(1), flux(2))
 intBtor = ts.interior_B(tornodes);
 torfluxcheck = sum(intBtor(2,:).*torweights);
 intBpol = ts.interior_B(polnodes);
-polfluxcheck = sum(intBpol(3,:).*polweights);
+polfluxcheck = -sum(intBpol(3,:).*polweights); % note sign
 fprintf('TS flux = [%f+%fi,%f+%fi]\n', real(torfluxcheck), ...
     imag(torfluxcheck), real(polfluxcheck), imag(polfluxcheck))
 

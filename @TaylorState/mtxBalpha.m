@@ -178,8 +178,13 @@ else
             targinfoi);
         curlSmHo2i = array_to_surfacefun(curlSmHo2i.',dom{2},S{2});
 
-        Balpha = {dot(vno,curlSmHo + curlSmHi2o), ...
-            dot(vni,curlSmHi + curlSmHo2i)};
+        % Balpha = {dot(vno,curlSmHo + curlSmHi2o), ...
+        %     dot(vni,curlSmHi + curlSmHo2i)};
+        Balpha = cell(2);
+        Balpha{1,1} = dot(vno,curlSmHo);
+        Balpha{1,2} = dot(vno,curlSmHi2o);
+        Balpha{2,1} = dot(vni,curlSmHo2i);
+        Balpha{2,2} = dot(vni,curlSmHi);
     else
         % compute curl Sk[mH]
         curlSmHo = taylor.dynamic.eval_curlSk(S{1},zk,mHvalso,epstaylor, ...
