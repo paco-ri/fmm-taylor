@@ -216,6 +216,8 @@ else
             sig{i,j} = surfacefun_to_array(sigma{i,j},dom{i},S{i});
         end
     end
+    % i: inner or outer surface
+    % j: RHS was mH1 or mH2
 
     if abs(zk) < eps
         % n x grad S_0[sigma]
@@ -223,7 +225,7 @@ else
         for i = 1:2
             for j = 1:2
                 for k = 1:2
-                    if j == k
+                    if i == k
                         gradS0sig = taylor.static.eval_gradS0(S{i}, ...
                             sig{i,j},epstaylor,S{k},opts{k});
                     else
@@ -238,6 +240,8 @@ else
                 end
             end
         end
+        % k: n x grad S0[sigma] target inner or outer surface
+
         % gradS0sigooo = taylor.static.eval_gradS0(So,sigoo, ...
         %     epstaylor,targinfoo,optso);
         % gradS0sigooo = array_to_surfacefun(gradS0sigooo.',domo,So);
@@ -273,6 +277,8 @@ else
                 end
             end
         end
+        % l: S0[n x grad S_0[sigma]] target points outer or inner surf
+
         % S0nxo = taylor.helper.lap_dir_vec_eval(So,nxvalso.',targinfoo, ...
         %     epslh,dpars,optslho);
         % S0nxo = array_to_surfacefun(S0nxo.',domo,So);
@@ -303,9 +309,8 @@ else
         % S0nxi2o2i = array_to_surfacefun(S0nxi2o2i.',domi,Si);
 
         fluxsigma = zeros(2);
-        % note negative sign
-        % sum over i,k,l
-        % l = which surface the fn is on
+        % rows: toroidal or poloidal flux
+        % j: as before
         for j = 1:2
             for i = 1:2
                 for k = 1:2
