@@ -137,8 +137,8 @@ else
 
     % near quadrature corrections for Helmholtz layer potential
     % only needed if zk != 0 
-    if nargin < 9
-        if abs(zk) < eps
+    if abs(zk) >= eps
+        if nargin < 9
             Qlho = helm3d.dirichlet.get_quadrature_correction(S{1}, ...
                 epslh,zk,dpars,targinfoo);
             Qlhi = helm3d.dirichlet.get_quadrature_correction(S{2}, ...
@@ -149,10 +149,10 @@ else
             optslhi = [];
             optslhi.format = 'rsc';
             optslhi.precomp_quadrature = Qlhi;
+        else
+            optslho = varargin{3}{1};
+            optslhi = varargin{3}{2};
         end
-    else
-        optslho = varargin{3}{1};
-        optslhi = varargin{3}{2};
     end
 
     % ====
@@ -178,8 +178,6 @@ else
             targinfoi);
         curlSmHo2i = array_to_surfacefun(curlSmHo2i.',dom{2},S{2});
 
-        % Balpha = {dot(vno,curlSmHo + curlSmHi2o), ...
-        %     dot(vni,curlSmHi + curlSmHo2i)};
         Balpha = cell(2);
         Balpha{1,1} = dot(vno,curlSmHo);
         Balpha{1,2} = dot(vno,curlSmHi2o);
@@ -216,8 +214,13 @@ else
         SmHi2o = array_to_surfacefun(SmHi2o.',dom{1},S{1});
         SmHo2i = array_to_surfacefun(SmHo2i.',dom{2},S{2});
     
-        Balpha = {dot(vno,zk.*SmHo + curlSmHo + zk.*SmHi2o + curlSmHi2o), ...
-            dot(vni,zk.*SmHi + curlSmHi + zk.*SmHo2i + curlSmHo2i)};
+        % Balpha = {dot(vno,zk.*SmHo + curlSmHo + zk.*SmHi2o + curlSmHi2o), ...
+        %     dot(vni,zk.*SmHi + curlSmHi + zk.*SmHo2i + curlSmHo2i)};
+        Balpha = cell(2);
+        Balpha{1,1} = dot(vno, zk.*SmHo + curlSmHo);
+        Balpha{1,2} = dot(vno, zk.*SmHi2o + curlSmHi2o);
+        Balpha{2,1} = dot(vni, zk.*SmHo2i + curlSmHo2i);
+        Balpha{2,2} = dot(vni, zk.*SmHi + curlSmHi);
     end
 end
 

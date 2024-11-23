@@ -1,5 +1,4 @@
-function Bsigma = mtxBsigma(S,dom,L,sigmavals,zk,epstaylor,epslh, ...
-    varargin)
+function Bsigma = mtxBsigma(S,dom,L,sigmavals,zk,epstaylor,epslh,varargin)
 %MTXBSIGMA compute sigma-dep. terms of surface magnetic field
 % 
 %   Required arguments:
@@ -92,18 +91,6 @@ if length(dom) == 1
         m0 = TaylorState.debyem0(sigma,zk,L{1},vn);
         m0vals = surfacefun_to_array(m0,dom{1},S{1});
 
-        % % compute n . Sk[m0]
-        % Sm0 = taylor.helper.helm_dir_vec_eval(S{1},m0vals.',targinfo, ...
-        %     epslh,zk,dpars,optslh);
-        % Sm0 = array_to_surfacefun(Sm0.',dom{1},S{1});
-        % 
-        % % compute n . grad Sk[sigma] and n . curl Sk[m0]
-        % [gradSsigma, curlSm0] = taylor.dynamic.eval_gradcurlSk(S{1},zk, ...
-        %     sigmavals,m0vals.',epstaylor,targinfo,opts);
-        % gradSsigma = array_to_surfacefun(gradSsigma.',dom{1},S{1}); 
-        % ngradSsigma = dot(vn,gradSsigma);
-        % curlSm0 = array_to_surfacefun(curlSm0.',dom{1},S{1});
-
         [Sm0, gradSsigma, curlSm0] = taylor.helper.mtxBsigma_eval(S{1}, ...
             m0vals.',sigmavals,m0vals.',targinfo,[epstaylor,epslh],zk, ...
             dpars,opts,optslh);
@@ -113,7 +100,6 @@ if length(dom) == 1
         curlSm0 = array_to_surfacefun(curlSm0.',dom{1},S{1});
 
         % combine
-        % m0terms = 1i.*dot(n,zk.*Sm0+curlSm0);
         m0terms = 1i*zk.*dot(vn,Sm0) + 1i.*dot(vn,curlSm0);
         Bsigma = {sigma./2 + ngradSsigma - m0terms};
     end
@@ -156,8 +142,8 @@ else
 
     % near quadrature corrections for Helmholtz layer potential
     % only needed if zk != 0 
-    if nargin < 9
-        if abs(zk) < eps
+    if abs(zk) >= eps
+        if nargin < 9
             Qlho = helm3d.dirichlet.get_quadrature_correction(S{1}, ...
                 epslh,zk,dpars,targinfoo);
             Qlhi = helm3d.dirichlet.get_quadrature_correction(S{2}, ...
@@ -168,10 +154,10 @@ else
             optslhi = [];
             optslhi.format = 'rsc';
             optslhi.precomp_quadrature = Qlhi;
+        else
+            optslho = varargin{3}{1};
+            optslhi = varargin{3}{2};
         end
-    else
-        optslho = varargin{3}{1};
-        optslhi = varargin{3}{2};
     end
 
     % split sigmavals into halves. top half is on outer surface, etc.

@@ -80,11 +80,13 @@ end
 h1 = 50:90;
 h2 = 80:120;
 h3 = 100:150;
-loglog(h1,1e1.*h1.^(-1),'--')
-loglog(h2,1e4.*h2.^(-3),'--')
-loglog(h3,1e7.*h3.^(-5),'--')
+loglog(h1,5e1.*h1.^(-2),'--')
+loglog(h2,1e4.*h2.^(-4),'--')
+loglog(h3,1e7.*h3.^(-6),'--')
 
-legend('p=4','p=6','p=8','O(h^{-1})','O(h^{-3})','O(h^{-5})')
+legend('p=poly. order=4','p=6','p=8','O(h^{-2})','O(h^{-4})','O(h^{-6})','location','southwest')
+xlabel('h, panel size')
+ylabel('||B-B_0||_\infty/||B_0||_\infty')
 
 function N = vecinfnorm(f)
 N = max([norm(f.components{1}, inf) ...

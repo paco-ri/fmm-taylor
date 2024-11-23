@@ -315,10 +315,7 @@ classdef TaylorState
                 obj.sigma{1} = 1i*obj.alpha.*dfunc{1};
             else
                 A = 1i*fluxsigmaD + fluxalpha;
-                disp(fluxsigmaD)
-                disp(fluxalpha)
                 obj.alpha = A\obj.flux.';
-                disp(obj.alpha)
                 obj.sigma = cell(1,2);
                 obj.sigma{1} = 1i*(obj.alpha(1).*dfunc{1,1} + obj.alpha(2).*dfunc{1,2}); 
                 obj.sigma{2} = 1i*(obj.alpha(1).*dfunc{2,1} + obj.alpha(2).*dfunc{2,2});
@@ -553,19 +550,6 @@ classdef TaylorState
                     B = B + 1i.*obj.zk.*Skm - gradSksigma + 1i.*curlSkm;
                 end
             end
-            % experimenting 15 Oct 2024
-            % idx = 2;
-            % sigmavals = surfacefun_to_array(obj.sigma{idx}, ...
-            %     obj.dom{idx},obj.surf{idx});
-            % mvals = surfacefun_to_array(obj.m{idx},obj.dom{idx}, ...
-            %     obj.surf{idx});
-            % gradSksigma = taylor.static.eval_gradS0( ...
-            %     obj.surf{idx},sigmavals.',obj.eps_taylor, ...
-            %     targinfo);
-            % curlSkm = taylor.static.eval_curlS0(obj.surf{idx}, ...
-            %     mvals.',obj.eps_taylor,targinfo);
-            % B = -gradSksigma;
-            % B = 1i.*curlSkm;
         end
 
         function [errB, curlB, kB] = fd_test(obj,intpt,h)
