@@ -2,11 +2,11 @@
 tol = 1e-4;
 
 % --- Beltrami parameter ---
-zk = 0;
+zk = 1.0;
 
 % --- Geometry parameters ---
-ns = [5 7 9]; % polynomial order + 1
-nvs = [4 6 8 10]; % number of patches in poloidal direction
+ns = [5];% 7 9]; % polynomial order + 1
+nvs = [4 6];% 8 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;

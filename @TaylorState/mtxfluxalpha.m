@@ -152,9 +152,11 @@ else
     domi = dom{2};
 
     if nargin < nreqarg + 1
+        targinfo = S;
         targinfoo = S{1};
         targinfoi = S{2};
     else
+        targinfo = varargin{1};
         targinfoo = varargin{1}{1};
         targinfoi = varargin{1}{2};
     end
@@ -209,176 +211,167 @@ else
 
     % ====
     
-    mHo = mH{1};
-    mHi = mH{2};
-    mHvalso = surfacefun_to_array(mHo,domo,So);
-    mHvalso = mHvalso.';
-    mHvalsi = surfacefun_to_array(mHi,domi,Si);
-    mHvalsi = mHvalsi.';
-    vno = vn{1};
-    vni = vn{2};
+    mHvals = cell(1,2);
+    for i = 1:2
+        mHvals{i} = surfacefun_to_array(mH{i},dom{i},S{i});
+        mHvals{i} = mHvals{i}.';
+    end
     
     if abs(zk) < eps
-        % n x curl S0[mH] - mH/2
-        curlS0mHo = taylor.static.eval_curlS0(So,mHvalso,epstaylor, ...
-            targinfoo,optso);
-        curlS0mHo = array_to_surfacefun(curlS0mHo.',domo,So);
-        nxcurlS0mHo = cross(vno,curlS0mHo);
+        nxcurlS0mH = cell(2);
+        % i: source is mHo or i
+        % j: target is o or i
+        for i = 1:2
+            for j = 1:2
+                if i == j
+                    curlS0mH = taylor.static.eval_curlS0(S{i}, ...
+                        mHvals{i},epstaylor,targinfo{i},opts{i});
+                else
+                    curlS0mH = taylor.static.eval_curlS0(S{i}, ...
+                        mHvals{i},epstaylor,targinfo{j});
+                end
+                curlS0mH = array_to_surfacefun(curlS0mH.',dom{j},S{j});
+                nxcurlS0mH{i,j} = cross(vn{j},curlS0mH);
+                % diagonal terms for on-surface potentials
+                if i == j
+                    nxcurlS0mH{i,i} = nxcurlS0mH{i,i} - mH{i}./2;
+                end
+                nxcurlS0mH{i,j} = surfacefun_to_array(nxcurlS0mH{i,j}, ...
+                    dom{j},S{j});
+            end
+        end
 
-        curlS0mHi = taylor.static.eval_curlS0(Si,mHvalsi,epstaylor, ...
-            targinfoi,optsi);
-        curlS0mHi = array_to_surfacefun(curlS0mHi.',domi,Si);
-        nxcurlS0mHi = cross(vni,curlS0mHi);
-
-        curlS0mHo2i = taylor.static.eval_curlS0(So,mHvalso,epstaylor, ...
-            targinfoi);
-        curlS0mHo2i = array_to_surfacefun(curlS0mHo2i.',domi,Si);
-        nxcurlS0mHo2i = cross(vni,curlS0mHo2i);
-
-        curlS0mHi2o = taylor.static.eval_curlS0(Si,mHvalsi,epstaylor, ...
-            targinfoo);
-        curlS0mHi2o = array_to_surfacefun(curlS0mHi2o.',domo,So);
-        nxcurlS0mHi2o = cross(vno,curlS0mHi2o);
-
-        % boundary terms for on-surface potentials
-        nxminusmHo = nxcurlS0mHo - mHo./2;
-        nxminusmHi = nxcurlS0mHi - mHi./2;
-
-        % surfacefuns to arrays
-        nxo = surfacefun_to_array(nxminusmHo,domo,So);
-        nxi = surfacefun_to_array(nxminusmHi,domi,Si);
-        nxo2i = surfacefun_to_array(nxcurlS0mHo2i,domi,Si);
-        nxi2o = surfacefun_to_array(nxcurlS0mHi2o,domo,So);
+        % k: targ o or i
+        S0nx = cell(2,2,2);
+        for i = 1:2
+            for j = 1:2
+                for k = 1:2
+                    if j == k
+                        S0nx{i,j,k} = taylor.helper.lap_dir_vec_eval(S{j}, ...
+                            nxcurlS0mH{i,j}.',targinfo{j},epslh,dpars,optslh{j});
+                    else
+                        S0nx{i,j,k} = taylor.helper.lap_dir_vec_eval(S{j}, ...
+                            nxcurlS0mH{i,j}.',targinfo{k},epslh,dpars);
+                    end
+                    S0nx{i,j,k} = array_to_surfacefun(S0nx{i,j,k}.', ...
+                        dom{k},S{k});
+                end
+            end
+        end
         
-        % S0[n x curl S0[mH] - mH/2]
-        S0nxo = taylor.helper.lap_dir_vec_eval(So,nxo.',targinfoo,epslh, ...
-            dpars,optslho);
-        S0nxi = taylor.helper.lap_dir_vec_eval(Si,nxi.',targinfoi,epslh, ...
-            dpars,optslhi);
-
-        % 18 Oct 2024 trying "double coupling"
-        S0nxo2i2i = taylor.helper.lap_dir_vec_eval(Si,nxo2i.',targinfoi,epslh, ...
-            dpars,optslhi);
-        S0nxi2o2o = taylor.helper.lap_dir_vec_eval(So,nxi2o.',targinfoo,epslh, ...
-            dpars,optslho);
-
-        S0nxo2o2i = taylor.helper.lap_dir_vec_eval(So,nxo.',targinfoi,epslh, ...
-            dpars);
-        S0nxi2i2o = taylor.helper.lap_dir_vec_eval(Si,nxi.',targinfoo,epslh, ...
-            dpars);
-
-        S0nxo2i2o = taylor.helper.lap_dir_vec_eval(Si,nxo2i.',targinfoo,epslh, ...
-            dpars);
-        S0nxi2o2i = taylor.helper.lap_dir_vec_eval(So,nxi2o.',targinfoi,epslh, ...
-            dpars);
-
-        S0nxo = array_to_surfacefun(S0nxo.',domo,So);
-        S0nxi = array_to_surfacefun(S0nxi.',domi,Si);
-        S0nxo2i2i = array_to_surfacefun(S0nxo2i2i.',domi,Si);
-        S0nxi2o2o = array_to_surfacefun(S0nxi2o2o.',domo,So);
-        S0nxo2o2i = array_to_surfacefun(S0nxo2o2i.',domi,Si);
-        S0nxi2i2o = array_to_surfacefun(S0nxi2i2o.',domo,So);
-        S0nxo2i2o = array_to_surfacefun(S0nxo2i2o.',domo,So);
-        S0nxi2o2i = array_to_surfacefun(S0nxi2o2i.',domi,Si);
-    
         fluxalpha = zeros(2);
-        fluxalpha(1,1) = 1i*(TaylorState.intacyc(S0nxo,n,nv) ...
-            - TaylorState.intacyc(S0nxo2i2i,n,nv) ...
-            + TaylorState.intacyc(S0nxo2i2o,n,nv) ...
-            - TaylorState.intacyc(S0nxo2o2i,n,nv));
-        fluxalpha(1,2) = 1i*(TaylorState.intacyc(S0nxi2o2o,n,nv) ...
-            - TaylorState.intacyc(S0nxi,n,nv) ...
-            + TaylorState.intacyc(S0nxi2i2o,n,nv) ...
-            - TaylorState.intacyc(S0nxi2o2i,n,nv));
-        fluxalpha(2,1) = 1i*(TaylorState.intbcyc(S0nxo,n,nu) ...
-            - TaylorState.intbcyc(S0nxo2i2i,n,nu) ...
-            + TaylorState.intbcyc(S0nxo2i2o,n,nu) ...
-            - TaylorState.intbcyc(S0nxo2o2i,n,nu));
-        fluxalpha(2,2) = 1i*(TaylorState.intbcyc(S0nxi2o2o,n,nu) ...
-            - TaylorState.intbcyc(S0nxi,n,nu) ...
-            + TaylorState.intbcyc(S0nxi2i2o,n,nu) ...
-            - TaylorState.intbcyc(S0nxi2o2i,n,nu));
-        % fluxalpha(2,:) = -1.*fluxalpha(2,:);
+        for i = 1:2
+            for j = 1:2
+                for k = 1:2
+                    fluxalpha(1,i) = fluxalpha(1,i) ...
+                        + (-1)^(k-1)*1i.*TaylorState.intacyc(S0nx{i,j,k},n,nv);
+                    fluxalpha(1,i) = fluxalpha(2,i) ...
+                        + (-1)^(k-1)*1i.*TaylorState.intbcyc(S0nx{i,j,k},n,nu);
+                end
+            end
+        end
     else
         % Sk[mH]
-        SkmHo = taylor.helper.helm_dir_vec_eval(So,mHvalso, ...
-            targinfoo,epslh,zk,dpars,optslho);
-        SkmHi = taylor.helper.helm_dir_vec_eval(Si,mHvalsi, ...
-            targinfoi,epslh,zk,dpars,optslhi);
-        SkmHo2i = taylor.helper.helm_dir_vec_eval(So,mHvalso, ...
-            targinfoi,epslh,zk,dpars);
-        SkmHi2o = taylor.helper.helm_dir_vec_eval(Si,mHvalsi, ...
-            targinfoo,epslh,zk,dpars);
+        % SkmHo = taylor.helper.helm_dir_vec_eval(So,mHvalso, ...
+        %     targinfoo,epslh,zk,dpars,optslho);
+        % SkmHi = taylor.helper.helm_dir_vec_eval(Si,mHvalsi, ...
+        %     targinfoi,epslh,zk,dpars,optslhi);
+        % SkmHo2i = taylor.helper.helm_dir_vec_eval(So,mHvalso, ...
+        %     targinfoi,epslh,zk,dpars);
+        % SkmHi2o = taylor.helper.helm_dir_vec_eval(Si,mHvalsi, ...
+        %     targinfoo,epslh,zk,dpars);
+        % 
+        % SkmHo = array_to_surfacefun(SkmHo.',domo,So);
+        % SkmHi = array_to_surfacefun(SkmHi.',domi,Si);
+        % SkmHo2i = array_to_surfacefun(SkmHo2i.',domi,Si);
+        % SkmHi2o = array_to_surfacefun(SkmHi2o.',domo,So);
 
-        SkmHo = array_to_surfacefun(SkmHo.',domo,So);
-        SkmHi = array_to_surfacefun(SkmHi.',domi,Si);
-        SkmHo2i = array_to_surfacefun(SkmHo2i.',domi,Si);
-        SkmHi2o = array_to_surfacefun(SkmHi2o.',domo,So);
+        SkmH = cell(2);
+        curlSkmH = cell(2);
+        curlS0mH = cell(2);
+        % i: source is mHo or i
+        % j: target is o or i
+        for i = 1:2
+            for j = 1:2
+                if i == j
+                    SkmH{i,j} = taylor.helper.helm_dir_vec_eval(S{i}, ...
+                        mHvals{i},targinfo{i},epslh,zk,dpars,optslh{i});
+                    curlSkmH{i,j} = taylor.dynamic.eval_curlSk(S{i}, ...
+                        zk,mHvals{i},epstaylor,targinfo{i},opts{i});
+                else
+                    SkmH{i,j} = taylor.helper.helm_dir_vec_eval(S{i}, ...
+                        mHvals{i},targinfo{j},epslh,zk,dpars);
+                    curlSkmH{i,j} = taylor.dynamic.eval_curlSk(S{i}, ...
+                        zk,mHvals{i},epstaylor,targinfo{j},opts{j});
+                end
+                curlS0mH{i,j} = taylor.static.eval_curlS0(S{i}, ...
+                    mHvals{i},epstaylor,targinfo{j});
+                SkmH{i,j} = array_to_surfacefun(SkmH{i,j}.',dom{j},S{j});
+                curlSkmH{i,j} = array_to_surfacefun(curlSkmH{i,j}.', ...
+                    dom{j},S{j});
+                curlS0mH{i,j} = array_to_surfacefun(curlS0mH{i,j}.', ...
+                    dom{j},S{j});
+            end
+        end
 
         % curl Sk[mH]
-        curlSkmHo = taylor.dynamic.eval_curlSk(So,zk,mHvalso, ...
-            epstaylor,targinfoo,optso);
-        curlSkmHi = taylor.dynamic.eval_curlSk(Si,zk,mHvalsi, ...
-            epstaylor,targinfoi,optsi);
-        curlSkmHo2i = taylor.dynamic.eval_curlSk(So,zk,mHvalso, ...
-            epstaylor,targinfoi);
-        curlSkmHi2o = taylor.dynamic.eval_curlSk(Si,zk,mHvalsi, ...
-            epstaylor,targinfoo);
-
-        curlSkmHo = array_to_surfacefun(curlSkmHo.',domo,So);
-        curlSkmHi = array_to_surfacefun(curlSkmHi.',domi,Si);
-        curlSkmHo2i = array_to_surfacefun(curlSkmHo2i.',domi,Si);
-        curlSkmHi2o = array_to_surfacefun(curlSkmHi2o.',domo,So);
+        % curlSkmHo = taylor.dynamic.eval_curlSk(So,zk,mHvalso, ...
+        %     epstaylor,targinfoo,optso);
+        % curlSkmHi = taylor.dynamic.eval_curlSk(Si,zk,mHvalsi, ...
+        %     epstaylor,targinfoi,optsi);
+        % curlSkmHo2i = taylor.dynamic.eval_curlSk(So,zk,mHvalso, ...
+        %     epstaylor,targinfoi);
+        % curlSkmHi2o = taylor.dynamic.eval_curlSk(Si,zk,mHvalsi, ...
+        %     epstaylor,targinfoo);
+        % 
+        % curlSkmHo = array_to_surfacefun(curlSkmHo.',domo,So);
+        % curlSkmHi = array_to_surfacefun(curlSkmHi.',domi,Si);
+        % curlSkmHo2i = array_to_surfacefun(curlSkmHo2i.',domi,Si);
+        % curlSkmHi2o = array_to_surfacefun(curlSkmHi2o.',domo,So);
 
         % curl S0[mH]
         % TODO request quadrature correction?
-        curlS0mHo = taylor.static.eval_curlS0(So,mHvalso, ...
-            epstaylor);
-        curlS0mHi = taylor.static.eval_curlS0(Si,mHvalsi, ...
-            epstaylor);
-        curlS0mHo2i = taylor.static.eval_curlS0(So,mHvalso, ...
-            epstaylor,targinfoi);
-        curlS0mHi2o = taylor.static.eval_curlS0(So,mHvalsi, ...
-            epstaylor,targinfoo);
-
-        curlS0mHo = array_to_surfacefun(curlS0mHo.',domo,So);
-        curlS0mHi = array_to_surfacefun(curlS0mHi.',domi,Si);
-        curlS0mHo2i = array_to_surfacefun(curlS0mHo2i.',domi,Si);
-        curlS0mHi2o = array_to_surfacefun(curlS0mHi2o.',domo,So);
+        % curlS0mHo = taylor.static.eval_curlS0(So,mHvalso, ...
+        %     epstaylor);
+        % curlS0mHi = taylor.static.eval_curlS0(Si,mHvalsi, ...
+        %     epstaylor);
+        % curlS0mHo2i = taylor.static.eval_curlS0(So,mHvalso, ...
+        %     epstaylor,targinfoi);
+        % curlS0mHi2o = taylor.static.eval_curlS0(So,mHvalsi, ...
+        %     epstaylor,targinfoo);
+        % 
+        % curlS0mHo = array_to_surfacefun(curlS0mHo.',domo,So);
+        % curlS0mHi = array_to_surfacefun(curlS0mHi.',domi,Si);
+        % curlS0mHo2i = array_to_surfacefun(curlS0mHo2i.',domi,Si);
+        % curlS0mHi2o = array_to_surfacefun(curlS0mHi2o.',domo,So);
 
         fluxalpha = zeros(2);
         % fluxalpha(1,1) = TaylorState.intacyc( ...
         %     1i.*(SkmHo + (curlSkmHo - curlS0mHo)./zk), n, nv) ...
-        %     - TaylorState.intacyc( ...
-        %     1i.*(SkmHo2i + (curlSkmHo2i - curlS0mHo2i)./zk), n, nv);
-        % fluxalpha(1,2) = TaylorState.intacyc( ...
-        %     1i.*(SkmHi2o + (curlSkmHi2o - curlS0mHi2o)./zk), n, nv) ...
+        %     + TaylorState.intacyc( ...
+        %     1i.*(SkmHi2o + (curlSkmHi2o - curlS0mHi2o)./zk), n, nv);
+        % fluxalpha(1,2) = -TaylorState.intacyc( ...
+        %     1i.*(SkmHo2i + (curlSkmHo2i - curlS0mHo2i)./zk), n, nv) ...
         %     - TaylorState.intacyc( ...
         %     1i.*(SkmHi + (curlSkmHi - curlS0mHi)./zk), n, nv);
         % fluxalpha(2,1) = TaylorState.intbcyc( ...
         %     1i.*(SkmHo + (curlSkmHo - curlS0mHo)./zk), n, nu) ...
-        %     - TaylorState.intbcyc( ...
-        %     1i.*(SkmHo2i + (curlSkmHo2i - curlS0mHo2i)./zk), n, nu);
-        % fluxalpha(2,2) = TaylorState.intbcyc( ...
-        %     1i.*(SkmHi2o + (curlSkmHi2o - curlS0mHi2o)./zk), n, nu) ...
+        %     + TaylorState.intbcyc( ...
+        %     1i.*(SkmHi2o + (curlSkmHi2o - curlS0mHi2o)./zk), n, nu);
+        % fluxalpha(2,2) = -TaylorState.intbcyc( ...
+        %     1i.*(SkmHo2i + (curlSkmHo2i - curlS0mHo2i)./zk), n, nu) ...
         %     - TaylorState.intbcyc( ...
         %     1i.*(SkmHi + (curlSkmHi - curlS0mHi)./zk), n, nu);
-        fluxalpha(1,1) = TaylorState.intacyc( ...
-            1i.*(SkmHo + (curlSkmHo - curlS0mHo)./zk), n, nv) ...
-            + TaylorState.intacyc( ...
-            1i.*(SkmHi2o + (curlSkmHi2o - curlS0mHi2o)./zk), n, nv);
-        fluxalpha(1,2) = -TaylorState.intacyc( ...
-            1i.*(SkmHo2i + (curlSkmHo2i - curlS0mHo2i)./zk), n, nv) ...
-            - TaylorState.intacyc( ...
-            1i.*(SkmHi + (curlSkmHi - curlS0mHi)./zk), n, nv);
-        fluxalpha(2,1) = TaylorState.intbcyc( ...
-            1i.*(SkmHo + (curlSkmHo - curlS0mHo)./zk), n, nu) ...
-            + TaylorState.intbcyc( ...
-            1i.*(SkmHi2o + (curlSkmHi2o - curlS0mHi2o)./zk), n, nu);
-        fluxalpha(2,2) = -TaylorState.intbcyc( ...
-            1i.*(SkmHo2i + (curlSkmHo2i - curlS0mHo2i)./zk), n, nu) ...
-            - TaylorState.intbcyc( ...
-            1i.*(SkmHi + (curlSkmHi - curlS0mHi)./zk), n, nu);
+        for i = 1:2
+            for j = 1:2
+                fluxalpha(1,i) = fluxalpha(1,i) ...
+                    + (-1)^(j-1).*TaylorState.intacyc( ...
+                    1i.*(SkmH{i} + (curlSkmH{i}-curlS0mH{i})./zk), n, nv);
+                fluxalpha(2,i) = fluxalpha(2,i) ...
+                    + (-1)^(j-1).*TaylorState.intbcyc( ...
+                    1i.*(SkmH{i} + (curlSkmH{i}-curlS0mH{i})./zk), n, nu);
+            end
+        end
     end    
 
 end

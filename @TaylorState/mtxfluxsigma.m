@@ -296,7 +296,7 @@ else
         m0vals = cell(2);
         for i = 1:2
             for j = 1:2
-                m0{i,j} = TaylorState.debyem0(sig{i,j},zk,L{i},vn{i});
+                m0{i,j} = TaylorState.debyem0(sigma{i,j},zk,L{i},vn{i});
                 m0vals{i,j} = surfacefun_to_array(m0{i,j},dom{i},S{i});
             end
         end
@@ -358,12 +358,12 @@ else
                 for k = 1:2
                     if i == k
                         temp = taylor.dynamic.eval_curlSk(S{i},zk, ...
-                            m0vals{i,j},epstaylor,targinfo{i},opts{i});
+                            m0vals{i,j}.',epstaylor,targinfo{i},opts{i});
                         curlSkm0{i,j,k} = array_to_surfacefun(temp.', ...
                             dom{i},S{i});
                     else
                         temp = taylor.dynamic.eval_curlSk(S{i},zk, ...
-                            m0vals{i,j},epstaylor,targinfo{k});
+                            m0vals{i,j}.',epstaylor,targinfo{k});
                         curlSkm0{i,j,k} = array_to_surfacefun(temp.', ...
                             dom{k},S{k});
                     end

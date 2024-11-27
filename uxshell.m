@@ -1,6 +1,6 @@
 % --- Geometry parameters ---
-n = 8; % polynomial order + 1
-nv = 8; % number of patches in poloidal direction
+n = 6; % polynomial order + 1
+nv = 6; % number of patches in poloidal direction
 nu = nv*3; % number of patches in toroidal direction
 r = 2.0; % major radius
 ao = 1.0; % outer minor radius
@@ -14,7 +14,7 @@ domparams = [n, nu, nv];
 flux = [1.0,0.7];
 
 % --- Beltrami parameter ---
-zk = 0;
+zk = 1.0;
 
 % --- Tolerances ---
 tol = 1e-6;

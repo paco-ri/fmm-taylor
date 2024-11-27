@@ -173,10 +173,10 @@ else
             optslhipol.format = 'rsc';
             optslhipol.precomp_quadrature = Qlhipol;
             optslh = cell(2);
-            optslh{1,1} = optsolhtor;
-            optslh{1,2} = optsilhtor;
-            optslh{2,1} = optsolhpol;
-            optslh{2,2} = optsilhpol;
+            optslh{1,1} = optslhotor;
+            optslh{1,2} = optslhitor;
+            optslh{2,1} = optslhopol;
+            optslh{2,2} = optslhipol;
         else
             optslh = varargin{2};
         end
@@ -204,10 +204,6 @@ else
             end
         end
         fluxsigma = zeros(2,numfuns);
-        % fluxsigma(1,1) = sum(gradS0sig{1,1,1}(2,:).*weights{1}) ...
-        %     + sum(gradS0sig{2,1,1}(2,:).*weights{1});
-        % fluxsigma(1,2) = sum(gradS0sig{1,1,2}(2,:).*weights{1}) ...
-        %     + sum(gradS0sig{2,1,2}(2,:).*weights{1});
         for i = 1:2
             for j = 1:numfuns
                 for k = 1:2
@@ -219,7 +215,29 @@ else
             end
         end
     else
-        disp('nonzero zk todo')
+        gradSksig = cell(2,2,2);
+        for i = 1:2
+            for j = 1:numfuns
+                for k = 1:2
+                    % i source (outer/inner)
+                    % j column
+                    % k tor/pol
+                    gradSksig{i,j,k} = taylor.dynamic.eval_gradSk(S{i}, ...
+                        zk,sig{i,j},epstaylor,targinfo{k},opts{k,i});
+                end
+            end
+        end
+        fluxsigma = zeros(2,numfuns);
+        for i = 1:2
+            for j = 1:numfuns
+                for k = 1:2
+                    % k + 1 is 2nd or 3rd component, depending on 
+                    % toroidal vs poloidal flux
+                    fluxsigma(k,j) = fluxsigma(k,j) ...
+                        + (-1)^(k-1).*sum(gradSksig{i,j,k}(k+1,:).*weights{k});
+                end
+            end
+        end
     end
 
 end

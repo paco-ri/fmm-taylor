@@ -167,10 +167,10 @@ else
             optslhipol.format = 'rsc';
             optslhipol.precomp_quadrature = Qlhipol;
             optslh = cell(2);
-            optslh{1,1} = optsolhtor;
-            optslh{1,2} = optsilhtor;
-            optslh{2,1} = optsolhpol;
-            optslh{2,2} = optsilhpol;
+            optslh{1,1} = optslhotor;
+            optslh{1,2} = optslhitor;
+            optslh{2,1} = optslhopol;
+            optslh{2,2} = optslhipol;
         else
             optslh = varargin{2};
         end
@@ -248,10 +248,10 @@ else
             optslhipol.format = 'rsc';
             optslhipol.precomp_quadrature = Qlhipol;
             optslh = cell(2);
-            optslh{1,1} = optsolhtor;
-            optslh{1,2} = optsilhtor;
-            optslh{2,1} = optsolhpol;
-            optslh{2,2} = optsilhpol;
+            optslh{1,1} = optslhotor;
+            optslh{1,2} = optslhitor;
+            optslh{2,1} = optslhopol;
+            optslh{2,2} = optslhipol;
         else
             optslh = varargin{2};
         end
@@ -268,7 +268,14 @@ else
             end
         end
     else
-        disp('nonzero zk todo')
+        fluxalpha = zeros(2);
+        for i = 1:2
+            mHvals = surfacefun_to_array(mH{i},dom{i},S{i}); % mH on surface i
+            for j = 1:2
+                curlSmH = taylor.dynamic.eval_curlSk(S{i},zk,mHvals.',...
+                    epstaylor,targinfo{j},opts{j,i});
+                fluxalpha(j,i) = (-1)^(j-1).*sum(curlSmH(j+1,:).*weights{j});
+            end
+        end
     end
-
 end
