@@ -175,87 +175,6 @@ else
             optslh = varargin{2};
         end
     end
-    targtor = [];
-    targtor.r = nodes{1}; 
-    targpol = [];
-    targpol.r = nodes{2};
-    targinfo = {targtor,targpol};
-
-    So = S{1};
-    Si = S{2};
-
-    if nargin < nreqarg + 1
-        if abs(zk) < eps
-            Qotor = taylor.static.get_quadrature_correction(So, ...
-                epstaylor,targtor);
-            Qitor = taylor.static.get_quadrature_correction(Si, ...
-                epstaylor,targtor);
-            Qopol = taylor.static.get_quadrature_correction(So, ...
-                epstaylor,targpol);
-            Qipol = taylor.static.get_quadrature_correction(Si, ...
-                epstaylor,targpol);
-        else
-            Qotor = taylor.dynamic.get_quadrature_correction(So,zk, ...
-                epstaylor,targtor);
-            Qitor = taylor.dynamic.get_quadrature_correction(Si,zk, ...
-                epstaylor,targtor);
-            Qopol = taylor.dynamic.get_quadrature_correction(So,zk, ...
-                epstaylor,targpol);
-            Qipol = taylor.dynamic.get_quadrature_correction(Si,zk, ...
-                epstaylor,targpol);
-        end
-        optsotor = [];
-        optsotor.format = 'rsc';
-        optsotor.precomp_quadrature = Qotor;
-        optsitor = [];
-        optsitor.format = 'rsc';
-        optsitor.precomp_quadrature = Qitor;
-        optsopol = [];
-        optsopol.format = 'rsc';
-        optsopol.precomp_quadrature = Qopol;
-        optsipol = [];
-        optsipol.format = 'rsc';
-        optsipol.precomp_quadrature = Qipol;
-        opts = cell(2);
-        opts{1,1} = optsotor;
-        opts{1,2} = optsitor;
-        opts{2,1} = optsopol;
-        opts{2,2} = optsipol;
-    else
-        opts = varargin{1};
-    end
-    
-    if abs(zk) >= eps
-        if nargin < nreqarg + 2
-            Qlhotor = helm3d.dirichlet.get_quadrature_correction(So, ...
-                epslh,zk,dpars,targtor);
-            Qlhitor = helm3d.dirichlet.get_quadrature_correction(Si, ...
-                epslh,zk,dpars,targtor);
-            Qlhopol = helm3d.dirichlet.get_quadrature_correction(So, ...
-                epslh,zk,dpars,targpol);
-            Qlhipol = helm3d.dirichlet.get_quadrature_correction(Si, ...
-                epslh,zk,dpars,targpol);
-            optslhotor = [];
-            optslhotor.format = 'rsc';
-            optslhotor.precomp_quadrature = Qlhotor;
-            optslhitor = [];
-            optslhitor.format = 'rsc';
-            optslhitor.precomp_quadrature = Qlhitor;
-            optslhopol = [];
-            optslhopol.format = 'rsc';
-            optslhopol.precomp_quadrature = Qlhopol;
-            optslhipol = [];
-            optslhipol.format = 'rsc';
-            optslhipol.precomp_quadrature = Qlhipol;
-            optslh = cell(2);
-            optslh{1,1} = optslhotor;
-            optslh{1,2} = optslhitor;
-            optslh{2,1} = optslhopol;
-            optslh{2,2} = optslhipol;
-        else
-            optslh = varargin{2};
-        end
-    end
 
     if abs(zk) < eps
         fluxalpha = zeros(2);
@@ -273,8 +192,11 @@ else
             mHvals = surfacefun_to_array(mH{i},dom{i},S{i}); % mH on surface i
             for j = 1:2
                 curlSmH = taylor.dynamic.eval_curlSk(S{i},zk,mHvals.',...
-                    epstaylor,targinfo{j},opts{j,i});
-                fluxalpha(j,i) = (-1)^(j-1).*sum(curlSmH(j+1,:).*weights{j});
+                    epstaylor,targinfo{j});%,opts{j,i});
+                SmH = taylor.helper.helm_dir_vec_eval(S{i},mHvals.',...
+                    targinfo{j},epslh,zk,dpars);%,optslh{j,i});
+                integrand = curlSmH + zk.*SmH;
+                fluxalpha(j,i) = (-1)^(j-1).*sum(integrand(j+1,:).*weights{j});
             end
         end
     end
