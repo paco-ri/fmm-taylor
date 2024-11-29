@@ -10,12 +10,12 @@ domo = circulartorus(n,nu,nv,ao,r);
 domi = circulartorus(n,nu,nv,ai,r);
 doms = {domo, domi};
 
-onesurf = false;
+onesurf = true;
 if onesurf
     ai = 0;
 end
 
-zk = 0.5;
+zk = 0;%.5;
 
 % Reference Taylor State
 ntheta = 1e3;
@@ -79,10 +79,10 @@ B = ts.surface_B();
 % interior point
 intpt = [2.8*cos(pi/12) 2.8*sin(pi/12) 0.01];
 h = 1e-6;
-% [errB, curlB, kB] = ts.fd_test(intpt,h);
-% disp(errB)
-[errB2, curlB2, kB2] = rts.fd_test(intpt,h);
-disp(errB2)
+[errB, curlB, kB] = ts.fd_test(intpt,h);
+disp(errB)
+% [errB2, curlB2, kB2] = rts.fd_test(intpt,h);
+% disp(errB2)
 
 % fprintf('true flux = [%f,%f]\n', torflux, polflux)
 fprintf('true flux = [%f,%f]\n', flux(1), flux(2))

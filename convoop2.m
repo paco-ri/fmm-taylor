@@ -2,7 +2,7 @@
 tol = 1e-4;
 
 % --- Beltrami parameter ---
-zk = 0.5;
+zk = 0;
 
 % --- Geometry parameters ---
 ns = [5];% 7 9]; % polynomial order + 1
