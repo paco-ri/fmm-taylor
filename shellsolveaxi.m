@@ -10,38 +10,41 @@ domo = circulartorus(n,nu,nv,ao,r);
 domi = circulartorus(n,nu,nv,ai,r);
 doms = {domo, domi};
 
-onesurf = true;
+onesurf = false;
+doreftaylor = false;
 if onesurf
     ai = 0;
 end
 
 zk = 0;%.5;
 
-% Reference Taylor State
-ntheta = 1e3;
-rmin = 2.0;
-rmaj = r;
-jmag = 1.0;
-B0o = reftaylorsurffun(domo,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
-B0i = reftaylorsurffun(domi,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
-
-% plot(norm(B0o))
-
-nr = 16;
-nt = 40;
-np = 40;
-[tornodes, torweights] = toroidalfluxquad(nr,nt,r,ao,r,ai);
-[polnodes, polweights] = poloidalfluxquad(nr,np,r,ao,r,ai);
-
-torflux = 0;
-for i = 1:nr*nt
-    B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,tornodes(:,i));
-    torflux = torflux + B0eval(2)*torweights(i);
-end
-polflux = 0;
-for i = 1:nr*np
-    B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,polnodes(:,i));
-    polflux = polflux + B0eval(3)*polweights(i); % note sign
+if doreftaylor
+    % Reference Taylor State
+    ntheta = 1e3;
+    rmin = 2.0;
+    rmaj = r;
+    jmag = 1.0;
+    B0o = reftaylorsurffun(domo,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
+    B0i = reftaylorsurffun(domi,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
+    
+    % plot(norm(B0o))
+    
+    nr = 16;
+    nt = 40;
+    np = 40;
+    [tornodes, torweights] = toroidalfluxquad(nr,nt,r,ao,r,ai);
+    [polnodes, polweights] = poloidalfluxquad(nr,np,r,ao,r,ai);
+    
+    torflux = 0;
+    for i = 1:nr*nt
+        B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,tornodes(:,i));
+        torflux = torflux + B0eval(2)*torweights(i);
+    end
+    polflux = 0;
+    for i = 1:nr*np
+        B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,polnodes(:,i));
+        polflux = polflux + B0eval(3)*polweights(i); % note sign
+    end
 end
 
 % plot3(tornodes(1,:),tornodes(2,:),tornodes(3,:),'.')
@@ -54,45 +57,54 @@ end
 flux = [1.0,1.0];
 tol = 1e-7;
 
-ts = TaylorState(doms,[n,nu,nv],zk,flux,tol);
-if onesurf
-    ts = TaylorState(domo,[n,nu,nv],zk,flux(1),1e-6);
+if doreftaylor
+    rts = RefTaylorState(doms,[n,nu,nv],zk,[torflux,polflux],{B0o,B0i}, ...
+    {tornodes,polnodes},{torweights,polweights},tol);
+    if onesurf
+        rts = RefTaylorState(domo,[n,nu,nv],zk,torflux,{B0o,B0i}, ...
+            {tornodes},{torweights},tol);
+    end
+    rts = rts.solve(true);
+    B = rts.surface_B();
+
+    plot(norm(B0o-B{1}));
+    colorbar
+else
+    ts = TaylorState(doms,[n,nu,nv],zk,flux,tol);
+    if onesurf
+        ts = TaylorState(domo,[n,nu,nv],zk,flux(1),1e-6);
+    end
+    ts = ts.solve(true);
 end
-
-% rts = RefTaylorState(doms,[n,nu,nv],zk,[torflux,polflux],{B0o,B0i}, ...
-%     {tornodes,polnodes},{torweights,polweights},tol);
-% if onesurf
-%     rts = RefTaylorState(domo,[n,nu,nv],zk,torflux,{B0o,B0i}, ...
-%         {tornodes},{torweights},tol);
-% end
-
-ts = ts.solve(true);
-% rts = rts.solve(true);
-
-B = ts.surface_B();
-% B = rts.surface_B();
-
-% plot(norm(B0o-B{1}));
-% colorbar
 
 % Finite difference test
 % interior point
 intpt = [2.8*cos(pi/12) 2.8*sin(pi/12) 0.01];
 h = 1e-6;
-[errB, curlB, kB] = ts.fd_test(intpt,h);
-disp(errB)
-% [errB2, curlB2, kB2] = rts.fd_test(intpt,h);
-% disp(errB2)
 
-% fprintf('true flux = [%f,%f]\n', torflux, polflux)
-fprintf('true flux = [%f,%f]\n', flux(1), flux(2))
+if doreftaylor
+    [errB2, curlB2, kB2] = rts.fd_test(intpt,h);
+    disp(errB2)
+    fprintf('true flux = [%f,%f]\n', torflux, polflux)
 
-intBtor = ts.interior_B(tornodes);
-torfluxcheck = sum(intBtor(2,:).*torweights);
-intBpol = ts.interior_B(polnodes);
-polfluxcheck = -sum(intBpol(3,:).*polweights); % note sign
-fprintf('TS flux = [%f+%fi,%f+%fi]\n', real(torfluxcheck), ...
-    imag(torfluxcheck), real(polfluxcheck), imag(polfluxcheck))
+    intBtor = rts.interior_B(tornodes);
+    torfluxcheck = sum(intBtor(2,:).*torweights);
+    intBpol = rts.interior_B(polnodes);
+    polfluxcheck = sum(intBpol(3,:).*polweights);
+    fprintf('RTS flux = [%f+i%f,%f+i%f]\n', real(torfluxcheck), ...
+        imag(torfluxcheck), real(polfluxcheck), imag(polfluxcheck))
+else
+    [errB, curlB, kB] = ts.fd_test(intpt,h);
+    disp(errB)
+    fprintf('true flux = [%f,%f]\n', flux(1), flux(2))
+
+    intBtor = ts.interior_B(tornodes);
+    torfluxcheck = sum(intBtor(2,:).*torweights);
+    intBpol = ts.interior_B(polnodes);
+    polfluxcheck = -sum(intBpol(3,:).*polweights); % note sign
+    fprintf('TS flux = [%f+%fi,%f+%fi]\n', real(torfluxcheck), ...
+        imag(torfluxcheck), real(polfluxcheck), imag(polfluxcheck))
+end
 
 % intBtor = rts.interior_B(tornodes);
 % torfluxcheck = sum(intBtor(2,:).*torweights);

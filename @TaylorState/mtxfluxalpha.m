@@ -270,6 +270,7 @@ else
                 end
             end
         end
+        
     else
         % Sk[mH]
         % SkmHo = taylor.helper.helm_dir_vec_eval(So,mHvalso, ...
