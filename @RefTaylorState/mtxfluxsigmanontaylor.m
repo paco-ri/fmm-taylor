@@ -95,8 +95,8 @@ if isa(dom,'surfacemesh')
     
     % Compute flux
     % ASSUMES y^ IS THE NORMAL TO THE CROSS-SECTION
-    fluxsigma = dot(sigmaterms(2,:),weights);
-    % fluxsigma = sum(sigmaterms(2+pol,:).*weights);
+    % fluxsigma = dot(sigmaterms(2,:),weights);
+    fluxsigma = sum(sigmaterms(2,:).*weights);
 
 else
 
