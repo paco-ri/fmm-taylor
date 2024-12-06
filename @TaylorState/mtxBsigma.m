@@ -38,10 +38,9 @@ function Bsigma = mtxBsigma(S,dom,L,sigmavals,zk,epstaylor,epslh,varargin)
 
 dpars = [1.0,0];
 
+nreqarg = 7;
 % torus case
 if length(dom) == 1
-
-    nreqarg = 7;
     if nargin < nreqarg + 1
         targinfo = S{1};
     else
@@ -108,7 +107,7 @@ if length(dom) == 1
 else
     
     % targinfoo = outer surface, targinfoi = inner surface
-    if nargin < 7
+    if nargin < nreqarg + 1
         targinfoo = S{1};
         targinfoi = S{2};
     else
@@ -117,7 +116,7 @@ else
     end
 
     % near quadrature corrections for +taylor routines
-    if nargin < 8
+    if nargin < nreqarg + 2
         if abs(zk) < eps
             Qo = taylor.static.get_quadrature_correction(S{1}, ...
                 epstaylor,targinfoo);
@@ -143,7 +142,7 @@ else
     % near quadrature corrections for Helmholtz layer potential
     % only needed if zk != 0 
     if abs(zk) >= eps
-        if nargin < 9
+        if nargin < nreqarg + 3
             Qlho = helm3d.dirichlet.get_quadrature_correction(S{1}, ...
                 epslh,zk,dpars,targinfoo);
             Qlhi = helm3d.dirichlet.get_quadrature_correction(S{2}, ...

@@ -2,11 +2,11 @@
 tol = 1e-4;
 
 % --- Beltrami parameter ---
-zk = 0.5;
+zk = .5;
 
 % --- Geometry parameters ---
-ns = [5];% 7 9]; % polynomial order + 1
-nvs = [4 6];% 8 10]; % number of patches in poloidal direction
+ns = [5 7];% 9]; % polynomial order + 1
+nvs = [4 6];% 8];% 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
@@ -46,7 +46,7 @@ for n = ns
         polflux = 0;
         for i = 1:nr*np
             B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,polnodes(:,i));
-            polflux = polflux + B0eval(3)*polweights(i); % note sign
+            polflux = polflux - B0eval(3)*polweights(i); % note sign
         end
         
         B0 = {B0o,B0i};

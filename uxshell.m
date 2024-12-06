@@ -14,7 +14,7 @@ domparams = [n, nu, nv];
 flux = [1.0,0.7];
 
 % --- Beltrami parameter ---
-zk = 1.0;
+zk = 0.1;
 
 % --- Tolerances ---
 tol = 1e-6;
@@ -29,3 +29,11 @@ center = [(r+ai+.1)*cos(phi) (r+ai+.1)*sin(phi) 0];
 
 [errB, curlB, kB] = ts.fd_test(center,h);
 fprintf('at interior pt norm(curl B - k B) = %f\n',norm(errB));
+
+figure(1)
+plot(dot(ts.vn{1},B{1}))
+colorbar
+
+figure(2)
+plot(dot(ts.vn{2},B{2}))
+colorbar

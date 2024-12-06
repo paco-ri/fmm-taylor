@@ -4,8 +4,6 @@ function Balpha = mtxBalpha(S,dom,mH,zk,epstaylor,epslh,varargin)
 %   Required arguments:
 %     * S: surfer object (see fmm3dbie/matlab README for details)
 %     * dom: surfacemesh version of S (see surfacehps for details)
-%     * domparams: parameter describing dom and circulation [io]
-%         io: [int] if 1, negate vn because inner torus
 %     * mH: [surfacefunv] density for which 
 %                  n . curl S0[mH]
 %           is computed. Note that there is no factor of i. 
@@ -40,16 +38,17 @@ function Balpha = mtxBalpha(S,dom,mH,zk,epstaylor,epslh,varargin)
 
 dpars = [1.0,0];
 
+nreqarg = 6;
 % torus case
 if length(dom) == 1
 
-    if nargin < 7
+    if nargin < nreqarg + 1
         targinfo = S{1};
     else
         targinfo = varargin{1}{1};
     end
     
-    if nargin < 8
+    if nargin < nreqarg + 2
         if abs(zk) < eps
             Q = taylor.static.get_quadrature_correction(S{1},epstaylor, ...
                 targinfo);
@@ -64,7 +63,7 @@ if length(dom) == 1
         opts = varargin{2}{1};
     end
     
-    if nargin < 9
+    if nargin < nreqarg + 3
         if abs(zk) < eps
             Qlh = lap3d.dirichlet.get_quadrature_correction(S, ...
                 epslh,dpars,targinfo,opts);
@@ -103,7 +102,7 @@ if length(dom) == 1
 else
 
     % targinfoo = outer surface, targinfoi = inner surface
-    if nargin < 7
+    if nargin < nreqarg + 1
         targinfoo = S{1};
         targinfoi = S{2};
     else
@@ -112,7 +111,7 @@ else
     end
 
     % near quadrature corrections for +taylor routines
-    if nargin < 8
+    if nargin < nreqarg + 2
         if abs(zk) < eps
             Qo = taylor.static.get_quadrature_correction(S{1}, ...
                 epstaylor,targinfoo);
@@ -138,7 +137,7 @@ else
     % near quadrature corrections for Helmholtz layer potential
     % only needed if zk != 0 
     if abs(zk) >= eps
-        if nargin < 9
+        if nargin < nreqarg + 3
             Qlho = helm3d.dirichlet.get_quadrature_correction(S{1}, ...
                 epslh,zk,dpars,targinfoo);
             Qlhi = helm3d.dirichlet.get_quadrature_correction(S{2}, ...

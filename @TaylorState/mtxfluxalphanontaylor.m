@@ -1,18 +1,16 @@
-function fluxsigma = mtxfluxsigmanontaylor(S,dom,vn,L,nodes, ...
-    weights,sigma,zk,epstaylor,epslh,varargin)
-%MTXFLUXSIGMANONTAYLOR compute sigma-dep. terms of flux condition for
+function fluxalpha = mtxfluxalphanontaylor(S,dom,nodes,weights, ...
+    mH,zk,epstaylor,epslh,varargin)
+%MTXFLUXALPHANONTAYLOR compute alpha coefficient in flux condition for
 %                      a non-Taylor-state magnetic field
 % 
 %   Required arguments:
 %     * S: surfer object (see fmm3dbie/matlab README for details)
-%     * dom: surfacemesh version of S (see surfacefun for details)
-%     * vn: normal vectors on S
-%     * L: surfaceop on S (see surfacefun for details)
+%     * dom: surfacemesh version of S (see surfacehps for details)
 %     * nodes: [double(3,*)] quadrature nodes for computing flux 
 %              Gauss-Legendre in r, trapezoidal in theta
 %     * weights: [double(*)] corresponding quadrature weights
-%     * sigma: [surfacefun] density for which 
-%                  \oint (grad S_0[sigma]) . da
+%     * mH: [surfacefunv] density for which 
+%                  \oint curl S0[mH] . da
 %              is computed
 %     * zk: [double complex] wavenumber
 %     * epstaylor: [double] precision requested for taylor routines
@@ -36,14 +34,15 @@ function fluxsigma = mtxfluxsigmanontaylor(S,dom,vn,L,nodes, ...
 
 dpars = [1.0, 0];
 
-nreqarg = 10;
+nreqarg = 8;
 
 if isa(dom,'surfacemesh')
 
     targinfo = [];
-    targinfo.r = nodes; 
-
+    targinfo.r = nodes;
     if nargin < nreqarg + 1
+        targinfo = [];
+        targinfo.r = nodes;
         opts = [];
         opts.format = 'rsc';
         if abs(zk) < eps
@@ -70,33 +69,28 @@ if isa(dom,'surfacemesh')
         end
     end
     
-    sigmavals = surfacefun_to_array(sigma,dom,S);
-    sigmavals = sigmavals.';
+    mHvals = surfacefun_to_array(mH,dom,S);
+    mHvals = mHvals.';
     
     % Evaluate layer potential
     if abs(zk) < eps
-        sigmaterms = taylor.static.eval_gradS0(S,sigmavals,epstaylor, ...
-            targinfo,opts);
+        mHterms = taylor.static.eval_curlS0(S,mHvals,epstaylor,targinfo,opts);
     else
-        gradSsigma = taylor.dynamic.eval_gradSk(S,zk,sigmavals,epstaylor, ...
+        curlSmH = taylor.dynamic.eval_curlSk(S,zk,mHvals,epstaylor, ...
             targinfo,opts);
-        m0 = TaylorState.debyem0(sigma,zk,L,vn);
-        m0vals = surfacefun_to_array(m0,dom,S);
-        m0vals = m0vals.';
-        curlSkm0 = taylor.dynamic.eval_curlSk(S,zk,m0vals,epstaylor, ...
-            targinfo,opts);
-        Skm0 = complex(zeros(size(nodes)));
-        for j = 1:3
-            Skm0(j,:) = helm3d.dirichlet.eval(S,m0vals(j,:),targinfo,epslh, ...
-                zk,dpars,optslh);
+        % compute Sk[mH]
+        SmH = complex(zeros(size(nodes)));
+        for j=1:3
+            SmH(j,:) = helm3d.dirichlet.eval(S,mHvals(j,:),targinfo,epslh, ...
+                zk,[1.0 0],optslh);
         end
-        sigmaterms = gradSsigma - 1i.*(zk.*Skm0 + curlSkm0);
+        mHterms = curlSmH + zk.*SmH;
     end
     
     % Compute flux
     % ASSUMES y^ IS THE NORMAL TO THE CROSS-SECTION
-    % fluxsigma = dot(sigmaterms(2,:),weights);
-    fluxsigma = sum(sigmaterms(2,:).*weights);
+    % fluxalpha = dot(mHterms(2,:),weights);
+    fluxalpha = sum(mHterms(2,:).*weights);
 
 else
 
@@ -182,75 +176,28 @@ else
         end
     end
 
-    numfuns = size(sigma,2);
-    sig = cell(2,numfuns);
-    for i = 1:2
-        for j = 1:numfuns
-            sig{i,j} = surfacefun_to_array(sigma{i,j},dom{i},S{i});
-        end
-    end
-
     if abs(zk) < eps
-        gradS0sig = cell(2,2,2);
+        fluxalpha = zeros(2);
         for i = 1:2
-            for j = 1:numfuns
-                for k = 1:2
-                    % i source (outer/inner)
-                    % j column
-                    % k tor/pol
-                    gradS0sig{i,j,k} = taylor.static.eval_gradS0(S{i}, ...
-                        sig{i,j},epstaylor,targinfo{k},opts{k,i});
-                end
-            end
-        end
-        fluxsigma = zeros(2,numfuns);
-        for i = 1:2
-            for j = 1:numfuns
-                for k = 1:2
-                    % k + 1 is 2nd or 3rd component, depending on 
-                    % toroidal vs poloidal flux
-                    fluxsigma(k,j) = fluxsigma(k,j) ...
-                        + (-1)^(k-1).*sum(gradS0sig{i,j,k}(k+1,:).*weights{k});
-                end
+            mHvals = surfacefun_to_array(mH{i},dom{i},S{i}); % mH on surface i
+            for j = 1:2
+                curlSmH = taylor.static.eval_curlS0(S{i},mHvals.',...
+                    epstaylor,targinfo{j},opts{j,i});
+                fluxalpha(j,i) = (-1)^(j-1).*sum(curlSmH(j+1,:).*weights{j});
             end
         end
     else
-        gradSksig = cell(2,2,2);
-        curlSkm0 = cell(2,2,2);
-        Skm0 = cell(2,2,2);
+        fluxalpha = zeros(2);
         for i = 1:2
-            for j = 1:numfuns
-                m0 = TaylorState.debyem0(sigma{i,j},zk,L{i},vn{i});
-                m0vals = surfacefun_to_array(m0,dom{i},S{i});
-                m0vals = m0vals.';
-                for k = 1:2
-                    % i source (outer/inner)
-                    % j column
-                    % k tor/pol
-                    gradSksig{i,j,k} = taylor.dynamic.eval_gradSk(S{i}, ...
-                        zk,sig{i,j},epstaylor,targinfo{k});%,opts{k,i});
-                    curlSkm0{i,j,k} = taylor.dynamic.eval_curlSk(S{i}, ...
-                        zk,m0vals,epstaylor,targinfo{k});%,opts{k,i});
-                    Skm0{i,j,k} = taylor.helper.helm_dir_vec_eval(S{i}, ...
-                        m0vals,targinfo{k},epslh,zk,dpars);%,optslh{k,i});
-                end
-            end
-        end
-        fluxsigma = zeros(2,numfuns);
-        for i = 1:2
-            for j = 1:numfuns
-                for k = 1:2
-                    % k+1 is 2nd or 3rd component, depending on 
-                    % toroidal vs poloidal flux 
-                    integrand = gradSksig{i,j,k} - 1i.*(zk.*Skm0{i,j,k} ...
-                        + curlSkm0{i,j,k});
-                    fluxsigma(k,j) = fluxsigma(k,j) ...
-                        + (-1)^(k-1).*sum(integrand(k+1,:).*weights{k});
-                end
+            mHvals = surfacefun_to_array(mH{i},dom{i},S{i}); % mH on surface i
+            for j = 1:2
+                curlSmH = taylor.dynamic.eval_curlSk(S{i},zk,mHvals.',...
+                    epstaylor,targinfo{j},opts{j,i});
+                SmH = taylor.helper.helm_dir_vec_eval(S{i},mHvals.',...
+                    targinfo{j},epslh,zk,dpars,optslh{j,i});
+                integrand = curlSmH + zk.*SmH;
+                fluxalpha(j,i) = (-1)^(j-1).*sum(integrand(j+1,:).*weights{j});
             end
         end
     end
-
-end
-
 end
