@@ -169,18 +169,20 @@ classdef TaylorState
                 opts.format = format;
             end
             
-            obj.quad_opts_taylor = cell(1,obj.nsurfaces);
+            obj.quad_opts_taylor = cell(obj.nsurfaces);
             for i = 1:obj.nsurfaces
-                if abs(obj.zk) < eps
-                    Q = taylor.static.get_quadrature_correction(obj.surf{i}, ...
-                        obj.eps_taylor,obj.surf{i},opts);
-                else
-                    Q = taylor.dynamic.get_quadrature_correction(obj.surf{i}, ...
-                        obj.zk,obj.eps_taylor,obj.surf{i},opts);
+                for j = 1:obj.nsurfaces
+                    if abs(obj.zk) < eps
+                        Q = taylor.static.get_quadrature_correction(obj.surf{i}, ...
+                            obj.eps_taylor,obj.surf{j},opts);
+                    else
+                        Q = taylor.dynamic.get_quadrature_correction(obj.surf{i}, ...
+                            obj.zk,obj.eps_taylor,obj.surf{j},opts);
+                    end
+                    obj.quad_opts_taylor{i,j} = [];
+                    obj.quad_opts_taylor{i,j}.format = format;
+                    obj.quad_opts_taylor{i,j}.precomp_quadrature = Q;                    
                 end
-                obj.quad_opts_taylor{i} = [];
-                obj.quad_opts_taylor{i}.format = format;
-                obj.quad_opts_taylor{i}.precomp_quadrature = Q;
             end
         end
 
@@ -206,18 +208,20 @@ classdef TaylorState
                 opts.format = format;
             end
             
-            obj.quad_opts_laphelm = cell(1,obj.nsurfaces);
+            obj.quad_opts_laphelm = cell(obj.nsurfaces);
             for i = 1:obj.nsurfaces
-                if abs(obj.zk) < eps
-                    Q = lap3d.dirichlet.get_quadrature_correction(obj.surf{i}, ...
-                        obj.eps_laphelm,[1.0,0],obj.surf{i},opts);
-                else
-                    Q = helm3d.dirichlet.get_quadrature_correction(obj.surf{i}, ...
-                        obj.eps_laphelm,obj.zk,[1.0,0],obj.surf{i},opts);
+                for j = 1:obj.nsurfaces
+                    if abs(obj.zk) < eps
+                        Q = lap3d.dirichlet.get_quadrature_correction(obj.surf{i}, ...
+                            obj.eps_laphelm,[1.0,0],obj.surf{j},opts);
+                    else
+                        Q = helm3d.dirichlet.get_quadrature_correction(obj.surf{i}, ...
+                            obj.eps_laphelm,obj.zk,[1.0,0],obj.surf{j},opts);
+                    end
+                    obj.quad_opts_laphelm{i,j} = [];
+                    obj.quad_opts_laphelm{i,j}.format = format;
+                    obj.quad_opts_laphelm{i,j}.precomp_quadrature = Q;
                 end
-                obj.quad_opts_laphelm{i} = [];
-                obj.quad_opts_laphelm{i}.format = format;
-                obj.quad_opts_laphelm{i}.precomp_quadrature = Q;
             end
         end
 
@@ -233,7 +237,7 @@ classdef TaylorState
             end
             
             Balpha = TaylorState.mtxBalpha(obj.surf,obj.dom, ...
-                obj.mH,obj.zk,obj.eps_taylor, ...
+                obj.vn,obj.mH,obj.zk,obj.eps_taylor, ...
                 obj.eps_laphelm,obj.surf, ...
                 obj.quad_opts_taylor,obj.quad_opts_laphelm);
             b = zeros(obj.nsurfaces*obj.nptspersurf,obj.nsurfaces);
@@ -251,7 +255,7 @@ classdef TaylorState
             totiter = 0;
             for i = 1:obj.nsurfaces
                 [D(:,i),~,~,iter] = gmres(@(s) TaylorState.gmresA(s,obj.dom, ...
-                    obj.surf,obj.L,obj.zk,obj.eps_taylor,obj.eps_laphelm, ...
+                    obj.surf,obj.vn,obj.L,obj.zk,obj.eps_taylor,obj.eps_laphelm, ...
                     obj.quad_opts_taylor,obj.quad_opts_laphelm), b(:,i), [], ...
                     obj.eps_gmres, 50);
                 totiter = totiter+iter(2);
@@ -654,9 +658,9 @@ classdef TaylorState
     end
 
     methods (Static)
-        Bsigma = mtxBsigma(S,dom,sigma,zk,epstaylor,epslh,varargin)
-        A = gmresA(s,dom,S,L,zk,epstaylor,epslh,opts,optslh)
-        Balpha = mtxBalpha(S,dom,mH,zk,epstaylor,epslh,varargin)
+        Bsigma = mtxBsigma(S,dom,vn,sigma,zk,epstaylor,epslh,varargin)
+        A = gmresA(s,dom,S,vn,L,zk,epstaylor,epslh,opts,optslh)
+        Balpha = mtxBalpha(S,dom,vn,mH,zk,epstaylor,epslh,varargin)
         fluxsigma = mtxfluxsigma(S,dom,L,domparams,sigma,zk,epstaylor,epslh,varargin)
         fluxalpha = mtxfluxalpha(S,dom,domparams,mH,zk,epstaylor,epslh,varargin)
         fluxsigmanontaylor = mtxfluxsigmanontaylor(S,dom,vn,params,nodes,weights, ...

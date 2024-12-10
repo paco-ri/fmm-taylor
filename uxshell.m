@@ -14,7 +14,7 @@ domparams = [n, nu, nv];
 flux = [1.0,0.7];
 
 % --- Beltrami parameter ---
-zk = 0.1;
+zk = 1.0;
 
 % --- Tolerances ---
 tol = 1e-6;

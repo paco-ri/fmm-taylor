@@ -1,4 +1,4 @@
-function Balpha = mtxBalpha(S,dom,mH,zk,epstaylor,epslh,varargin)
+function Balpha = mtxBalpha(S,dom,vn,mH,zk,epstaylor,epslh,varargin)
 %MTXBALPHA compute alpha coefficient for surface magnetic field
 % 
 %   Required arguments:
@@ -38,7 +38,7 @@ function Balpha = mtxBalpha(S,dom,mH,zk,epstaylor,epslh,varargin)
 
 dpars = [1.0,0];
 
-nreqarg = 6;
+nreqarg = 7;
 % torus case
 if length(dom) == 1
 
@@ -77,7 +77,6 @@ if length(dom) == 1
     
     mHvals = surfacefun_to_array(mH{1},dom{1},S{1});
     mHvals = mHvals.';
-    vn = normal(dom{1});
     
     if abs(zk) > eps
         % compute curl Sk[mH]
@@ -108,6 +107,7 @@ else
     else
         targinfoo = varargin{1}{1};
         targinfoi = varargin{1}{2};
+        targinfo = varargin{1};
     end
 
     % near quadrature corrections for +taylor routines
@@ -132,6 +132,7 @@ else
     else
         optso = varargin{2}{1};
         optsi = varargin{2}{2};
+        opts = varargin{2};
     end
 
     % near quadrature corrections for Helmholtz layer potential
@@ -151,75 +152,96 @@ else
         else
             optslho = varargin{3}{1};
             optslhi = varargin{3}{2};
+            optslh = varargin{3};
         end
     end
 
     % ====
 
-    mHvalso = surfacefun_to_array(mH{1},dom{1},S{1});
-    mHvalso = mHvalso.';
-    mHvalsi = surfacefun_to_array(mH{2},dom{2},S{2});
-    mHvalsi = mHvalsi.';
-    vno = normal(dom{1});
-    vni = -1.*normal(dom{2});
+    % mHvalso = surfacefun_to_array(mH{1},dom{1},S{1});
+    % mHvalso = mHvalso.';
+    % mHvalsi = surfacefun_to_array(mH{2},dom{2},S{2});
+    % mHvalsi = mHvalsi.';
+    mHvals = cell(1,2);
+    for i = 1:2
+        mHvals{i} = surfacefun_to_array(mH{i},dom{i},S{i});
+        mHvals{i} = mHvals{i}.';
+    end
     
     if abs(zk) < eps
-        curlSmHo = taylor.static.eval_curlS0(S{1},mHvalso,epstaylor, ...
-            targinfoo,optso);
-        curlSmHo = array_to_surfacefun(curlSmHo.',dom{1},S{1});
-        curlSmHi = taylor.static.eval_curlS0(S{2},mHvalsi,epstaylor, ...
-            targinfoi,optsi);
-        curlSmHi = array_to_surfacefun(curlSmHi.',dom{2},S{2});
-        curlSmHi2o = taylor.static.eval_curlS0(S{2},mHvalsi,epstaylor, ...
-            targinfoo);
-        curlSmHi2o = array_to_surfacefun(curlSmHi2o.',dom{1},S{1});
-        curlSmHo2i = taylor.static.eval_curlS0(S{1},mHvalso,epstaylor, ...
-            targinfoi);
-        curlSmHo2i = array_to_surfacefun(curlSmHo2i.',dom{2},S{2});
+        % curlSmHo = taylor.static.eval_curlS0(S{1},mHvalso,epstaylor, ...
+        %     targinfoo,optso);
+        % curlSmHo = array_to_surfacefun(curlSmHo.',dom{1},S{1});
+        % curlSmHi = taylor.static.eval_curlS0(S{2},mHvalsi,epstaylor, ...
+        %     targinfoi,optsi);
+        % curlSmHi = array_to_surfacefun(curlSmHi.',dom{2},S{2});
+        % curlSmHi2o = taylor.static.eval_curlS0(S{2},mHvalsi,epstaylor, ...
+        %     targinfoo);
+        % curlSmHi2o = array_to_surfacefun(curlSmHi2o.',dom{1},S{1});
+        % curlSmHo2i = taylor.static.eval_curlS0(S{1},mHvalso,epstaylor, ...
+        %     targinfoi);
+        % curlSmHo2i = array_to_surfacefun(curlSmHo2i.',dom{2},S{2});
 
         Balpha = cell(2);
-        Balpha{1,1} = dot(vno,curlSmHo);
-        Balpha{1,2} = dot(vno,curlSmHi2o);
-        Balpha{2,1} = dot(vni,curlSmHo2i);
-        Balpha{2,2} = dot(vni,curlSmHi);
+        % Balpha{1,1} = dot(vno,curlSmHo);
+        % Balpha{1,2} = dot(vno,curlSmHi2o);
+        % Balpha{2,1} = dot(vni,curlSmHo2i);
+        % Balpha{2,2} = dot(vni,curlSmHi);
+        for i = 1:2
+            for j = 1:2
+                curlSmH = taylor.static.eval_curlS0(S{i},mHvals{i},...
+                    epstaylor,targinfo{j},opts{i,j});
+                curlSmH = array_to_surfacefun(curlSmH.',dom{j},S{j});
+                Balpha{j,i} = dot(vn{j},curlSmH);
+            end
+        end
     else
-        % compute curl Sk[mH]
-        curlSmHo = taylor.dynamic.eval_curlSk(S{1},zk,mHvalso,epstaylor, ...
-            targinfoo,optso);
-        curlSmHi = taylor.dynamic.eval_curlSk(S{2},zk,mHvalsi,epstaylor, ...
-            targinfoi,optsi);
-        curlSmHi2o = taylor.dynamic.eval_curlSk(S{2},zk,mHvalsi,epstaylor, ...
-            targinfoo);
-        curlSmHo2i = taylor.dynamic.eval_curlSk(S{1},zk,mHvalso,epstaylor, ...
-            targinfoi);
-
-        curlSmHo = array_to_surfacefun(curlSmHo.',dom{1},S{1});
-        curlSmHi = array_to_surfacefun(curlSmHi.',dom{2},S{2});
-        curlSmHi2o = array_to_surfacefun(curlSmHi2o.',dom{1},S{1});
-        curlSmHo2i = array_to_surfacefun(curlSmHo2i.',dom{2},S{2});
+        % % compute curl Sk[mH]
+        % curlSmHo = taylor.dynamic.eval_curlSk(S{1},zk,mHvalso,epstaylor, ...
+        %     targinfoo,optso);
+        % curlSmHi = taylor.dynamic.eval_curlSk(S{2},zk,mHvalsi,epstaylor, ...
+        %     targinfoi,optsi);
+        % curlSmHi2o = taylor.dynamic.eval_curlSk(S{2},zk,mHvalsi,epstaylor, ...
+        %     targinfoo);
+        % curlSmHo2i = taylor.dynamic.eval_curlSk(S{1},zk,mHvalso,epstaylor, ...
+        %     targinfoi);
+        % 
+        % curlSmHo = array_to_surfacefun(curlSmHo.',dom{1},S{1});
+        % curlSmHi = array_to_surfacefun(curlSmHi.',dom{2},S{2});
+        % curlSmHi2o = array_to_surfacefun(curlSmHi2o.',dom{1},S{1});
+        % curlSmHo2i = array_to_surfacefun(curlSmHo2i.',dom{2},S{2});
+        % 
+        % % compute Sk[mH]
+        % SmHo = taylor.helper.helm_dir_vec_eval(S{1},mHvalso, ...
+        %     targinfoo,epslh,zk,dpars,optslho);
+        % SmHi = taylor.helper.helm_dir_vec_eval(S{2},mHvalsi, ...
+        %     targinfoi,epslh,zk,dpars,optslhi);
+        % SmHi2o = taylor.helper.helm_dir_vec_eval(S{2},mHvalsi, ...
+        %     targinfoo,epslh,zk,dpars);
+        % SmHo2i = taylor.helper.helm_dir_vec_eval(S{1},mHvalso, ...
+        %     targinfoi,epslh,zk,dpars);
+        % 
+        % SmHo = array_to_surfacefun(SmHo.',dom{1},S{1});
+        % SmHi = array_to_surfacefun(SmHi.',dom{2},S{2});
+        % SmHi2o = array_to_surfacefun(SmHi2o.',dom{1},S{1});
+        % SmHo2i = array_to_surfacefun(SmHo2i.',dom{2},S{2});
     
-        % compute Sk[mH]
-        SmHo = taylor.helper.helm_dir_vec_eval(S{1},mHvalso, ...
-            targinfoo,epslh,zk,dpars,optslho);
-        SmHi = taylor.helper.helm_dir_vec_eval(S{2},mHvalsi, ...
-            targinfoi,epslh,zk,dpars,optslhi);
-        SmHi2o = taylor.helper.helm_dir_vec_eval(S{2},mHvalsi, ...
-            targinfoo,epslh,zk,dpars);
-        SmHo2i = taylor.helper.helm_dir_vec_eval(S{1},mHvalso, ...
-            targinfoi,epslh,zk,dpars);
-        
-        SmHo = array_to_surfacefun(SmHo.',dom{1},S{1});
-        SmHi = array_to_surfacefun(SmHi.',dom{2},S{2});
-        SmHi2o = array_to_surfacefun(SmHi2o.',dom{1},S{1});
-        SmHo2i = array_to_surfacefun(SmHo2i.',dom{2},S{2});
-    
-        % Balpha = {dot(vno,zk.*SmHo + curlSmHo + zk.*SmHi2o + curlSmHi2o), ...
-        %     dot(vni,zk.*SmHi + curlSmHi + zk.*SmHo2i + curlSmHo2i)};
         Balpha = cell(2);
-        Balpha{1,1} = dot(vno, zk.*SmHo + curlSmHo);
-        Balpha{1,2} = dot(vno, zk.*SmHi2o + curlSmHi2o);
-        Balpha{2,1} = dot(vni, zk.*SmHo2i + curlSmHo2i);
-        Balpha{2,2} = dot(vni, zk.*SmHi + curlSmHi);
+        % Balpha{1,1} = dot(vno, zk.*SmHo + curlSmHo);
+        % Balpha{1,2} = dot(vno, zk.*SmHi2o + curlSmHi2o);
+        % Balpha{2,1} = dot(vni, zk.*SmHo2i + curlSmHo2i);
+        % Balpha{2,2} = dot(vni, zk.*SmHi + curlSmHi);
+        for i = 1:2
+            for j = 1:2
+                curlSmH = taylor.dynamic.eval_curlSk(S{i},zk,mHvals{i},...
+                    epstaylor,targinfo{j},opts{i,j});
+                curlSmH = array_to_surfacefun(curlSmH.',dom{j},S{j});
+                SmH = taylor.helper.helm_dir_vec_eval(S{i},mHvals{i},...
+                    targinfo{j},epslh,zk,dpars,optslh{i,j});
+                SmH = array_to_surfacefun(SmH.',dom{j},S{j});
+                Balpha{j,i} = dot(vn{j}, zk.*SmH + curlSmH);
+            end
+        end
     end
 end
 

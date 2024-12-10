@@ -1,4 +1,4 @@
-function Bsigma = mtxBsigma(S,dom,L,sigmavals,zk,epstaylor,epslh,varargin)
+function Bsigma = mtxBsigma(S,dom,vn,L,sigmavals,zk,epstaylor,epslh,varargin)
 %MTXBSIGMA compute sigma-dep. terms of surface magnetic field
 % 
 %   Required arguments:
@@ -38,7 +38,7 @@ function Bsigma = mtxBsigma(S,dom,L,sigmavals,zk,epstaylor,epslh,varargin)
 
 dpars = [1.0,0];
 
-nreqarg = 7;
+nreqarg = 8;
 % torus case
 if length(dom) == 1
     if nargin < nreqarg + 1
@@ -74,7 +74,6 @@ if length(dom) == 1
         optslh = varargin{3}{1};
     end
 
-    vn = normal(dom{1});
     sigma = array_to_surfacefun(sigmavals,dom{1},S{1});
 
     if abs(zk) < eps
@@ -113,6 +112,7 @@ else
     else
         targinfoo = varargin{1}{1};
         targinfoi = varargin{1}{2};
+        targinfo = varargin{1};
     end
 
     % near quadrature corrections for +taylor routines
@@ -135,8 +135,9 @@ else
         optsi.format = 'rsc';
         optsi.precomp_quadrature = Qi;
     else
-        optso = varargin{2}{1};
-        optsi = varargin{2}{2};
+        optso = varargin{2}{1,1};
+        optsi = varargin{2}{2,2};
+        opts = varargin{2};
     end
 
     % near quadrature corrections for Helmholtz layer potential
@@ -156,97 +157,152 @@ else
         else
             optslho = varargin{3}{1};
             optslhi = varargin{3}{2};
+            optslh = varargin{3};
         end
     end
 
     % split sigmavals into halves. top half is on outer surface, etc.
     npts = length(sigmavals)/2;
-    sigmavalso = sigmavals(1:npts);
-    sigmavalsi = sigmavals(npts+1:end);
+    % sigmavalso = sigmavals(1:npts);
+    % sigmavalsi = sigmavals(npts+1:end);
+    sigvalcell = cell(1,2);
+    sigvalcell{1} = sigmavals(1:npts);
+    sigvalcell{2} = sigmavals(npts+1:end);
 
     % evaluate layer potential
+    ngradSsigma = cell(2);
     if abs(zk) < eps
-        gradSsigmao = taylor.static.eval_gradS0(S{1},sigmavalso, ...
-            epstaylor,targinfoo,optso);
-        gradSsigmai = taylor.static.eval_gradS0(S{2},sigmavalsi, ...
-            epstaylor,targinfoi,optsi);
-        gradSsigmai2o = taylor.static.eval_gradS0(S{2},sigmavalsi, ...
-            epstaylor,targinfoo);
-        gradSsigmao2i = taylor.static.eval_gradS0(S{1},sigmavalso, ...
-            epstaylor,targinfoi);
+        for i = 1:2
+            for j = 1:2
+                gradSsigma = taylor.static.eval_gradS0(S{i}, ...
+                    sigvalcell{i},epstaylor,targinfo{j},opts{i,j});
+                gradSsigma = array_to_surfacefun(gradSsigma.', ...
+                    dom{j},S{j});
+                ngradSsigma{i,j} = dot(vn{j},gradSsigma);
+            end
+        end
+        % gradSsigmao = taylor.static.eval_gradS0(S{1},sigmavalso, ...
+        %     epstaylor,targinfoo,optso);
+        % gradSsigmai = taylor.static.eval_gradS0(S{2},sigmavalsi, ...
+        %     epstaylor,targinfoi,optsi);
+        % gradSsigmai2o = taylor.static.eval_gradS0(S{2},sigmavalsi, ...
+        %     epstaylor,targinfoo);
+        % gradSsigmao2i = taylor.static.eval_gradS0(S{1},sigmavalso, ...
+        %     epstaylor,targinfoi);
     else
-        gradSsigmao = taylor.dynamic.eval_gradSk(S{1},zk,sigmavalso, ...
-            epstaylor,targinfoo,optso);
-        gradSsigmai = taylor.dynamic.eval_gradSk(S{2},zk,sigmavalsi, ...
-            epstaylor,targinfoi,optsi);
-        gradSsigmai2o = taylor.dynamic.eval_gradSk(S{2},zk,sigmavalsi, ...
-            epstaylor,targinfoo);
-        gradSsigmao2i = taylor.dynamic.eval_gradSk(S{1},zk,sigmavalso, ...
-            epstaylor,targinfoi);
+        for i = 1:2
+            for j = 1:2
+                gradSsigma = taylor.dynamic.eval_gradSk(S{i},zk, ...
+                    sigvalcell{i},epstaylor,targinfo{j},opts{i,j});
+                gradSsigma = array_to_surfacefun(gradSsigma.', ...
+                    dom{j},S{j});
+                ngradSsigma{i,j} = dot(vn{j},gradSsigma);
+            end
+        end
+        % gradSsigmao = taylor.dynamic.eval_gradSk(S{1},zk,sigmavalso, ...
+        %     epstaylor,targinfoo,optso);
+        % gradSsigmai = taylor.dynamic.eval_gradSk(S{2},zk,sigmavalsi, ...
+        %     epstaylor,targinfoi,optsi);
+        % gradSsigmai2o = taylor.dynamic.eval_gradSk(S{2},zk,sigmavalsi, ...
+        %     epstaylor,targinfoo);
+        % gradSsigmao2i = taylor.dynamic.eval_gradSk(S{1},zk,sigmavalso, ...
+        %     epstaylor,targinfoi);
     end
 
-    gradSsigmao = array_to_surfacefun(gradSsigmao.',dom{1},S{1});
-    gradSsigmai = array_to_surfacefun(gradSsigmai.',dom{2},S{2});
-    gradSsigmai2o = array_to_surfacefun(gradSsigmai2o.',dom{1},S{1});
-    gradSsigmao2i = array_to_surfacefun(gradSsigmao2i.',dom{2},S{2});
+    % gradSsigmao = array_to_surfacefun(gradSsigmao.',dom{1},S{1});
+    % gradSsigmai = array_to_surfacefun(gradSsigmai.',dom{2},S{2});
+    % gradSsigmai2o = array_to_surfacefun(gradSsigmai2o.',dom{1},S{1});
+    % gradSsigmao2i = array_to_surfacefun(gradSsigmao2i.',dom{2},S{2});
 
-    vno = normal(dom{1});
-    vni = -1.*normal(dom{2}); % note negative sign 
+    % nogradSsigmao = dot(vno,gradSsigmao);
+    % nigradSsigmai = dot(vni,gradSsigmai);
+    % nogradSsigmai2o = dot(vno,gradSsigmai2o);
+    % nigradSsigmao2i = dot(vni,gradSsigmao2i);
 
-    nogradSsigmao = dot(vno,gradSsigmao);
-    nigradSsigmai = dot(vni,gradSsigmai);
-    nogradSsigmai2o = dot(vno,gradSsigmai2o);
-    nigradSsigmao2i = dot(vni,gradSsigmao2i);
+    % sigmao = array_to_surfacefun(sigmavalso,dom{1},S{1});
+    % sigmai = array_to_surfacefun(sigmavalsi,dom{2},S{2});
 
-    sigmao = array_to_surfacefun(sigmavalso,dom{1},S{1});
-    sigmai = array_to_surfacefun(sigmavalsi,dom{2},S{2});
+    sigma = cell(1,2);
+    for i=1:2
+        sigma{i} = array_to_surfacefun(sigvalcell{i},dom{i},S{i});
+    end
 
     % construct Bsigma
+    Bsigma = cell(1,2);
     if abs(zk) < eps
-        Bsigma = {sigmao./2 + nogradSsigmao + nogradSsigmai2o, ...
-            sigmai./2 + nigradSsigmai + nigradSsigmao2i};
+        % Bsigma = {sigmao./2 + nogradSsigmao + nogradSsigmai2o, ...
+        %     sigmai./2 + nigradSsigmai + nigradSsigmao2i};
+        for i = 1:2
+            Bsigma{i} = sigma{i}./2;
+            for j = 1:2
+                Bsigma{i} = Bsigma{i} + ngradSsigma{j,i};
+            end
+        end
     else
         % compute m0
-        m0o = TaylorState.debyem0(sigmao,zk,L{1},vno);
-        m0i = TaylorState.debyem0(sigmai,zk,L{2},vni);
-        m0valso = surfacefun_to_array(m0o,dom{1},S{1});
-        m0valsi = surfacefun_to_array(m0i,dom{2},S{2});
+        % m0o = TaylorState.debyem0(sigmao,zk,L{1},vno);
+        % m0i = TaylorState.debyem0(sigmai,zk,L{2},vni);
+        % m0valso = surfacefun_to_array(m0o,dom{1},S{1});
+        % m0valsi = surfacefun_to_array(m0i,dom{2},S{2});
+        Sm0 = cell(2);
+        curlSm0 = cell(2);
+        for i = 1:2
+            m0 = TaylorState.debyem0(sigma{i},zk,L{i},vn{i});
+            m0 = surfacefun_to_array(m0,dom{i},S{i});
+            for j = 1:2
+                Sm0{i,j} = taylor.helper.helm_dir_vec_eval(S{i},m0.', ...
+                    targinfo{j},epslh,zk,dpars,optslh{i,j});
+                Sm0{i,j} = array_to_surfacefun(Sm0{i,j}.',dom{j},S{j});
+                curlSm0{i,j} = taylor.dynamic.eval_curlSk(S{i},zk,m0.', ...
+                    epstaylor,targinfo{j},opts{i,j});
+                curlSm0{i,j} = array_to_surfacefun(curlSm0{i,j}.',dom{j},S{j});
+            end
+        end
 
         % compute n . Sk[m0]
-        Sm0o = taylor.helper.helm_dir_vec_eval(S{1},m0valso.', ...
-            targinfoo,epslh,zk,dpars,optslho);
-        Sm0i = taylor.helper.helm_dir_vec_eval(S{2},m0valsi.', ...
-            targinfoi,epslh,zk,dpars,optslhi);
-        Sm0i2o = taylor.helper.helm_dir_vec_eval(S{2},m0valsi.', ...
-            targinfoo,epslh,zk,dpars);
-        Sm0o2i = taylor.helper.helm_dir_vec_eval(S{1},m0valso.', ...
-            targinfoi,epslh,zk,dpars);
-
-        Sm0o = array_to_surfacefun(Sm0o.',dom{1},S{1});
-        Sm0i = array_to_surfacefun(Sm0i.',dom{2},S{2});
-        Sm0i2o = array_to_surfacefun(Sm0i2o.',dom{1},S{1});
-        Sm0o2i = array_to_surfacefun(Sm0o2i.',dom{2},S{2});
+        % Sm0o = taylor.helper.helm_dir_vec_eval(S{1},m0valso.', ...
+        %     targinfoo,epslh,zk,dpars,optslho);
+        % Sm0i = taylor.helper.helm_dir_vec_eval(S{2},m0valsi.', ...
+        %     targinfoi,epslh,zk,dpars,optslhi);
+        % Sm0i2o = taylor.helper.helm_dir_vec_eval(S{2},m0valsi.', ...
+        %     targinfoo,epslh,zk,dpars);
+        % Sm0o2i = taylor.helper.helm_dir_vec_eval(S{1},m0valso.', ...
+        %     targinfoi,epslh,zk,dpars);
+        % 
+        % Sm0o = array_to_surfacefun(Sm0o.',dom{1},S{1});
+        % Sm0i = array_to_surfacefun(Sm0i.',dom{2},S{2});
+        % Sm0i2o = array_to_surfacefun(Sm0i2o.',dom{1},S{1});
+        % Sm0o2i = array_to_surfacefun(Sm0o2i.',dom{2},S{2});
 
         % compute n . curl Sk[m0]
-        curlSm0o = taylor.dynamic.eval_curlSk(S{1},zk,m0valso.', ...
-            epstaylor,targinfoo,optso);
-        curlSm0i = taylor.dynamic.eval_curlSk(S{2},zk,m0valsi.', ...
-            epstaylor,targinfoi,optsi);
-        curlSm0i2o = taylor.dynamic.eval_curlSk(S{2},zk,m0valsi.', ...
-            epstaylor,targinfoo);
-        curlSm0o2i = taylor.dynamic.eval_curlSk(S{1},zk,m0valso.', ...
-            epstaylor,targinfoi);
-
-        curlSm0o = array_to_surfacefun(curlSm0o.',dom{1},S{1});
-        curlSm0i = array_to_surfacefun(curlSm0i.',dom{2},S{2});
-        curlSm0i2o = array_to_surfacefun(curlSm0i2o.',dom{1},S{1});
-        curlSm0o2i = array_to_surfacefun(curlSm0o2i.',dom{2},S{2});
+        % curlSm0o = taylor.dynamic.eval_curlSk(S{1},zk,m0valso.', ...
+        %     epstaylor,targinfoo,optso);
+        % curlSm0i = taylor.dynamic.eval_curlSk(S{2},zk,m0valsi.', ...
+        %     epstaylor,targinfoi,optsi);
+        % curlSm0i2o = taylor.dynamic.eval_curlSk(S{2},zk,m0valsi.', ...
+        %     epstaylor,targinfoo);
+        % curlSm0o2i = taylor.dynamic.eval_curlSk(S{1},zk,m0valso.', ...
+        %     epstaylor,targinfoi);
+        % 
+        % curlSm0o = array_to_surfacefun(curlSm0o.',dom{1},S{1});
+        % curlSm0i = array_to_surfacefun(curlSm0i.',dom{2},S{2});
+        % curlSm0i2o = array_to_surfacefun(curlSm0i2o.',dom{1},S{1});
+        % curlSm0o2i = array_to_surfacefun(curlSm0o2i.',dom{2},S{2});
 
         % combine
-        m0termso = 1i.*dot(vno, zk.*(Sm0o + Sm0i2o) + curlSm0o + curlSm0i2o);
-        m0termsi = 1i.*dot(vni, zk.*(Sm0i + Sm0o2i) + curlSm0i + curlSm0o2i);
-        Bsigma = {sigmao./2 + nogradSsigmao + nogradSsigmai2o - m0termso, ...
-            sigmai./2 + nigradSsigmai + nigradSsigmao2i - m0termsi};
+        % m0termso = 1i.*dot(vno, zk.*(Sm0o + Sm0i2o) + curlSm0o + curlSm0i2o);
+        % m0termsi = 1i.*dot(vni, zk.*(Sm0i + Sm0o2i) + curlSm0i + curlSm0o2i);
+        % Bsigma = {sigmao./2 + nogradSsigmao + nogradSsigmai2o - m0termso, ...
+        %     sigmai./2 + nigradSsigmai + nigradSsigmao2i - m0termsi};
+        for i = 1:2
+            Bsigma{i} = sigma{i}./2;
+            m0terms = 0;
+            for j = 1:2
+                Bsigma{i} = Bsigma{i} + ngradSsigma{j,i};
+                m0terms = m0terms + zk.*Sm0{j,i} + curlSm0{j,i};
+            end
+            Bsigma{i} = Bsigma{i} - 1i.*dot(vn{i},m0terms);
+        end
     end
 
 end
