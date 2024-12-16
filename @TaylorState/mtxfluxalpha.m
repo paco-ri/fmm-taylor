@@ -148,8 +148,6 @@ else
 
     So = S{1};
     Si = S{2};
-    domo = dom{1};
-    domi = dom{2};
 
     if nargin < nreqarg + 1
         targinfo = S;
@@ -181,8 +179,6 @@ else
         optsi.precomp_quadrature = Qi;
     else
         opts = varargin{2};
-        optso = varargin{2}{1};
-        optsi = varargin{2}{2};
     end
     
     if nargin < nreqarg + 3
@@ -205,8 +201,6 @@ else
         optslhi.precomp_quadrature = Qlhi;
     else
         optslh = varargin{3};
-        optslho = varargin{3}{1};
-        optslhi = varargin{3}{2};
     end
 
     % ====

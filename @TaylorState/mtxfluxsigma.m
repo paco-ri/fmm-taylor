@@ -179,8 +179,6 @@ else
         opts = {optso,optsi};
     else
         opts = varargin{2};
-        optso = varargin{2}{1};
-        optsi = varargin{2}{2};
     end
     
     if nargin < nreqarg + 3
@@ -204,8 +202,6 @@ else
         optslh = {optslho,optslhi};
     else
         optslh = varargin{3};
-        optslho = varargin{3}{1};
-        optslhi = varargin{3}{2};
     end
 
     % ====

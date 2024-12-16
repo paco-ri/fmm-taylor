@@ -12,7 +12,7 @@ classdef TaylorState
     %   prescribed flux.
 
     properties
-        nsurfaces % number of tested toroidal surfaces (1 or 2)
+        nsurfaces % number of nested toroidal surfaces (1 or 2)
         dom % surface as a surfacefun.surfacemesh
         surf % surface as an fmm3dbie.surfer
         domparams % parameters describing surface
@@ -290,7 +290,7 @@ classdef TaylorState
             end
             dfunc = solveforD(obj,time);
 
-            surfacequad = true; 
+            surfacequad = false; 
 
             if obj.nsurfaces == 1
                 fluxsigmaD = TaylorState.mtxfluxsigma( ...
@@ -348,8 +348,6 @@ classdef TaylorState
                 obj.sigma{1} = 1i*(obj.alpha(1).*dfunc{1,1} + obj.alpha(2).*dfunc{1,2}); 
                 obj.sigma{2} = 1i*(obj.alpha(1).*dfunc{2,1} + obj.alpha(2).*dfunc{2,2});
             end
-            disp(fluxsigmaD)
-            disp(fluxalpha)
         end
 
         function obj = compute_m0(obj,varargin)

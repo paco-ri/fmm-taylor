@@ -134,8 +134,6 @@ else
         optsi.format = 'rsc';
         optsi.precomp_quadrature = Qi;
     else
-        optso = varargin{2}{1};
-        optsi = varargin{2}{2};
         opts = varargin{2};
     end
 
@@ -154,8 +152,6 @@ else
             optslhi.format = 'rsc';
             optslhi.precomp_quadrature = Qlhi;
         else
-            optslho = varargin{3}{1};
-            optslhi = varargin{3}{2};
             optslh = varargin{3};
         end
     end
