@@ -55,7 +55,7 @@ classdef Domain
                 obj.L{i}.build();
             end
 
-            obj.compute_mH();
+            obj = obj.compute_mH();
         end
 
         function obj = compute_mH(obj)

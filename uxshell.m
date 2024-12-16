@@ -31,9 +31,9 @@ center = [(r+ai+.1)*cos(phi) (r+ai+.1)*sin(phi) 0];
 fprintf('at interior pt norm(curl B - k B) = %f\n',norm(errB));
 
 figure(1)
-plot(dot(ts.vn{1},B{1}))
+plot(dot(ts.domain.vn{1},B{1}))
 colorbar
 
 figure(2)
-plot(dot(ts.vn{2},B{2}))
+plot(dot(ts.domain.vn{2},B{2}))
 colorbar
