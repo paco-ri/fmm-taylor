@@ -5,7 +5,7 @@ tol = 1e-4;
 zk = 0.5;
 
 % --- Geometry parameters ---
-ns = [5 7];% 9]; % polynomial order + 1
+ns = [5];% 7];% 9]; % polynomial order + 1
 nvs = [4 6];% 8];% 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));

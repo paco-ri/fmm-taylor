@@ -5,8 +5,8 @@ tol = 1e-4;
 zk = 1.0;
 
 % --- Geometry parameters ---
-ns = [5 7 9]; % polynomial order + 1
-nvs = [6 8 10]; % number of patches in poloidal direction
+ns = 5;%[5 7 9]; % polynomial order + 1
+nvs = [6 8];% 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
@@ -15,11 +15,13 @@ for n = ns
     for nv = nvs
         fprintf('\t========\n\tn = %d, nv = %d \n', n, nv)
         nu = nv*3; % number of patches in toroidal direction
-        a = 2.0; % minor radius, horiz. axis
-        a0 = 5.0; % major radius
-        b = 3.0; % minor radius vert. axis
-        dom = twisted_ellipse_torus(a,a0,b,n,nu,nv); % surfacemesh
-        domparams = [n, nu, nv];
+        % a = 2.0; % minor radius, horiz. axis
+        % a0 = 5.0; % major radius
+        % b = 3.0; % minor radius vert. axis
+        % dom = twisted_ellipse_torus(a,a0,b,n,nu,nv); % surfacemesh
+        % domparams = [n, nu, nv];
+        dom = alt_stellarator(n,nu,nv);
+        domparams = [n,nu,nv];
 
         % --- Compute B0 ---
         ntheta = 1e3;

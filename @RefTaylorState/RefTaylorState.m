@@ -61,7 +61,8 @@ classdef RefTaylorState < TaylorState
                 obj.eps_xs_laphelm = tols(5);
             end
             
-            if obj.nsurfaces == 1 && isa(B0{1}, 'surfacefunv')
+            nsurf = obj.domain.nsurfaces;
+            if nsurf == 1 && isa(B0{1}, 'surfacefunv')
                 obj.B0 = B0;
             elseif isa(B0{1}, 'surfacefunv') && isa(B0{2}, 'surfacefunv')
                 obj.B0 = B0;
@@ -72,9 +73,9 @@ classdef RefTaylorState < TaylorState
                     'curl B = k B. '])
             end
 
-            obj.xs_nodes = cell(1,obj.nsurfaces);
-            obj.xs_weights = cell(1,obj.nsurfaces);
-            for i = 1:obj.nsurfaces
+            obj.xs_nodes = cell(1,nsurf);
+            obj.xs_weights = cell(1,nsurf);
+            for i = 1:nsurf
                 [xs_nodes_r, xs_nodes_c] = size(xs_nodes{i});
                 [xs_weights_r, xs_weights_c] = size(xs_weights{i});
                 if xs_nodes_r == 3 
@@ -123,16 +124,17 @@ classdef RefTaylorState < TaylorState
                 opts.format = format;
             end
 
-            obj.quad_opts_xs_taylor = cell(obj.nsurfaces);
-            for i = 1:obj.nsurfaces
+            nsurf = obj.domain.nsurfaces;
+            obj.quad_opts_xs_taylor = cell(nsurf);
+            for i = 1:nsurf
                 targinfo = [];
                 targinfo.r = obj.xs_nodes{i};
-                for j = 1:obj.nsurfaces
+                for j = 1:nsurf
                     if abs(obj.zk) < eps
-                        Q = taylor.static.get_quadrature_correction(obj.surf{j}, ...
+                        Q = taylor.static.get_quadrature_correction(obj.domain.surf{j}, ...
                             obj.eps_taylor,targinfo,opts);
                     else
-                        Q = taylor.dynamic.get_quadrature_correction(obj.surf{j}, ...
+                        Q = taylor.dynamic.get_quadrature_correction(obj.domain.surf{j}, ...
                             obj.zk,obj.eps_taylor,targinfo,opts);
                     end
                     obj.quad_opts_xs_taylor{i,j} = [];
@@ -164,16 +166,17 @@ classdef RefTaylorState < TaylorState
                 opts.format = format;
             end
 
-            obj.quad_opts_xs_laphelm = cell(obj.nsurfaces);
-            for i = 1:obj.nsurfaces
+            nsurf = obj.domain.nsurfaces;
+            obj.quad_opts_xs_laphelm = cell(nsurf);
+            for i = 1:nsurf
                 targinfo = [];
                 targinfo.r = obj.xs_nodes{i};
-                for j = 1:obj.nsurfaces
+                for j = 1:nsurf
                     if abs(obj.zk) < eps
-                        Q = lap3d.dirichlet.get_quadrature_correction(obj.surf{j}, ...
+                        Q = lap3d.dirichlet.get_quadrature_correction(obj.domain.surf{j}, ...
                             obj.eps_laphelm,[1.0,0],targinfo,opts);
                     else
-                        Q = helm3d.dirichlet.get_quadrature_correction(obj.surf{j}, ...
+                        Q = helm3d.dirichlet.get_quadrature_correction(obj.domain.surf{j}, ...
                             obj.eps_laphelm,obj.zk,[1.0,0],targinfo,opts);
                     end
                     obj.quad_opts_xs_laphelm{i,j} = [];
@@ -194,18 +197,19 @@ classdef RefTaylorState < TaylorState
                 time = false;
             end
 
-            wfunc = cell(obj.nsurfaces,1);
-            b = zeros(obj.nptspersurf,obj.nsurfaces);
-            for i = 1:obj.nsurfaces
-                nB0 = dot(obj.vn{i},obj.B0{i});
-                b(:,i) = surfacefun_to_array(nB0,obj.dom{i},obj.surf{i});
+            nsurf = obj.domain.nsurfaces;
+            wfunc = cell(nsurf,1);
+            b = zeros(obj.nptspersurf,nsurf);
+            for i = 1:nsurf
+                nB0 = dot(obj.domain.vn{i},obj.B0{i});
+                b(:,i) = surfacefun_to_array(nB0,obj.domain.dom{i},obj.domain.surf{i});
             end
-            b = reshape(b,obj.nptspersurf*obj.nsurfaces,1);
+            b = reshape(b,obj.nptspersurf*nsurf,1);
             if time
                 t1 = tic;
             end
             [W,~,~,iter] = gmres(@(s) TaylorState.gmresA(s, ...
-                obj.dom,obj.surf,obj.vn,obj.L,obj.zk,obj.eps_taylor, ...
+                obj.domain.dom,obj.domain.surf,obj.domain.vn,obj.domain.L,obj.zk,obj.eps_taylor, ...
                 obj.eps_laphelm,obj.quad_opts_taylor, ...
                 obj.quad_opts_laphelm),b,[],obj.eps_gmres,50);
             if time
@@ -214,10 +218,10 @@ classdef RefTaylorState < TaylorState
                     'sigma and alpha"): %f s / %d iter. = %f s)\n'], ...
                     t2, iter(2), t2/iter(2))
             end
-            for i = 1:obj.nsurfaces
+            for i = 1:nsurf
                 inds = obj.nptspersurf*(i-1)+1:obj.nptspersurf*i;
-                wfunc{i} = array_to_surfacefun(W(inds),obj.dom{i}, ...
-                    obj.surf{i});
+                wfunc{i} = array_to_surfacefun(W(inds),obj.domain.dom{i}, ...
+                    obj.domain.surf{i});
             end
         end
 
@@ -235,35 +239,36 @@ classdef RefTaylorState < TaylorState
             dfunc = solveforD(obj,time);
             wfunc = solveforW(obj,time);
 
-            if obj.nsurfaces == 1
+            nsurf = obj.domain.nsurfaces;
+            if nsurf == 1
                 fluxsigmaD = TaylorState.mtxfluxsigmanontaylor(...
-                    obj.surf{1},obj.dom{1},obj.vn{1},obj.L{1}, ...
+                    obj.domain.surf{1},obj.domain.dom{1},obj.domain.vn{1},obj.domain.L{1}, ...
                     obj.xs_nodes{1},obj.xs_weights{1},dfunc{1},obj.zk, ...
                     obj.eps_taylor,obj.eps_laphelm);
                 fluxsigmaW = TaylorState.mtxfluxsigmanontaylor(...
-                    obj.surf{1},obj.dom{1},obj.vn{1},obj.L{1}, ...
+                    obj.domain.surf{1},obj.domain.dom{1},obj.domain.vn{1},obj.domain.L{1}, ...
                     obj.xs_nodes{1},obj.xs_weights{1},wfunc{1},obj.zk, ...
                     obj.eps_taylor,obj.eps_laphelm);
                 fluxalpha = TaylorState.mtxfluxalphanontaylor(...
-                    obj.surf{1},obj.dom{1},obj.xs_nodes{1},...
-                    obj.xs_weights{1},obj.mH{1},obj.zk,obj.eps_taylor,...
+                    obj.domain.surf{1},obj.domain.dom{1},obj.xs_nodes{1},...
+                    obj.xs_weights{1},obj.domain.mH{1},obj.zk,obj.eps_taylor,...
                     obj.eps_laphelm);
             else
                 fluxsigmaD = TaylorState.mtxfluxsigmanontaylor(...
-                    obj.surf,obj.dom,obj.vn,obj.L,obj.xs_nodes, ...
+                    obj.domain.surf,obj.domain.dom,obj.domain.vn,obj.domain.L,obj.xs_nodes, ...
                     obj.xs_weights,dfunc,obj.zk,obj.eps_taylor, ...
                     obj.eps_laphelm);
                 fluxsigmaW = TaylorState.mtxfluxsigmanontaylor(...
-                    obj.surf,obj.dom,obj.vn,obj.L,obj.xs_nodes, ...
+                    obj.domain.surf,obj.domain.dom,obj.domain.vn,obj.domain.L,obj.xs_nodes, ...
                     obj.xs_weights,wfunc,obj.zk,obj.eps_taylor, ...
                     obj.eps_laphelm);
                 fluxalpha = TaylorState.mtxfluxalphanontaylor(...
-                    obj.surf,obj.dom,obj.xs_nodes, ...
-                    obj.xs_weights,obj.mH,obj.zk,obj.eps_taylor, ...
+                    obj.domain.surf,obj.domain.dom,obj.xs_nodes, ...
+                    obj.xs_weights,obj.domain.mH,obj.zk,obj.eps_taylor, ...
                     obj.eps_laphelm);
             end
 
-            if obj.nsurfaces == 1
+            if nsurf == 1
                 obj.alpha = -1i*(obj.flux - fluxsigmaW)...
                     /(-fluxsigmaD + fluxalpha);
                 obj.sigma{1} = 1i*obj.alpha.*dfunc{1} - wfunc{1};
@@ -289,12 +294,12 @@ classdef RefTaylorState < TaylorState
             end
             
             if time; t1 = tic; end
-            obj = obj.compute_mH();
-            if time
-                t2 = toc(t1);
-                fprintf('compute mH: %f s\n',t2)
-                t1 = tic;
-            end
+            % obj = obj.compute_mH();
+            % if time
+            %     t2 = toc(t1);
+            %     fprintf('compute mH: %f s\n',t2)
+            %     t1 = tic;
+            % end
             obj = obj.get_quad_corr_laphelm();
             if time
                 t2 = toc(t1);

@@ -71,16 +71,16 @@ classdef TaylorState
             
             obj.domain = Domain(domain);
 
-            if isnumeric(domparams)
-                obj.domparams = domparams;
-            else
-                error(['Invalid call to TaylorState constructor. ' ...
-                    'Second argument should be an array of three ' ...
-                    'integers.'])
-            end
+            % if isnumeric(domparams)
+            %     obj.domparams = domparams;
+            % else
+            %     error(['Invalid call to TaylorState constructor. ' ...
+            %         'Second argument should be an array of three ' ...
+            %         'integers.'])
+            % end
 
-            obj.nptspersurf = obj.domparams(1)^2*obj.domparams(2)...
-                *obj.domparams(3);
+            % obj.nptspersurf = obj.domparams(1)^2*obj.domparams(2)...
+            %     *obj.domparams(3);
 
             if isnumeric(zk)
                 obj.zk = complex(zk);

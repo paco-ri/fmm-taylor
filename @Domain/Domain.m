@@ -7,18 +7,17 @@ classdef Domain
         nsurfaces % number of nested toroidal surfaces (1 or 2)
         dom % surface as a surfacefun.surfacemesh
         surf % surface as an fmm3dbie.surfer
-        % domparams % parameters describing surface
-        % nptspersurf % number of points on each surface
+        domparams % parameters describing surface
+        nptspersurf % number of points on each surface
         vn % outward unit normal vector on surface 
         mH % surface harmonic vector field on surface 
         L % surfaceop for Laplace-Beltrami operator on surf
         aquad % A-cycle quadrature
         bquad % B-cycle quadrature
-        param % parametrization of the surface
     end
 
     methods
-        function obj = Domain(domain)
+        function obj = Domain(domain,domparams)
             %UNTITLED3 Construct an instance of a Domain
             %   Arguments: see above
             if isa(domain, 'surfacemesh')
@@ -46,6 +45,16 @@ classdef Domain
                     'array with two surfacemeshes.'])
             end
 
+            if isnumeric(domparams)
+                obj.domparams = domparams;
+                obj.nptspersurf = obj.domparams(1)^2*obj.domparams(2)...
+                *obj.domparams(3);
+            else
+                error(['Invalid call to TaylorState constructor. ' ...
+                    'Second argument should be an array of three ' ...
+                    'integers.'])
+            end
+
             obj.L = cell(1,obj.nsurfaces);
             pdo = [];
             pdo.lap = 1;
@@ -56,6 +65,19 @@ classdef Domain
             end
 
             obj = obj.compute_mH();
+
+            [x,xv,w] = Domain.acycquad(domain,domparams);
+            obj.aquad = [];
+            obj.aquad.x = x;
+            obj.aquad.xv = xv;
+            obj.aquad.w = w;
+            if obj.nsurfaces == 2
+                [x,xu,w] = Domain.bcycquad(domain,domparams);
+                obj.bquad = [];
+                obj.bquad.x = x;
+                obj.bquad.xu = xu;
+                obj.bquad.w = w;
+            end
         end
 
         function obj = compute_mH(obj)
@@ -80,6 +102,7 @@ classdef Domain
     end
 
     methods (Static)
-        aquad = acycquad(dom,mode,varargin);
+        [x,xv,w] = acycquad(dom,domparams);
+        [x,xu,w] = bcycquad(dom,domparams);
     end
 end

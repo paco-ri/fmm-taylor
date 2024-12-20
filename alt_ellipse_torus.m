@@ -13,6 +13,10 @@ dom = twist(ro, ao, bo, n, nu, nv);
 plot(dom)
 hold on
 
+g = surfacefunv(@(x,y,z) x+y+z, ...
+    @(x,y,z) x-y-z, ...
+    @(x,y,z) sin(3*z), dom);
+
 nphi = 20;
 options = optimset('Display','off');
 for j = 0:nphi-1
