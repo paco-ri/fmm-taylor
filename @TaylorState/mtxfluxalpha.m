@@ -1,19 +1,8 @@
-function fluxalpha = mtxfluxalpha(S,dom,vn,domparams,mH,zk,epstaylor,epslh,varargin)
+function fluxalpha = mtxfluxalpha(domain,zk,epstaylor,epslh,varargin)
 %MTXFLUXALPHA compute alpha coefficient in flux condition
 % 
 %   Required arguments:
-%     * S: surfer object (see fmm3dbie/matlab README for details)
-%     * dom: surfacemesh version of S (see surfacehps for details)
-%     * vn: normal to surface
-%     * domparams: parameters describing dom and circulation [n, nu, nv, io, aint]
-%         n: [int] polynomial order on each surface patch
-%         nu: [int] number of patches in toroidal direction
-%         nv: [int] number of patches in poloidal direction
-%         io: [int] if 1, negate vn because inner torus
-%         aint: [int] if 1, do A-cyc. integral; otherwise, B-cyc.
-%     * mH: [surfacefunv] density for which 
-%                  \oint -mH/2 + n x curl S0[mH]
-%              is computed
+%     * domain: Domain object
 %     * zk: [double complex] wavenumber
 %     * epstaylor: [double] precision requested for taylor routines
 %     * epslh: [double] precision requested for lap3d/helm3d routines
@@ -43,12 +32,18 @@ function fluxalpha = mtxfluxalpha(S,dom,vn,domparams,mH,zk,epstaylor,epslh,varar
 %             currently only supports quadrature corrections 
 %             computed in rsc format 
 
+S = domain.surf;
+dom = domain.dom;
+vn = domain.vn;
+domparams = domain.domparams;
+mH = domain.mH;
+
 n = domparams(1);
 nu = domparams(2);
 nv = domparams(3);
 
 dpars = [1.0, 0.0];
-nreqarg = 8;
+nreqarg = 4;
 
 if isa(dom,'surfacemesh')
     if nargin < nreqarg + 1

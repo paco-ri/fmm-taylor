@@ -1,13 +1,10 @@
-function fluxsigma = mtxfluxsigmanontaylor(S,dom,vn,L,nodes, ...
+function fluxsigma = mtxfluxsigmanontaylor(domain,nodes, ...
     weights,sigma,zk,epstaylor,epslh,varargin)
 %MTXFLUXSIGMANONTAYLOR compute sigma-dep. terms of flux condition for
 %                      a non-Taylor-state magnetic field
 % 
 %   Required arguments:
-%     * S: surfer object (see fmm3dbie/matlab README for details)
-%     * dom: surfacemesh version of S (see surfacefun for details)
-%     * vn: normal vectors on S
-%     * L: surfaceop on S (see surfacefun for details)
+%     * domain: Domain object
 %     * nodes: [double(3,*)] quadrature nodes for computing flux 
 %              Gauss-Legendre in r, trapezoidal in theta
 %     * weights: [double(*)] corresponding quadrature weights
@@ -34,9 +31,14 @@ function fluxsigma = mtxfluxsigmanontaylor(S,dom,vn,L,nodes, ...
 %             currently only supports quadrature corrections 
 %             computed in rsc format 
 
+S = domain.surf;
+dom = domain.dom;
+vn = domain.vn;
+L = domain.L;
+
 dpars = [1.0, 0];
 
-nreqarg = 10;
+nreqarg = 7;
 
 if isa(dom,'surfacemesh')
 

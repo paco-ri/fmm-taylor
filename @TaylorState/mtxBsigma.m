@@ -1,9 +1,8 @@
-function Bsigma = mtxBsigma(S,dom,vn,L,sigmavals,zk,epstaylor,epslh,varargin)
+function Bsigma = mtxBsigma(domain,sigmavals,zk,epstaylor,epslh,varargin)
 %MTXBSIGMA compute sigma-dep. terms of surface magnetic field
 % 
 %   Required arguments:
-%     * S: surfer object (see fmm3dbie/matlab README for details)
-%     * dom: surfacemesh version of S (see surfacehps for details)
+%     * domain: Domain object
 %     * sigmavals: [double complex(*)] density for which 
 %                  sigma/2 + n . grad S0[sigma]
 %              is computed
@@ -37,8 +36,12 @@ function Bsigma = mtxBsigma(S,dom,vn,L,sigmavals,zk,epstaylor,epslh,varargin)
 %             computed in rsc format 
 
 dpars = [1.0,0];
+S = domain.surf;
+dom = domain.dom;
+vn = domain.vn;
+L = domain.L;
 
-nreqarg = 8;
+nreqarg = 5;
 % torus case
 if length(dom) == 1
     if nargin < nreqarg + 1

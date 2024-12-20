@@ -1,11 +1,10 @@
-function fluxalpha = mtxfluxalphanontaylor(S,dom,nodes,weights, ...
+function fluxalpha = mtxfluxalphanontaylor(domain,nodes,weights, ...
     mH,zk,epstaylor,epslh,varargin)
 %MTXFLUXALPHANONTAYLOR compute alpha coefficient in flux condition for
 %                      a non-Taylor-state magnetic field
 % 
 %   Required arguments:
-%     * S: surfer object (see fmm3dbie/matlab README for details)
-%     * dom: surfacemesh version of S (see surfacehps for details)
+%     * domain: Domain object
 %     * nodes: [double(3,*)] quadrature nodes for computing flux 
 %              Gauss-Legendre in r, trapezoidal in theta
 %     * weights: [double(*)] corresponding quadrature weights
@@ -32,9 +31,12 @@ function fluxalpha = mtxfluxalphanontaylor(S,dom,nodes,weights, ...
 %             currently only supports quadrature corrections 
 %             computed in rsc format 
 
+S = domain.surf;
+dom = domain.dom;
+
 dpars = [1.0, 0];
 
-nreqarg = 8;
+nreqarg = 7;
 
 if isa(dom,'surfacemesh')
 

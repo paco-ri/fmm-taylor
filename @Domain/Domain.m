@@ -65,19 +65,30 @@ classdef Domain
             end
 
             obj = obj.compute_mH();
-
-            [x,xv,w] = Domain.acycquad(domain,domparams);
-            obj.aquad = [];
-            obj.aquad.x = x;
-            obj.aquad.xv = xv;
-            obj.aquad.w = w;
-            if obj.nsurfaces == 2
-                [x,xu,w] = Domain.bcycquad(domain,domparams);
-                obj.bquad = [];
-                obj.bquad.x = x;
-                obj.bquad.xu = xu;
-                obj.bquad.w = w;
+            
+            obj.aquad = cell(1,obj.nsurfaces);
+            if obj.nsurfaces == 1
+                [x,xv,w] = Domain.acycquad(domain{1},domparams);
+                obj.aquad{1} = [];
+                obj.aquad{1}.x = x;
+                obj.aquad{1}.xv = xv;
+                obj.aquad{1}.w = w;
+            else
+                obj.bquad = cell(1,2);
+                for i = 1:2
+                    [x,xv,w] = Domain.acycquad(domain{i},domparams);
+                    obj.aquad{i} = [];
+                    obj.aquad{i}.x = x;
+                    obj.aquad{i}.xv = xv;
+                    obj.aquad{i}.w = w;
+                    [x,xu,w] = Domain.bcycquad(domain{i},domparams);
+                    obj.bquad{i} = [];
+                    obj.bquad{i}.x = x;
+                    obj.bquad{i}.xu = xu;
+                    obj.bquad{i}.w = w;
+                end
             end
+           
         end
 
         function obj = compute_mH(obj)

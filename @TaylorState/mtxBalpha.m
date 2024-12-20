@@ -1,12 +1,8 @@
-function Balpha = mtxBalpha(S,dom,vn,mH,zk,epstaylor,epslh,varargin)
+function Balpha = mtxBalpha(domain,zk,epstaylor,epslh,varargin)
 %MTXBALPHA compute alpha coefficient for surface magnetic field
 % 
 %   Required arguments:
-%     * S: surfer object (see fmm3dbie/matlab README for details)
-%     * dom: surfacemesh version of S (see surfacehps for details)
-%     * mH: [surfacefunv] density for which 
-%                  n . curl S0[mH]
-%           is computed. Note that there is no factor of i. 
+%     * domain: Domain object
 %     * zk: [dcomplex] wavenumber
 %     * epstaylor: [double] precision requested for taylor routines
 %     * epslh: [double] precision requested for lap3d/helm3d routines
@@ -37,8 +33,12 @@ function Balpha = mtxBalpha(S,dom,vn,mH,zk,epstaylor,epslh,varargin)
 %             computed in rsc format
 
 dpars = [1.0,0];
+S = domain.surf;
+dom = domain.dom;
+vn = domain.vn;
+mH = domain.mH;
 
-nreqarg = 7;
+nreqarg = 4;
 % torus case
 if length(dom) == 1
 

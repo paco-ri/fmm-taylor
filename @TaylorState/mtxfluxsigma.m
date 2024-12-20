@@ -1,15 +1,8 @@
-function fluxsigma = mtxfluxsigma(S,dom,vn,L,domparams,sigma,zk,epstaylor,epslh,varargin)
+function fluxsigma = mtxfluxsigma(domain,sigma,zk,epstaylor,epslh,varargin)
 %MTXFLUXSIGMA compute sigma-dep. terms of flux condition
 % 
 %   Required arguments:
-%     * S: cell of surfer objects 
-%     * dom: surfacemesh version of S
-%     * vn: normal vectors on S
-%     * L: surfaceops on S
-%     * domparams: parameters describing dom and circulation [n, nu, nv, io, aint]
-%         n: [int] polynomial order on each surface patch
-%         nu: [int] number of patches in toroidal direction
-%         nv: [int] number of patches in poloidal direction
+%     * domain: Domain object
 %     * sigma: [cell of surfacefuns] densities for which 
 %                  \oint S0[n times grad S0[sigma]]
 %              is computed
@@ -42,12 +35,18 @@ function fluxsigma = mtxfluxsigma(S,dom,vn,L,domparams,sigma,zk,epstaylor,epslh,
 %             currently only supports quadrature corrections 
 %             computed in rsc format 
 
+S = domain.surf;
+dom = domain.dom;
+vn = domain.vn;
+L = domain.L;
+domparams = domain.domparams;
+
 n = domparams(1);
 nu = domparams(2);
 nv = domparams(3);
 
 dpars = [1.0, 0.0];
-nreqarg = 9;
+nreqarg = 5;
 
 if isa(dom,'surfacemesh')
 
