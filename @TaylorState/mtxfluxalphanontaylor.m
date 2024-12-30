@@ -38,6 +38,11 @@ dpars = [1.0, 0];
 
 nreqarg = 7;
 
+if isscalar(dom) && isa(dom{1},'surfacemesh')
+    dom = dom{1};
+    S = S{1};
+end
+
 if isa(dom,'surfacemesh')
 
     targinfo = [];

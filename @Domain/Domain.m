@@ -26,6 +26,14 @@ classdef Domain
                 surf = surfer.surfacemesh_to_surfer(domain);
                 obj.surf = {surf};
                 obj.vn = {normal(domain)};
+            elseif isscalar(domain)
+                if isa(domain{1}, 'surfacemesh')
+                    obj.nsurfaces = 1;
+                    obj.dom = domain;
+                    surf = surfer.surfacemesh_to_surfer(domain{1});
+                    obj.surf = {surf};
+                    obj.vn = {normal(domain{1})};
+                end
             elseif length(domain) == 2
                 if isa(domain{1}, 'surfacemesh') && isa(domain{2}, 'surfacemesh')
                     obj.nsurfaces = 2;

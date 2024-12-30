@@ -199,17 +199,17 @@ classdef RefTaylorState < TaylorState
 
             nsurf = obj.domain.nsurfaces;
             wfunc = cell(nsurf,1);
-            b = zeros(obj.nptspersurf,nsurf);
+            b = zeros(obj.domain.nptspersurf,nsurf);
             for i = 1:nsurf
                 nB0 = dot(obj.domain.vn{i},obj.B0{i});
                 b(:,i) = surfacefun_to_array(nB0,obj.domain.dom{i},obj.domain.surf{i});
             end
-            b = reshape(b,obj.nptspersurf*nsurf,1);
+            b = reshape(b,obj.domain.nptspersurf*nsurf,1);
             if time
                 t1 = tic;
             end
             [W,~,~,iter] = gmres(@(s) TaylorState.gmresA(s, ...
-                obj.domain.dom,obj.domain.surf,obj.domain.vn,obj.domain.L,obj.zk,obj.eps_taylor, ...
+                obj.domain,obj.zk,obj.eps_taylor, ...
                 obj.eps_laphelm,obj.quad_opts_taylor, ...
                 obj.quad_opts_laphelm),b,[],obj.eps_gmres,50);
             if time
@@ -219,7 +219,7 @@ classdef RefTaylorState < TaylorState
                     t2, iter(2), t2/iter(2))
             end
             for i = 1:nsurf
-                inds = obj.nptspersurf*(i-1)+1:obj.nptspersurf*i;
+                inds = obj.domain.nptspersurf*(i-1)+1:obj.domain.nptspersurf*i;
                 wfunc{i} = array_to_surfacefun(W(inds),obj.domain.dom{i}, ...
                     obj.domain.surf{i});
             end
@@ -244,7 +244,7 @@ classdef RefTaylorState < TaylorState
                 fluxsigmaD = TaylorState.mtxfluxsigmanontaylor(obj.domain, ...
                     obj.xs_nodes{1},obj.xs_weights{1},dfunc{1},obj.zk, ...
                     obj.eps_taylor,obj.eps_laphelm);
-                fluxsigmaW = TaylorState.mtxfluxsigmanontaylor(obj.domain. ...
+                fluxsigmaW = TaylorState.mtxfluxsigmanontaylor(obj.domain, ...
                     obj.xs_nodes{1},obj.xs_weights{1},wfunc{1},obj.zk, ...
                     obj.eps_taylor,obj.eps_laphelm);
                 fluxalpha = TaylorState.mtxfluxalphanontaylor(...

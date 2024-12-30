@@ -43,44 +43,8 @@ classdef TaylorState
             %     zk [double complex] Beltrami parameter
             %     flux [double] cross-sectional flux
             %     tols [double or double(3)] quad. and GMRES tolerances
-            % obj.nsurfaces = 0;
-            % if isa(domain, 'surfacemesh')
-            %     obj.dom = {domain};
-            %     surf = surfer.surfacemesh_to_surfer(domain);
-            %     obj.surf = {surf};
-            %     obj.vn = {normal(domain)};
-            %     obj.nsurfaces = 1;
-            % elseif length(domain) == 2
-            %     if isa(domain{1}, 'surfacemesh') && isa(domain{2}, 'surfacemesh')
-            %         obj.dom = domain;
-            %         surf = cell(1,2);
-            %         surf{1} = surfer.surfacemesh_to_surfer(domain{1});
-            %         surf{2} = surfer.surfacemesh_to_surfer(domain{2});
-            %         obj.surf = surf;
-            %         vn = cell(1,2);
-            %         vn{1} = normal(domain{1});
-            %         vn{2} = -1.*normal(domain{2}); % flip inner normal
-            %         obj.vn = vn;
-            %         obj.nsurfaces = 2;
-            %     end
-            % else
-            %     error(['Invalid call to TaylorState constructor. ' ...
-            %         'First argument should be a surfacemesh or a cell ' ...
-            %         'array with two surfacemeshes.'])
-            % end
             
             obj.domain = Domain(domain,domparams);
-
-            % if isnumeric(domparams)
-            %     obj.domparams = domparams;
-            % else
-            %     error(['Invalid call to TaylorState constructor. ' ...
-            %         'Second argument should be an array of three ' ...
-            %         'integers.'])
-            % end
-
-            % obj.nptspersurf = obj.domparams(1)^2*obj.domparams(2)...
-            %     *obj.domparams(3);
 
             if isnumeric(zk)
                 obj.zk = complex(zk);
@@ -99,15 +63,6 @@ classdef TaylorState
                     'flux(es). There should be as many fluxes as ' ...
                     'there are surfaces. '])
             end
-
-            % obj.L = cell(1,obj.nsurfaces);
-            % pdo = [];
-            % pdo.lap = 1;
-            % for i = 1:obj.nsurfaces
-            %     obj.L{i} = surfaceop(obj.dom{i}, pdo);
-            %     obj.L{i}.rankdef = true;
-            %     obj.L{i}.build();
-            % end
             
             if isnumeric(tols)
                 if isscalar(tols)
@@ -129,26 +84,6 @@ classdef TaylorState
                     'Fifth argument should be 1 or 3 tolerance(s).'])
             end
         end
-
-        % function obj = compute_mH(obj)
-        %     %COMPUTE_MH Compute surface harmonic vector field
-        %     sinphi = @(x,y,z) y./sqrt(x.^2 + y.^2);
-        %     cosphi = @(x,y,z) x./sqrt(x.^2 + y.^2);
-        %     obj.mH = cell(1,obj.nsurfaces);
-        %     for i = 1:obj.nsurfaces
-        %         phihat = surfacefunv(@(x,y,z) -sinphi(x,y,z), ...
-        %              @(x,y,z) cosphi(x,y,z), ...
-        %              @(x,y,z) 0.*z, obj.dom{i});
-        %         dummy = cross(obj.vn{i}, phihat); 
-        % 
-        %         if i == 1
-        %             [~, ~, vH] = hodge(dummy);
-        %         else
-        %             [~, ~, vH] = TaylorState.hodge_inward(dummy);
-        %         end
-        %         obj.mH{i} = vH + 1i.*cross(obj.vn{i},vH);
-        %     end
-        % end
 
         function obj = get_quad_corr_taylor(obj,varargin)
             %GET_QUAD_CORR_TAYLOR Get near quad. corr. for grad / curl Sk 
@@ -373,12 +308,6 @@ classdef TaylorState
             end
             
             if time; t1 = tic; end
-            % obj = obj.compute_mH();
-            % if time
-            %     t2 = toc(t1);
-            %     fprintf('compute mH: %f s\n',t2)
-            %     t1 = tic;
-            % end
             obj = obj.get_quad_corr_laphelm();
             if time
                 t2 = toc(t1);
