@@ -7,3 +7,11 @@
 *.mexa64
 *.jpg
 fort.13
+*.log
+gradcurlS0.c
+gradcurlSk.c
+helper.c
+
+saved_data
+old_routs
+old_lap
