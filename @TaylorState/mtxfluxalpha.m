@@ -45,6 +45,13 @@ nv = domparams(3);
 dpars = [1.0, 0.0];
 nreqarg = 4;
 
+if isscalar(dom) && isa(dom{1},'surfacemesh')
+    dom = dom{1};
+    S = S{1};
+    vn = vn{1};
+    mH = mH{1};
+end
+
 if isa(dom,'surfacemesh')
     if nargin < nreqarg + 1
         targinfo = S;

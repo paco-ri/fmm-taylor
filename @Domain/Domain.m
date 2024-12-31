@@ -76,7 +76,7 @@ classdef Domain
             
             obj.aquad = cell(1,obj.nsurfaces);
             if obj.nsurfaces == 1
-                [x,xv,w] = Domain.acycquad(domain{1},domparams);
+                [x,xv,w] = Domain.acycquad(obj.dom{1},domparams);
                 obj.aquad{1} = [];
                 obj.aquad{1}.x = x;
                 obj.aquad{1}.xv = xv;
