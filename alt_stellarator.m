@@ -1,4 +1,4 @@
-function dom = alt_stellarator(n, nu, nv)
+function [dom, fluxnodes, fluxwts] = alt_stellarator(n, nu, nv, scale)
 
 if ( nargin < 2 )
     nu = 8;
@@ -18,7 +18,7 @@ k = 1;
 for ku = 1:nu
     for kv = 1:nv
         [uu, vv] = chebpts2(n, n, [ubreaks(ku:ku+1) vbreaks(kv:kv+1)]);
-        [x{k}, y{k}, z{k}] = evalStellarator(uu, vv);
+        [x{k}, y{k}, z{k}] = evalStellarator(uu, vv, scale);
         k = k+1;
     end
 end
@@ -34,9 +34,18 @@ end
 
 dom = surfacemesh(x, y, z);
 
+fluxnodes = zeros(3,n*nv);
+for kv = 1:nv
+    v = chebpts(n, vbreaks(kv:kv+1));
+    idx = n*(kv-1)+1:n*kv;
+    [fluxnodes(1,idx), fluxnodes(2,idx), fluxnodes(3,idx)] = evalStellarator(0, v, scale);
 end
 
-function [x, y, z] = evalStellarator(v, u)
+fluxwts = zeros(1,nv);
+
+end
+
+function [x, y, z] = evalStellarator(v, u, scale)
 
 Q = 3;
 R = 1;
@@ -48,6 +57,8 @@ d = [0.15  0.09  0.00  0.00  0.00;
      0.01 -0.28 -0.28  0.03  0.02;
      0.00  0.09 -0.03  0.06  0.00;
      0.01 -0.02  0.02  0.00 -0.02];
+d = scale.*d;
+d(3,2) = 4.00;
 
 rz = zeros(size(u));
 for j = -1:4

@@ -1,12 +1,12 @@
 % --- Tolerances ---
-tol = 1e-4;
+tol = 1e-3;
 
 % --- Beltrami parameter ---
 zk = 0.5;
 
 % --- Geometry parameters ---
-ns = [5];% 7];% 9]; % polynomial order + 1
-nvs = [4 6];% 8];% 10]; % number of patches in poloidal direction
+ns = [5 7];% 9]; % polynomial order + 1
+nvs = [4 6 8];% 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
@@ -18,41 +18,54 @@ for n = ns
         r = 2.0; % major radius
         ao = 1.0; % outer minor radius
         ai = 0.6; % inner minor radius
-        domo = circulartorus(n,nu,nv,ao,r);
-        domi = circulartorus(n,nu,nv,ai,r);
-        dom = {domo,domi};
-        domparams = [n, nu, nv];
 
-        % --- Compute B0 ---
-        ntheta = 1e3;
-        rmin = 2.0;
-        rmaj = 2.0;
-        jmag = 1.0;
-        B0o = reftaylorsurffun(domo,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
-        B0i = reftaylorsurffun(domi,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
-
-        % --- Compute XS quad. and flux ---
+        % --- Get domain, compute XS quad. and flux ---
         nr = 16;
         nt = 40;
         np = 40;
-        [tornodes, torweights] = toroidalfluxquad(nr,nt,r,ao,r,ai);
-        [polnodes, polweights] = poloidalfluxquad(nr,np,r,ao,r,ai);
+        % domo = circulartorus(n,nu,nv,ao,r);
+        % domi = circulartorus(n,nu,nv,ai,r);
+        % dom = {domo,domi};
+        [dom, qnodes, qweights] = prepare_stellarator(n,nu,nv,n,nu,nv,ao,ai,nr,nt,np);
+        domo = dom{1};
+        domi = dom{2};
+        domparams = [n, nu, nv];
+
+        % [tornodes, torweights] = toroidalfluxquad(nr,nt,r,ao,r,ai);
+        % [polnodes, polweights] = poloidalfluxquad(nr,np,r,ao,r,ai);
+
+        % --- Compute B0 ---
+        ntheta = 1e3;
+        rmin = 3.0;%2.0;
+        rmaj = 4.0;%2.0;
+        jmag = 1.0;
+        B0o = reftaylorsurffun(domo,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
+        B0i = reftaylorsurffun(domi,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
         
-        torflux = 0;
+        % torflux = 0;
+        % for i = 1:nr*nt
+        %     B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,tornodes(:,i));
+        %     torflux = torflux + B0eval(2)*torweights(i);
+        % end
+        % polflux = 0;
+        % for i = 1:nr*np
+        %     B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,polnodes(:,i));
+        %     polflux = polflux - B0eval(3)*polweights(i); % note sign
+        % end
+        flux = zeros(1,2);
         for i = 1:nr*nt
-            B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,tornodes(:,i));
-            torflux = torflux + B0eval(2)*torweights(i);
+            B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,qnodes{1}(:,i));
+            flux(1) = flux(1) + B0eval(2)*qweights{1}(i);
         end
-        polflux = 0;
         for i = 1:nr*np
-            B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,polnodes(:,i));
-            polflux = polflux - B0eval(3)*polweights(i); % note sign
+            B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,qnodes{2}(:,i));
+            flux(2) = flux(2) - B0eval(3)*qweights{2}(i);
         end
         
         B0 = {B0o,B0i};
-        qnodes = {tornodes,polnodes};
-        qweights = {torweights,polweights};
-        flux = [torflux,polflux];
+        % qnodes = {tornodes,polnodes};
+        % qweights = {torweights,polweights};
+        % flux = [torflux,polflux];
         ts = RefTaylorState(dom,domparams,zk,flux,B0,qnodes,qweights,tol);
         ts = ts.solve(true);
         B = ts.surface_B();
