@@ -12,7 +12,7 @@ elseif nargin == 11
     ns = [n varargin{1}];
     nus = [nu varargin{2}];
     nvs = [nv varargin{3}];
-    scales = sort([varargin{4} varargin{5}]);
+    scales = sort([varargin{4} varargin{5}], 'descend');
     nr = varargin{6};
     nt = varargin{7};
     np = varargin{8};
@@ -71,10 +71,10 @@ for i = 1:nr
     for j = 1:nt
         ij = (i-1)*nt+j;
         tt = 2*pi*(j-1)/nt;
-        [go1, ~, go2] = evalStellarator(0,tt,scales(2));
-        [gi1, ~, gi2] = evalStellarator(0,tt,scales(1));
-        [dgo1, ~, dgo2] = dvEvalStellarator(0,tt,scales(2));
-        [dgi1, ~, dgi2] = dvEvalStellarator(0,tt,scales(1));
+        [go1, ~, go2] = evalStellarator(0,tt,scales(1));
+        [gi1, ~, gi2] = evalStellarator(0,tt,scales(2));
+        [dgo1, ~, dgo2] = dvEvalStellarator(0,tt,scales(1));
+        [dgi1, ~, dgi2] = dvEvalStellarator(0,tt,scales(2));
         fluxnodes{1}(:,ij) = (1-rr)*[gi1; 0; gi2] + rr*[go1; 0; go2];
         fluxwts{1}(1,ij) = (2*pi/nt) ...
             * wr*((-gi1+go1)*((1-rr)*dgi2+rr*dgo2) ...
@@ -91,10 +91,10 @@ if nsurf == 2
         for j = 1:np
             ij = (i-1)*np+j;
             pp = 2*pi*(j-1)/np;
-            [go1, go2] = evalStellarator(pp,0,scales(2));
-            [gi1, gi2] = evalStellarator(pp,0,scales(1));
-            [dgo1, dgo2] = duEvalStellarator(pp,0,scales(2));
-            [dgi1, dgi2] = duEvalStellarator(pp,0,scales(1));
+            [go1, go2] = evalStellarator(pp,0,scales(1));
+            [gi1, gi2] = evalStellarator(pp,0,scales(2));
+            [dgo1, dgo2] = duEvalStellarator(pp,0,scales(1));
+            [dgi1, dgi2] = duEvalStellarator(pp,0,scales(2));
             fluxnodes{2}(:,ij) = (1-rr)*[gi1; gi2; 0] + rr*[go1; go2; 0];
             fluxwts{2}(1,ij) = (2*pi/np) ...
                 * wr*((-gi1+go1)*((1-rr)*dgi2+rr*dgo2) ...
