@@ -1,11 +1,11 @@
 % --- Tolerances ---
-tol = 1e-3;
+tol = 1e-5;
 
 % --- Beltrami parameter ---
-zk = 0.5;
+zk = 0.1;
 
 % --- Geometry parameters ---
-ns = [5 7];% 9]; % polynomial order + 1
+ns = [5];% 7];% 9]; % polynomial order + 1
 nvs = [4 6 8];% 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
@@ -36,8 +36,8 @@ for n = ns
 
         % --- Compute B0 ---
         ntheta = 1e3;
-        rmin = 3.0;%2.0;
-        rmaj = 4.0;%2.0;
+        rmin = 2.0;
+        rmaj = 2.0;
         jmag = 1.0;
         B0o = reftaylorsurffun(domo,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
         B0i = reftaylorsurffun(domi,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);

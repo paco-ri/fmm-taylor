@@ -8,6 +8,9 @@
 *.jpg
 fort.13
 *.log
+*.o
+*.a
+*.so
 gradcurlS0.c
 gradcurlSk.c
 helper.c

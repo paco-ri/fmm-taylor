@@ -5,12 +5,13 @@ tol = 1e-4;
 zk = 1.0;
 
 % --- Geometry parameters ---
-ns = 7;%[5 7 9]; % polynomial order + 1
-nvs = [4 5];%[6 8 10]; % number of patches in poloidal direction
+ns = 9;%[5 7];% 9]; % polynomial order + 1
+nvs = 10;%[6 8];%[6 8 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
     
+tol = 1e-8;
 for n = ns
     for nv = nvs
         fprintf('\t========\n\tn = %d, nv = %d \n', n, nv)
@@ -18,23 +19,29 @@ for n = ns
         a = 2.0; % minor radius, horiz. axis
         a0 = 5.0; % major radius
         b = 3.0; % minor radius vert. axis
-        dom = twisted_ellipse_torus(a,a0,b,n,nu,nv); % surfacemesh
+        % dom = twisted_ellipse_torus(a,a0,b,n,nu,nv); % surfacemesh
+        [dom, qnodes, qweights] = prepare_stellarator(n,nu,nv,12,100);
+        dom = dom{1};
+        qnodes = qnodes{1};
+        qweights = qweights{1};
         domparams = [n, nu, nv];
         % dom = alt_stellarator(n,nu,nv);
         % domparams = [n,nu,nv];
 
         % --- Compute B0 ---
         ntheta = 1e3;
-        rmin = 5.0;
-        rmaj = 5.0;
+        % rmin = 5.0;
+        % rmaj = 5.0;
         jmag = 1.0;
+        rmin = 2.0;
+        rmaj = 2.0;
         B0 = reftaylorsurffun(dom,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
 
         % --- Compute XS quad. and flux ---
         % Specific for twisted ellipse geometry
         nr = 12;
         nt = 100;
-        [qnodes, qweights] = ellipsefluxquad(nr,nt,a,a0,b);
+        % [qnodes, qweights] = ellipsefluxquad(nr,nt,a,a0,b);
         flux = 0;
         for i = 1:nr*nt
             B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,qnodes(:,i));
