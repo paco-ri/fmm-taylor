@@ -5,13 +5,12 @@ tol = 1e-4;
 zk = 1.0;
 
 % --- Geometry parameters ---
-ns = 9;%[5 7];% 9]; % polynomial order + 1
-nvs = 10;%[6 8];%[6 8 10]; % number of patches in poloidal direction
+ns = [5 7 9]; % polynomial order + 1
+nvs = [6 8 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
-    
-tol = 1e-8;
+
 for n = ns
     for nv = nvs
         fprintf('\t========\n\tn = %d, nv = %d \n', n, nv)

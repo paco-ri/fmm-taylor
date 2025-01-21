@@ -1,11 +1,11 @@
 % --- Tolerances ---
-tol = 1e-5;
+tol = 1e-4;
 
 % --- Beltrami parameter ---
-zk = 0.1;
+zk = 0;
 
 % --- Geometry parameters ---
-ns = [5];% 7];% 9]; % polynomial order + 1
+ns = [5 7];% 9]; % polynomial order + 1
 nvs = [4 6 8];% 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
@@ -66,7 +66,8 @@ for n = ns
         % qnodes = {tornodes,polnodes};
         % qweights = {torweights,polweights};
         % flux = [torflux,polflux];
-        ts = RefTaylorState(dom,domparams,zk,flux,B0,qnodes,qweights,tol);
+        tols = [tol .01*tol .01*tol tol tol];
+        ts = RefTaylorState(dom,domparams,zk,flux,B0,qnodes,qweights,tols);
         ts = ts.solve(true);
         B = ts.surface_B();
 
