@@ -1,15 +1,17 @@
 % --- Tolerances ---
-tol = 1e-4;
+tol = 1e-6;%-4;
 
 % --- Beltrami parameter ---
 zk = 0;
 
 % --- Geometry parameters ---
-ns = [5 7];% 9]; % polynomial order + 1
-nvs = [4 6 8];% 10]; % number of patches in poloidal direction
+ns = 9;%[5 7 9]; % polynomial order + 1
+nvs = 8;%[4 6 8];% 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
+
+axisym = false;
 
 for n = ns
     for nv = nvs
@@ -17,22 +19,28 @@ for n = ns
         nu = nv*3; % number of patches in toroidal direction
         r = 2.0; % major radius
         ao = 1.0; % outer minor radius
-        ai = 0.6; % inner minor radius
+        ai = 0.4;%6; % inner minor radius
 
         % --- Get domain, compute XS quad. and flux ---
         nr = 16;
         nt = 40;
         np = 40;
-        % domo = circulartorus(n,nu,nv,ao,r);
-        % domi = circulartorus(n,nu,nv,ai,r);
-        % dom = {domo,domi};
-        [dom, qnodes, qweights] = prepare_stellarator(n,nu,nv,n,nu,nv,ao,ai,nr,nt,np);
-        domo = dom{1};
-        domi = dom{2};
+        if axisym
+            domo = circulartorus(n,nu,nv,ao,r);
+            domi = circulartorus(n,nu,nv,ai,r);
+            dom = {domo,domi};
+        else
+            % [dom, qnodes, qweights] = prepare_stellarator(n,nu,nv,n,nu,nv,ao,ai,nr,nt,np);
+            [dom, qnodes, qweights] = prepare_torus(n,nu,nv,n,nu,nv,ao,ai,nr,nt,np);
+            domo = dom{1};
+            domi = dom{2};
+        end
         domparams = [n, nu, nv];
 
-        % [tornodes, torweights] = toroidalfluxquad(nr,nt,r,ao,r,ai);
-        % [polnodes, polweights] = poloidalfluxquad(nr,np,r,ao,r,ai);
+        if axisym
+            [tornodes, torweights] = toroidalfluxquad(nr,nt,r,ao,r,ai);
+            [polnodes, polweights] = poloidalfluxquad(nr,np,r,ao,r,ai);
+        end
 
         % --- Compute B0 ---
         ntheta = 1e3;
@@ -42,31 +50,39 @@ for n = ns
         B0o = reftaylorsurffun(domo,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
         B0i = reftaylorsurffun(domi,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
         
-        % torflux = 0;
-        % for i = 1:nr*nt
-        %     B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,tornodes(:,i));
-        %     torflux = torflux + B0eval(2)*torweights(i);
-        % end
-        % polflux = 0;
-        % for i = 1:nr*np
-        %     B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,polnodes(:,i));
-        %     polflux = polflux - B0eval(3)*polweights(i); % note sign
-        % end
-        flux = zeros(1,2);
-        for i = 1:nr*nt
-            B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,qnodes{1}(:,i));
-            flux(1) = flux(1) + B0eval(2)*qweights{1}(i);
-        end
-        for i = 1:nr*np
-            B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,qnodes{2}(:,i));
-            flux(2) = flux(2) - B0eval(3)*qweights{2}(i);
+        if axisym
+            torflux = 0;
+            for i = 1:nr*nt
+                B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,tornodes(:,i));
+                torflux = torflux + B0eval(2)*torweights(i);
+            end
+            polflux = 0;
+            for i = 1:nr*np
+                B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,polnodes(:,i));
+                polflux = polflux - B0eval(3)*polweights(i); % note sign
+            end
+        else
+            flux = zeros(1,2);
+            for i = 1:nr*nt
+                B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,qnodes{1}(:,i));
+                flux(1) = flux(1) + B0eval(2)*qweights{1}(i);
+            end
+            for i = 1:nr*np
+                B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,qnodes{2}(:,i));
+                flux(2) = flux(2) - B0eval(3)*qweights{2}(i);
+            end
         end
         
         B0 = {B0o,B0i};
-        % qnodes = {tornodes,polnodes};
-        % qweights = {torweights,polweights};
-        % flux = [torflux,polflux];
-        tols = [tol .01*tol .01*tol tol tol];
+        if axisym
+            qnodes = {tornodes,polnodes};
+            qweights = {torweights,polweights};
+            flux = [torflux,polflux];
+            tols = tol;
+        else
+            tols = [tol .01*tol .01*tol tol tol]; 
+            % tols = tol;
+        end
         ts = RefTaylorState(dom,domparams,zk,flux,B0,qnodes,qweights,tols);
         ts = ts.solve(true);
         B = ts.surface_B();

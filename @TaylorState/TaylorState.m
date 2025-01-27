@@ -13,18 +13,10 @@ classdef TaylorState
 
     properties
         domain % Domain object
-        % nsurfaces % number of nested toroidal surfaces (1 or 2)
-        % dom % surface as a surfacefun.surfacemesh
-        % surf % surface as an fmm3dbie.surfer
-        % domparams % parameters describing surface
-        % nptspersurf % number of points on each surface
         zk % Beltrami parameter 
         flux % cross-sectional flux
-        % vn % outward unit normal vector on surface 
-        % mH % surface harmonic vector field on surface 
         quad_opts_taylor % near quadrature correction for grad and curl Sk
         quad_opts_laphelm % near quad. corr. for Sk
-        % L % surfaceop for Laplace-Beltrami operator on surf
         sigma % scalar density in integral equation solution
         alpha % mH coefficient in integral equation solution
         m0 % sigma-dependent part of vector density m 

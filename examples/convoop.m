@@ -2,10 +2,10 @@
 tol = 1e-4;
 
 % --- Beltrami parameter ---
-zk = 1.0;
+zk = 0;
 
 % --- Geometry parameters ---
-ns = [5 7 9]; % polynomial order + 1
+ns = [5];% 7];% 9]; % polynomial order + 1
 nvs = [6 8 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
@@ -19,7 +19,8 @@ for n = ns
         a0 = 5.0; % major radius
         b = 3.0; % minor radius vert. axis
         % dom = twisted_ellipse_torus(a,a0,b,n,nu,nv); % surfacemesh
-        [dom, qnodes, qweights] = prepare_stellarator(n,nu,nv,12,100);
+        % [dom, qnodes, qweights] = prepare_stellarator(n,nu,nv,12,100);
+        [dom, qnodes, qweights] = prepare_torus(n,nu,nv,12,100);
         dom = dom{1};
         qnodes = qnodes{1};
         qweights = qweights{1};
