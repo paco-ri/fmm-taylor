@@ -1,12 +1,12 @@
 % --- Tolerances ---
-tol = 1e-6;%-4;
+tol = 1e-4;
 
 % --- Beltrami parameter ---
 zk = 0;
 
 % --- Geometry parameters ---
-ns = 9;%[5 7 9]; % polynomial order + 1
-nvs = 8;%[4 6 8];% 10]; % number of patches in poloidal direction
+ns = [5 7 9]; % polynomial order + 1
+nvs = [4 6 8];% 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
@@ -107,12 +107,18 @@ for i = 1:size(ns,2)-1
         lerr(3,ind)), lerr(4,ind), 'o-')
 end
 
-h1 = 50:90;
-h2 = 80:120;
-h3 = 100:150;
+% h1 = 50:90;
+% h2 = 80:120;
+% h3 = 100:150;
+% loglog(h1,5e1.*h1.^(-2),'--')
+% loglog(h2,1e4.*h2.^(-4),'--')
+% loglog(h3,1e7.*h3.^(-6),'--')
+h1 = 34:68;
+h2 = 50:90;
+h3 = 62:124;
 loglog(h1,5e1.*h1.^(-2),'--')
-loglog(h2,1e4.*h2.^(-4),'--')
-loglog(h3,1e7.*h3.^(-6),'--')
+loglog(h2,9e4.*h2.^(-4),'--')
+loglog(h3,1e8.*h3.^(-6),'--')
 
 legend('p=poly. order=4','p=6','p=8','O(h^{-2})','O(h^{-4})','O(h^{-6})','location','southwest')
 xlabel('h, panel size')
