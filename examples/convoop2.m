@@ -124,12 +124,6 @@ legend('p=poly. order=4','p=6','p=8','O(h^{-2})','O(h^{-4})','O(h^{-6})','locati
 xlabel('h, panel size')
 ylabel('||B-B_0||_\infty/||B_0||_\infty')
 
-function N = vecinfnorm(f)
-N = max([norm(f.components{1}, inf) ...
-        norm(f.components{2}, inf), ...
-        norm(f.components{3}, inf)]);
-end
-
 function [qnodes, qweights] = toroidalfluxquad(nr,nt,ro,ao,ri,ai)
 %TOROIDALFLUXQUAD Computes quadrature for toroidal cross-section
 %   Gauss-Legendre in r, periodic trapezoidal in theta
