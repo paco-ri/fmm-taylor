@@ -1,12 +1,12 @@
 % --- Tolerances ---
-tol = 1e-4;
+tol = 1e-6; % !!!!
 
 % --- Beltrami parameter ---
 zk = 0;
 
 % --- Geometry parameters ---
-ns = [5 7 9]; % polynomial order + 1
-nvs = [4 6 8];% 10]; % number of patches in poloidal direction
+ns = 11;%[5 7 9]; % polynomial order + 1
+nvs = [4 6];% 8 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
@@ -36,6 +36,8 @@ for n = ns
             domi = dom{2};
         end
         domparams = [n, nu, nv];
+        disp(surfacearea(domo))
+        disp(surfacearea(domi))
 
         if axisym
             [tornodes, torweights] = toroidalfluxquad(nr,nt,r,ao,r,ai);
@@ -80,7 +82,7 @@ for n = ns
             flux = [torflux,polflux];
             tols = tol;
         else
-            tols = [tol .01*tol .01*tol tol tol]; 
+            tols = [tol .001*tol .001*tol tol tol]; 
             % tols = tol;
         end
         ts = RefTaylorState(dom,domparams,zk,flux,B0,qnodes,qweights,tols);
