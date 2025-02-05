@@ -1,4 +1,4 @@
-function B0 = reftaylor(ntheta,rmin,rmaj,jmag,lambda,targ)
+function [B0, source] = reftaylor(ntheta,rmin,rmaj,jmag,lambda,targ)
 %REFTAYLOR compute a reference Taylor state corresponding to a current ring
 % docs later 
 
@@ -6,7 +6,7 @@ source = zeros([3 ntheta]); % points on a ring in the xz-plane
 current = zeros([3 ntheta]); % current at these points
 for i = 1:ntheta
     theta = 2*pi*(i-1)/ntheta;
-    source(1,i) = rmaj + rmin*cos(theta);
+    source(1,i) = 5 + rmaj + rmin*cos(theta);
     % source(2,i) = rmaj + rmin*cos(theta);
     source(3,i) = rmin*sin(theta);
     current(1,i) = -jmag*rmin*sin(theta);

@@ -1,6 +1,6 @@
 % --- Geometry parameters ---
-n = 5; % polynomial order + 1
-nv = 5; % number of patches in poloidal direction
+n = 9; % polynomial order + 1
+nv = 8; % number of patches in poloidal direction
 nu = nv*3; % number of patches in toroidal direction
 r = 2.0; % major radius
 ao = 1.0; % outer minor radius

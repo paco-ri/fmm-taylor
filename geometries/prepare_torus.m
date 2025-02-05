@@ -20,6 +20,15 @@ elseif nargin == 11
 else
     disp('invalid number of args (4 or 8)')
 end
+
+d = [0.17 0.11  0    0;
+     0    1     0.01 0;
+     0    4.5   0    0;
+     0   -0.25 -0.45 0];
+d = [0.17 0.11  0    0;
+     0    1     0.01 0;
+     0    4.5   0    0;
+     0   -0.25 -.2 0];
     
 doms = cell(1,nsurf);
 for i = 1:nsurf
@@ -38,7 +47,7 @@ for i = 1:nsurf
     for ku = 1:nu
         for kv = 1:nv
             [uu, vv] = chebpts2(n, n, [ubreaks(ku:ku+1) vbreaks(kv:kv+1)]);
-            [x{k}, y{k}, z{k}] = evalTorus(uu, vv, rr);
+            [x{k}, y{k}, z{k}] = evalTorus(uu, vv, rr, d);
             k = k+1;
         end
     end
@@ -71,10 +80,10 @@ for i = 1:nr
     for j = 1:nt
         ij = (i-1)*nt+j;
         tt = 2*pi*(j-1)/nt;
-        [go1, ~, go2] = evalTorus(0,tt,scales(1));
-        [gi1, ~, gi2] = evalTorus(0,tt,scales(2));
-        [dgo1, ~, dgo2] = dvEvalTorus(0,tt,scales(1));
-        [dgi1, ~, dgi2] = dvEvalTorus(0,tt,scales(2));
+        [go1, ~, go2] = evalTorus(0,tt,scales(1),d);
+        [gi1, ~, gi2] = evalTorus(0,tt,scales(2),d);
+        [dgo1, ~, dgo2] = dvEvalTorus(0,tt,scales(1),d);
+        [dgi1, ~, dgi2] = dvEvalTorus(0,tt,scales(2),d);
         fluxnodes{1}(:,ij) = (1-rr)*[gi1; 0; gi2] + rr*[go1; 0; go2];
         fluxwts{1}(1,ij) = (2*pi/nt) ...
             * wr*((-gi1+go1)*((1-rr)*dgi2+rr*dgo2) ...
@@ -91,10 +100,10 @@ if nsurf == 2
         for j = 1:np
             ij = (i-1)*np+j;
             pp = 2*pi*(j-1)/np;
-            [go1, go2] = evalTorus(pp,0,scales(1));
-            [gi1, gi2] = evalTorus(pp,0,scales(2));
-            [dgo1, dgo2] = duEvalTorus(pp,0,scales(1));
-            [dgi1, dgi2] = duEvalTorus(pp,0,scales(2));
+            [go1, go2] = evalTorus(pp,0,scales(1),d);
+            [gi1, gi2] = evalTorus(pp,0,scales(2),d);
+            [dgo1, dgo2] = duEvalTorus(pp,0,scales(1),d);
+            [dgi1, dgi2] = duEvalTorus(pp,0,scales(2),d);
             fluxnodes{2}(:,ij) = (1-rr)*[gi1; gi2; 0] + rr*[go1; go2; 0];
             fluxwts{2}(1,ij) = (2*pi/np) ...
                 * wr*((-gi1+go1)*((1-rr)*dgi2+rr*dgo2) ...
@@ -105,16 +114,8 @@ end
 
 end
 
-function [x, y, z] = evalTorus(u, v, scale)
+function [x, y, z] = evalTorus(u, v, scale, d)
 
-d = [0.17 0.11  0    0;
-     0    1     0.01 0;
-     0    4.5   0    0;
-     0   -0.25 -0.45 0];
-d = [0.17 0.11  0    0;
-     0    1     0.01 0;
-     0    4.5   0    0;
-     0   -0.25 -0.2 0];
 d = scale.*d;
 d(3,2) = 2.0;
 
@@ -134,16 +135,8 @@ end
  
 end
 
-function [x, y, z] = duEvalTorus(u, v, scale)
+function [x, y, z] = duEvalTorus(u, v, scale, d)
 
-d = [0.17 0.11  0    0;
-     0    1     0.01 0;
-     0    4.5   0    0;
-     0   -0.25 -0.45 0];
-d = [0.17 0.11  0    0;
-     0    1     0.01 0;
-     0    4.5   0    0;
-     0   -0.25 -0.2 0];
 d = scale.*d;
 d(3,2) = 2.0;
 
@@ -163,16 +156,8 @@ end
 
 end
 
-function [x, y, z] = dvEvalTorus(u, v, scale)
+function [x, y, z] = dvEvalTorus(u, v, scale, d)
 
-d = [0.17 0.11  0    0;
-     0    1     0.01 0;
-     0    4.5   0    0;
-     0   -0.25 -0.45 0];
-d = [0.17 0.11  0    0;
-     0    1     0.01 0;
-     0    4.5   0    0;
-     0   -0.25 -0.2 0];
 d = scale.*d;
 d(3,2) = 2.0;
 

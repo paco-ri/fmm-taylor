@@ -1,12 +1,12 @@
 % --- Tolerances ---
-tol = 1e-6; % !!!!
+tol = 1e-4;
 
 % --- Beltrami parameter ---
 zk = 0;
 
 % --- Geometry parameters ---
-ns = 11;%[5 7 9]; % polynomial order + 1
-nvs = [4 6];% 8 10]; % number of patches in poloidal direction
+ns = 9;%[5 7 9]; % polynomial order + 1
+nvs = [4 6];%[6 8 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
@@ -19,7 +19,7 @@ for n = ns
         nu = nv*3; % number of patches in toroidal direction
         r = 2.0; % major radius
         ao = 1.0; % outer minor radius
-        ai = 0.4;%6; % inner minor radius
+        ai = 0.6; % inner minor radius
 
         % --- Get domain, compute XS quad. and flux ---
         nr = 16;
@@ -70,7 +70,7 @@ for n = ns
                 flux(1) = flux(1) + B0eval(2)*qweights{1}(i);
             end
             for i = 1:nr*np
-                B0eval = reftaylor(ntheta,rmin,rmaj,jmag,zk,qnodes{2}(:,i));
+                [B0eval, B0srcpts] = reftaylor(ntheta,rmin,rmaj,jmag,zk,qnodes{2}(:,i));
                 flux(2) = flux(2) - B0eval(3)*qweights{2}(i);
             end
         end
