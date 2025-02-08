@@ -6,10 +6,13 @@ classdef Domain
     properties
         nsurfaces % number of nested toroidal surfaces (1 or 2)
         dom % surface as a surfacefun.surfacemesh
+        nfine % high polynomial order for upsampled domain
+        domfine % dom with polynomial order nfine
         surf % surface as an fmm3dbie.surfer
         domparams % parameters describing surface
         nptspersurf % number of points on each surface
         vn % outward unit normal vector on surface 
+        vnfine % vn on domfine
         mH % surface harmonic vector field on surface 
         L % surfaceop for Laplace-Beltrami operator on surf
         aquad % A-cycle quadrature
@@ -17,27 +20,33 @@ classdef Domain
     end
 
     methods
-        function obj = Domain(domain,domparams)
+        function obj = Domain(domain,domparams,nfine)
             %UNTITLED3 Construct an instance of a Domain
             %   Arguments: see above
             if isa(domain, 'surfacemesh')
                 obj.nsurfaces = 1;
                 obj.dom = {domain};
+                obj.domfine = {resample(domain,nfine)};
                 surf = surfer.surfacemesh_to_surfer(domain);
                 obj.surf = {surf};
                 obj.vn = {normal(domain)};
+                obj.vnfine = {normal(obj.domfine)};
             elseif isscalar(domain)
                 if isa(domain{1}, 'surfacemesh')
                     obj.nsurfaces = 1;
                     obj.dom = domain;
+                    obj.domfine = {resample(domain{1},nfine)};
                     surf = surfer.surfacemesh_to_surfer(domain{1});
                     obj.surf = {surf};
                     obj.vn = {normal(domain{1})};
+                    obj.vn = {normal(obj.domfine{1})};
                 end
             elseif length(domain) == 2
                 if isa(domain{1}, 'surfacemesh') && isa(domain{2}, 'surfacemesh')
                     obj.nsurfaces = 2;
                     obj.dom = domain;
+                    obj.domfine = {resample(domain{1},nfine), ...
+                        resample(domain{2},nfine)};
                     surf = cell(1,2);
                     surf{1} = surfer.surfacemesh_to_surfer(domain{1});
                     surf{2} = surfer.surfacemesh_to_surfer(domain{2});
@@ -45,7 +54,11 @@ classdef Domain
                     vn = cell(1,2);
                     vn{1} = normal(domain{1});
                     vn{2} = -1.*normal(domain{2}); % flip inner normal
+                    vnfine = cell(1,2);
+                    vnfine{1} = normal(obj.domfine{1});
+                    vnfine{2} = -normal(obj.domfine{2});
                     obj.vn = vn;
+                    obj.vnfine = vnfine;
                 end
             else
                 error(['Invalid call to Domain constructor. ' ...
@@ -107,15 +120,22 @@ classdef Domain
             for i = 1:obj.nsurfaces
                 phihat = surfacefunv(@(x,y,z) -sinphi(x,y,z), ...
                      @(x,y,z) cosphi(x,y,z), ...
-                     @(x,y,z) 0.*z, obj.dom{i});
-                dummy = cross(obj.vn{i}, phihat); 
+                     @(x,y,z) 0.*z, obj.domfine{i}); % obj.dom{i});
+                % dummy = cross(obj.vn{i}, phihat); 
+                dummy = cross(obj.vnfine{i}, phihat);
                     
                 if i == 1
                     [~, ~, vH] = hodge(dummy);
                 else
                     [~, ~, vH] = TaylorState.hodge_inward(dummy);
                 end
-                obj.mH{i} = vH + 1i.*cross(obj.vn{i},vH);
+                % obj.mH{i} = vH + 1i.*cross(obj.vn{i},vH);
+                mHfine = vH + 1i.*cross(obj.vnfine{i},vH);
+                obj.mH{i} = surfacefunv(obj.dom{i});
+                for j = 1:3
+                    obj.mH{i}.components{j} = ...
+                        resample(mHfine.components{j},obj.domparams(1));
+                end
             end
         end
     end

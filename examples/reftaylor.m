@@ -6,11 +6,11 @@ source = zeros([3 ntheta]); % points on a ring in the xz-plane
 current = zeros([3 ntheta]); % current at these points
 for i = 1:ntheta
     theta = 2*pi*(i-1)/ntheta;
-    source(1,i) = 5 + rmaj + rmin*cos(theta);
-    % source(2,i) = rmaj + rmin*cos(theta);
+    % source(1,i) = rmaj + rmin*cos(theta);
+    source(2,i) = rmaj + rmin*cos(theta);
     source(3,i) = rmin*sin(theta);
-    current(1,i) = -jmag*rmin*sin(theta);
-    % current(2,i) = -jmag*rmin*sin(theta);   
+    % current(1,i) = -jmag*rmin*sin(theta);
+    current(2,i) = -jmag*rmin*sin(theta);   
     current(3,i) = jmag*rmin*cos(theta);
 end
 

@@ -5,13 +5,16 @@ tol = 1e-4;
 zk = 0;
 
 % --- Geometry parameters ---
-ns = 9;%[5 7 9]; % polynomial order + 1
-nvs = [4 6];%[6 8 10]; % number of patches in poloidal direction
+ns = 5; % polynomial order + 1
+nvs = [6 8 10]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
 
 axisym = false;
+
+B0s = cell(1,size(ns,2)*size(nvs,2));
+Bs = cell(1,size(ns,2)*size(nvs,2));
 
 for n = ns
     for nv = nvs
@@ -83,7 +86,7 @@ for n = ns
             tols = tol;
         else
             tols = [tol .001*tol .001*tol tol tol]; 
-            % tols = tol;
+            tols = tol;
         end
         ts = RefTaylorState(dom,domparams,zk,flux,B0,qnodes,qweights,tols);
         ts = ts.solve(true);
@@ -95,6 +98,8 @@ for n = ns
         lerr(4,lind) = max(vecinfnorm(B0{1}-B{1}),vecinfnorm(B0{2}-B{2}))...
             /max(vecinfnorm(B0{1}),vecinfnorm(B0{2})); 
 
+        B0s{lind} = B0;
+        Bs{lind} = B;
         lind = lind + 1;
     end
     tol = tol*1e-2;

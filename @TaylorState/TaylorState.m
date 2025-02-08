@@ -36,7 +36,8 @@ classdef TaylorState
             %     flux [double] cross-sectional flux
             %     tols [double or double(3)] quad. and GMRES tolerances
             
-            obj.domain = Domain(domain,domparams);
+            nfine = 16;
+            obj.domain = Domain(domain,domparams,nfine);
 
             if isnumeric(zk)
                 obj.zk = complex(zk);
