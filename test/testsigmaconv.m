@@ -1,17 +1,17 @@
 %% self-convegence test for sigma
 
-ns = 11;%[7 8 9 10];
+ns = [7 8 9 10];
 nfine = 12;
-nv = 7;
+nv = 10;
 nu = nv*3;
 
 tols = 1e-6;
 zk = 0;
 
 % load sigma and alpha
-sigma_o_fine = load('../saved_data/sigma_o_n12_nv7.mat', 'sigma_o');
+sigma_o_fine = load('../saved_data/sigma_o_n12_nv10.mat', 'sigma_o');
 sigma_o_fine = sigma_o_fine.sigma_o;
-sigma_i_fine = load('../saved_data/sigma_i_n12_nv7.mat', 'sigma_i');
+sigma_i_fine = load('../saved_data/sigma_i_n12_nv10.mat', 'sigma_i');
 sigma_i_fine = sigma_i_fine(1).sigma_i;
 
 sigma_errs = zeros(4,size(ns,2));
@@ -67,6 +67,7 @@ for n = ns
         max(norm(sigma_o_fine,'inf'), norm(sigma_i_fine,'inf'));
 
     sind = sind + 1;
+    tols = tols*1e-1;
 end
 
 loglog(sqrt(sigma_errs(1,1:size(nv,2)).^2.*sigma_errs(2,1:size(nv,2)).* ...
