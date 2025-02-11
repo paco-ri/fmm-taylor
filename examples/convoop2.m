@@ -1,12 +1,12 @@
 % --- Tolerances ---
-tol = 1e-4;
+tol = 1e-6;
 
 % --- Beltrami parameter ---
 zk = 0;
 
 % --- Geometry parameters ---
-ns = 5; % polynomial order + 1
-nvs = [6 8 10]; % number of patches in poloidal direction
+ns = 12;%7;%[7 9 11]; % polynomial order + 1
+nvs = [10 13];%[7 10 13]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
@@ -15,6 +15,7 @@ axisym = false;
 
 B0s = cell(1,size(ns,2)*size(nvs,2));
 Bs = cell(1,size(ns,2)*size(nvs,2));
+tss = cell(1,size(ns,2)*size(nvs,2));
 
 for n = ns
     for nv = nvs
@@ -100,6 +101,7 @@ for n = ns
 
         B0s{lind} = B0;
         Bs{lind} = B;
+        tss{lind} = ts;
         lind = lind + 1;
     end
     tol = tol*1e-2;

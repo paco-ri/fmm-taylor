@@ -14,6 +14,7 @@ classdef Domain
         vn % outward unit normal vector on surface 
         vnfine % vn on domfine
         mH % surface harmonic vector field on surface 
+        mHcoarse % mH computed in the old way (no upsampling)
         L % surfaceop for Laplace-Beltrami operator on surf
         aquad % A-cycle quadrature
         bquad % B-cycle quadrature
@@ -51,12 +52,22 @@ classdef Domain
                     surf{1} = surfer.surfacemesh_to_surfer(domain{1});
                     surf{2} = surfer.surfacemesh_to_surfer(domain{2});
                     obj.surf = surf;
-                    vn = cell(1,2);
-                    vn{1} = normal(domain{1});
-                    vn{2} = -1.*normal(domain{2}); % flip inner normal
+                    % vn = cell(1,2);
+                    % vn{1} = normal(domain{1});
+                    % vn{2} = -1.*normal(domain{2}); % flip inner normal
                     vnfine = cell(1,2);
                     vnfine{1} = normal(obj.domfine{1});
                     vnfine{2} = -normal(obj.domfine{2});
+                    % resample to get vn
+                    vn = cell(1,2);
+                    for j = 1:2
+                        vn{j} = surfacefunv(obj.dom{j});
+                        for k = 1:3
+                            vn{j}.components{k} = ...
+                                resample(vnfine{j}.components{k}, ...
+                                domparams(1));
+                        end
+                    end
                     obj.vn = vn;
                     obj.vnfine = vnfine;
                 end
@@ -117,6 +128,7 @@ classdef Domain
             sinphi = @(x,y,z) y./sqrt(x.^2 + y.^2);
             cosphi = @(x,y,z) x./sqrt(x.^2 + y.^2);
             obj.mH = cell(1,obj.nsurfaces);
+            obj.mHcoarse = cell(1,obj.nsurfaces);
             for i = 1:obj.nsurfaces
                 phihat = surfacefunv(@(x,y,z) -sinphi(x,y,z), ...
                      @(x,y,z) cosphi(x,y,z), ...
@@ -127,7 +139,7 @@ classdef Domain
                 if i == 1
                     [~, ~, vH] = hodge(dummy);
                 else
-                    [~, ~, vH] = TaylorState.hodge_inward(dummy);
+                    [~, ~, vH] = Domain.hodge_inward(dummy);
                 end
                 % obj.mH{i} = vH + 1i.*cross(obj.vn{i},vH);
                 mHfine = vH + 1i.*cross(obj.vnfine{i},vH);
@@ -136,6 +148,19 @@ classdef Domain
                     obj.mH{i}.components{j} = ...
                         resample(mHfine.components{j},obj.domparams(1));
                 end
+
+                % compute mHcoarse
+                phihat = surfacefunv(@(x,y,z) -sinphi(x,y,z), ...
+                     @(x,y,z) cosphi(x,y,z), ...
+                     @(x,y,z) 0.*z, obj.dom{i});
+                dummy = cross(obj.vn{i}, phihat);
+                    
+                if i == 1
+                    [~, ~, vH] = hodge(dummy);
+                else
+                    [~, ~, vH] = Domain.hodge_inward(dummy);
+                end
+                obj.mHcoarse{i} = vH + 1i.*cross(obj.vn{i},vH);
             end
         end
     end
@@ -143,5 +168,6 @@ classdef Domain
     methods (Static)
         [x,xv,w] = acycquad(dom,domparams);
         [x,xu,w] = bcycquad(dom,domparams);
+        [u, v, w, curlfree, divfree] = hodge_inward(f)
     end
 end
