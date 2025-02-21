@@ -11,6 +11,7 @@ fort.13
 *.o
 *.a
 *.so
+.vscode
 *#*
 gradcurlS0.c
 gradcurlSk.c

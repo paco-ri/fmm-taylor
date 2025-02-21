@@ -30,6 +30,7 @@ d = [0.17 0.11  0    0;
      0    4.5   0    0;
      0   -0.25  -.20 0];
 d(3,2)=2.;
+d(4,3)=0;%-.2; % critical mode
     
 doms = cell(1,nsurf);
 for i = 1:nsurf

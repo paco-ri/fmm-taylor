@@ -1,4 +1,4 @@
-%% self-convegence test for sigma
+%% self-convergence test for sigma, ReferenceTaylorState objects
 
 ns = [7 8 9 10];
 nfine = 12;

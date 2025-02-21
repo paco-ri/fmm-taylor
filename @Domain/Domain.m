@@ -12,6 +12,7 @@ classdef Domain
         domparams % parameters describing surface
         nptspersurf % number of points on each surface
         vn % outward unit normal vector on surface 
+        vncoarse % old way of computing vn
         vnfine % vn on domfine
         mH % surface harmonic vector field on surface 
         mHcoarse % mH computed in the old way (no upsampling)
@@ -52,9 +53,10 @@ classdef Domain
                     surf{1} = surfer.surfacemesh_to_surfer(domain{1});
                     surf{2} = surfer.surfacemesh_to_surfer(domain{2});
                     obj.surf = surf;
-                    % vn = cell(1,2);
-                    % vn{1} = normal(domain{1});
-                    % vn{2} = -1.*normal(domain{2}); % flip inner normal
+                    vncoarse = cell(1,2);
+                    vncoarse{1} = normal(domain{1});
+                    vncoarse{2} = -1.*normal(domain{2}); % flip inner normal
+                    obj.vncoarse = vncoarse;
                     vnfine = cell(1,2);
                     vnfine{1} = normal(obj.domfine{1});
                     vnfine{2} = -normal(obj.domfine{2});
