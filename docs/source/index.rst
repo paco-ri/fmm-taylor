@@ -11,9 +11,14 @@
    :maxdepth: 2
    :caption: Contents:
 
+   installation
+   classes
+   methods
+   examples
+
 Introduction
 ============
-``fmm-taylor`` is a code that solves for magnetohydrodynamic (MHD) equilibrium in stellarators. The vacuum chamber of a stellarator has a boundary that is diffeomorphic to a torus, so in this documentation, we abuse the term 'torus' to refer to the boundary of a stellarator-like geometry.
+``fmm-taylor`` is a code that solves for magnetohydrodynamic (MHD) equilibrium in stellarators using boundary integral methods and the fast multipole method (FMM). The vacuum chamber of a stellarator has a boundary that is diffeomorphic to a torus, so in this documentation, we abuse the term 'torus' to refer to the boundary of a stellarator-like geometry.
 
 Let
 
@@ -36,7 +41,7 @@ Let
 
 Here :math:`\mathbf{B}` is the magnetic field and :math:`\Phi_k` is the magnetic flux through :math:`S_k`. This BVP arises when computing MHD equilibrium in a stellarator according to the multi-region relaxed MHD model. When :math:`\mathbf{B}` solves :math:numref:`eq:bvp`, we say that the plasma is in a Taylor state.
 
-The method that this code uses to solve :math:numref:`eq:bvp` can be seen by writing :math:`\mathbf{B}(\mathbf{x}), \mathbf{x} \in \Omega`, as 
+The method that this code uses to solve :math:numref:`eq:bvp` arises by writing the equations in the form of integrals over the boundary :math:`\Gamma`. To start, :math:`\mathbf{B}(\mathbf{x}), \mathbf{x} \in \Omega` can be written as 
 
 .. math::
    \mathbf{B} = i\lambda \mathcal{S}_\lambda[\mathbf{m}] - \nabla \mathcal{S}_\lambda[\sigma] + i \nabla \times \mathcal{S}_\lambda[\mathbf{m}], 
@@ -60,7 +65,17 @@ and :math:`\sigma, \alpha_k, \mathbf{m}, \mathbf{n}, \mathbf{m}_H^k` are functio
    \mathbf{B} = \frac{-\sigma}{2} \mathbf{n} + i \frac{\mathbf{n} \times \mathbf{m}}{2} + i\lambda\mathcal{S}_\lambda[\mathbf{m}] - \nabla \mathcal{S}_\lambda[\sigma] + i\nabla \times \mathcal{S}_\lambda[\mathbf{m}], 
    :label: eq:limB
 
-evaluated at :math:`\mathbf{x} \in \Gamma`. 
+evaluated at :math:`\mathbf{x} \in \Gamma`, and taking a dot product with :math:`\mathbf{n}`, the boundary condition becomes
+
+.. math::
+   0 = \frac{-\sigma}{2} + i\lambda\mathbf{n} \cdot \mathcal{S}_\lambda[\mathbf{m}] - \mathbf{n} \cdot \nabla \mathcal{S}_\lambda[\sigma] + i \mathbf{n} \cdot \nabla \times \mathcal{S}_\lambda[\mathbf{m}].
+   :label: eq:ndotB
+
+Finally, to convert the flux conditions in :math:numref:`eq:ndotB` into boundary integrals,
+
+(flux conditions)
+
+(algo overview, see p 14 of slides)
 
 Indices and tables
 ==================
