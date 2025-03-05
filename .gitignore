@@ -13,9 +13,6 @@ fort.13
 *.so
 .vscode
 *#*
-gradcurlS0.c
-gradcurlSk.c
-helper.c
 
 saved_data
 old_routs
