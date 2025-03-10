@@ -1,2 +1,4 @@
 Classes
 =======
+
+.. mat:class:: Domain
