@@ -21,7 +21,7 @@ nptspersurf_fine = nfine^2*nu*nv;
 dom = prepare_torus(nfine,nu,nv,nfine,nu,nv,ao,ai,nr,nt,np);
 domparams = [nfine nu nv];
 
-do_load = false;
+do_load = true;
 fname = '../saved_data/curlS0mH_arr_crit0/curlS0mH_arr_nfine13_nv10.mat';
 % load/compute Balpha
 if do_load

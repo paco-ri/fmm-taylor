@@ -24,7 +24,7 @@ These are instructions for installing from source.
 
      git clone https://github.com/paco-ri/fmm-taylor-matlab.git
 
-2. Change into ``fmm-taylor``
+2. Change into the source code directory.
 3. Run::
 
      make install

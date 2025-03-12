@@ -1,8 +1,8 @@
 function [x,xu,w] = bcycquad(dom,domparams)
 %ACYCQUAD computes A-cycle quadrature for a domain
-%   Arguments
-%     dom = domain
-%     domparams = n,nu,nv of domain
+% Arguments
+% dom = domain
+% domparams = n,nu,nv of domain
 
 n = domparams(1);
 nu = domparams(2);

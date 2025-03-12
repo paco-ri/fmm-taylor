@@ -20,6 +20,7 @@ matlab_src_dir = os.path.abspath(os.path.join("..", ".."))
 extensions = ["sphinx.ext.autodoc", "sphinxcontrib.matlab"]
 primary_domain = "mat"
 
+
 templates_path = ['_templates']
 exclude_patterns = []
 
