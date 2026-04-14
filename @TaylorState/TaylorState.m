@@ -309,7 +309,7 @@ classdef TaylorState
             obj = obj.get_quad_corr_taylor();
             if time
                 t2 = toc(t1);
-                fprintf('get +taylor route quad. corr.: %f s\n',t2)
+                fprintf('get +taylor rout quad. corr.: %f s\n',t2)
                 t1 = tic;
             end
             obj = obj.compute_sigma_alpha(time);
@@ -563,8 +563,8 @@ classdef TaylorState
         fluxalphanontaylor = mtxfluxalphanontaylor(domain,nodes,weights, ...
             mH,zk,epstaylor,epslh,varargin)
         m0 = debyem0(sigma,lambda,L,vn)
-        integrala = intacyc(f,n,nv)
-        integralb = intbcyc(f,n,nu)
+        [integrala, quadpts, quadwts] = intacyc(f,n,nu,nv,varargin)
+        [integralb, quadpts, quadwts] = intbcyc(f,n,nu,nv,varargin)
         [u, v, w, curlfree, divfree] = hodge_inward(f)
         [qnodes, qweights] = toroidalfluxquadaxi(nr,nt,ro,ao,ri,ai)
         [qnodes, qweights] = poloidalfluxquadaxi(nr,np,ro,ao,ri,ai)

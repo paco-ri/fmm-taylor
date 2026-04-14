@@ -119,7 +119,7 @@ if isa(dom,'surfacemesh')
         S0nx = [S0nx1 S0nx2 S0nx3];
         S0nx = array_to_surfacefun(S0nx,dom,S);
     
-        fluxalpha = 1i*TaylorState.intacyc(S0nx,n,nv);
+        fluxalpha = 1i*TaylorState.intacyc(S0nx,n,nu,nv);
     else
         % Sk[mH]
         SkmH1 = helm3d.dirichlet.eval(S,mHvals(1,:),targinfo,epslh,zk, ...
@@ -142,7 +142,7 @@ if isa(dom,'surfacemesh')
     
         % A/B-cycle integral
         integrand = 1i.*( SkmH + (curlSkmH - curlS0mH)./zk );
-        fluxalpha = TaylorState.intacyc(integrand,n,nv);
+        fluxalpha = TaylorState.intacyc(integrand,n,nu,nv);
     end
 
 % toroidal shell case
@@ -250,9 +250,9 @@ else
             for j = 1:2
                 for k = 1:2
                     fluxalpha(1,i) = fluxalpha(1,i) ...
-                        + (-1)^(k-1)*1i.*TaylorState.intacyc(S0nx{i,j,k},n,nv);
+                        + (-1)^(k-1)*1i.*TaylorState.intacyc(S0nx{i,j,k},n,nu,nv);
                     fluxalpha(2,i) = fluxalpha(2,i) ...
-                        + (-1)^(k-1)*1i.*TaylorState.intbcyc(S0nx{i,j,k},n,nu);
+                        + (-1)^(k-1)*1i.*TaylorState.intbcyc(S0nx{i,j,k},n,nu,nv);
                 end
             end
         end
@@ -285,10 +285,10 @@ else
             for j = 1:2
                 fluxalpha(1,i) = fluxalpha(1,i) ...
                     + (-1)^(j).*TaylorState.intacyc( ...
-                    1i.*(SkmH{i,j} + (curlSkmH{i,j}-curlS0mH{i,j})./zk), n, nv);
+                    1i.*(SkmH{i,j} + (curlSkmH{i,j}-curlS0mH{i,j})./zk), n, nu, nv);
                 fluxalpha(2,i) = fluxalpha(2,i) ...
                     + (-1)^(j).*TaylorState.intbcyc( ...
-                    1i.*(SkmH{i,j} + (curlSkmH{i,j}-curlS0mH{i,j})./zk), n, nu);
+                    1i.*(SkmH{i,j} + (curlSkmH{i,j}-curlS0mH{i,j})./zk), n, nu, nv);
             end
         end
     end    

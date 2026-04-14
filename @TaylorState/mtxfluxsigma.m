@@ -122,7 +122,7 @@ if isa(dom,'surfacemesh')
         S0nx = [S0nx1 S0nx2 S0nx3];
         S0nx = array_to_surfacefun(S0nx,dom,S);
         
-        fluxsigma = -TaylorState.intacyc(S0nx,n,nv);
+        fluxsigma = -TaylorState.intacyc(S0nx,n,nu,nv);
     else
         m0 = TaylorState.debyem0(sigma,zk,L,vn);
         m0vals = surfacefun_to_array(m0,dom,S);
@@ -145,7 +145,7 @@ if isa(dom,'surfacemesh')
         
         % A-cycle integral
         integrand = 1i.*Skm0 + (m0./2 + 1i.*curlSkm0)./zk;
-        fluxsigma = TaylorState.intacyc(integrand,n,nv);
+        fluxsigma = TaylorState.intacyc(integrand,n,nu,nv);
     end
 
 % toroidal shell case
@@ -266,10 +266,10 @@ else
                     for l = 1:2
                         fluxsigma(1,j) = fluxsigma(1,j) ...
                             + (-1)^l.*TaylorState.intacyc( ...
-                            S0nx{i,j,k,l},n,nv);
+                            S0nx{i,j,k,l},n,nu,nv);
                         fluxsigma(2,j) = fluxsigma(2,j) ...
                             + (-1)^l.*TaylorState.intbcyc( ...
-                            S0nx{i,j,k,l},n,nu);
+                            S0nx{i,j,k,l},n,nu,nv);
                     end
                 end
             end
@@ -323,20 +323,20 @@ else
                 for k = 1:2
                     if i == k
                         fluxsigma(1,j) = fluxsigma(1,j) ...
-                            + (-1)^k.*TaylorState.intacyc( ...
+                               + (-1)^k.*TaylorState.intacyc( ...
                             1i.*Skm0{i,j,k} + (m0{i,j}./2 ...
-                            + 1i.*curlSkm0{i,j,k})./zk,n,nv);
+                               + 1i.*curlSkm0{i,j,k})./zk,n,nu,nv);
                         fluxsigma(2,j) = fluxsigma(2,j) ...
                             + (-1)^k.*TaylorState.intbcyc( ...
                             1i.*Skm0{i,j,k} + (m0{i,j}./2 ...
-                            + 1i.*curlSkm0{i,j,k})./zk,n,nu);
+                               + 1i.*curlSkm0{i,j,k})./zk,n,nu,nv);
                     else
                        fluxsigma(1,j) = fluxsigma(1,j) ...
                             + (-1)^k.*TaylorState.intacyc( ...
-                            1i.*(Skm0{i,j,k} + curlSkm0{i,j,k}./zk),n,nv);
+                               1i.*(Skm0{i,j,k} + curlSkm0{i,j,k}./zk),n,nu,nv);
                        fluxsigma(2,j) = fluxsigma(2,j) ...
                             + (-1)^k.*TaylorState.intbcyc( ...
-                            1i.*(Skm0{i,j,k} + curlSkm0{i,j,k}./zk),n,nu); 
+                               1i.*(Skm0{i,j,k} + curlSkm0{i,j,k}./zk),n,nu,nv); 
                     end
                 end
             end
