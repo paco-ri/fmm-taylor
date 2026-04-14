@@ -69,7 +69,7 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
       targinfo.n = S.n;
       patch_id  = zeros(npts,1);
       uvs_targ = zeros(2,npts);
-      mex_id_ = 'get_patch_id_uvs(i int[x], i int[x], i int[x], i int[x], i int[x], io int[x], io double[xx])';
+      mex_id_ = 'get_patch_id_uvs(c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c io int[x], c io double[xx])';
 [patch_id, uvs_targ] = gradcurlS0(mex_id_, npatches, norders, ixyzs, iptype, npts, patch_id, uvs_targ, 1, npatches, npatp1, npatches, 1, npts, 2, npts);
       targinfo.patch_id = patch_id;
       targinfo.uvs_targ = uvs_targ;
@@ -125,7 +125,7 @@ function curlj = eval_curlS0(S,rjvec,eps,varargin)
     curlj = complex(zeros(3,ntarg));
 
 % Call layer potential evaluator
-    mex_id_ = 'lpcomp_curllap_addsub(i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i double[xx], i int[x], i int[x], i double[xx], i double[x], i int[x], i int[x], i int[x], i int[x], i int[x], i double[xx], i dcomplex[xx], i int[x], i int[x], i int[x], i double[xx], i double[x], io dcomplex[xx])';
+    mex_id_ = 'lpcomp_curllap_addsub(c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c i double[xx], c i double[xx], c i int[x], c i int[x], c i double[xx], c i double[x], c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c i double[xx], c i dcomplex[xx], c i int[x], c i int[x], c i int[x], c i double[xx], c i double[x], c io dcomplex[xx])';
 [curlj] = gradcurlS0(mex_id_, npatches, norders, ixyzs, iptype, npts, srccoefs, srcvals, ndtarg, ntarg, targs, eps, nnz, row_ptr, col_ind, iquad, nquad, wnear, rjvec, novers, nptso, ixyzso, srcover, wover, curlj, 1, npatches, npatp1, npatches, 1, n9, npts, n12, npts, 1, 1, ndtarg, ntarg, 1, 1, ntargp1, nnz, nnzp1, 1, nquad, 3, 3, npts, npatches, 1, npatp1, 12, nptso, nptso, 3, ntarg);
     
 end
