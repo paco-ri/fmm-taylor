@@ -71,8 +71,9 @@ classdef Domain
 
             if isnumeric(domparams)
                 obj.domparams = domparams;
-                obj.nptspersurf = obj.domparams(1)^2*obj.domparams(2)...
-                *obj.domparams(3);
+                % obj.nptspersurf = obj.domparams(1)^2*obj.domparams(2)...
+                % *obj.domparams(3);
+                obj.nptspersurf = obj.domparams(1)^2*length(obj.dom{1}.x);
             else
                 error(['Invalid call to TaylorState constructor. ' ...
                     'Second argument should be an array of three ' ...
@@ -131,7 +132,8 @@ classdef Domain
                 else
                     [~, ~, vH] = Domain.hodge_inward(dummy);
                 end
-                obj.mH{i} = vH + 1i.*cross(obj.vn{i},vH);
+                % obj.mH{i} = vH + 1i.*cross(obj.vn{i},vH);
+                obj.mH{i} = vH + times(1i, cross(obj.vn{i}, vH));
             end
         end
     end
