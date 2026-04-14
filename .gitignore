@@ -13,6 +13,8 @@ fort.13
 *.so
 .vscode
 *#*
+*.html
+*.vtk
 
 saved_data
 old_routs
