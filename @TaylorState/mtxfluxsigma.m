@@ -47,6 +47,7 @@ nv = domparams(3);
 
 dpars = [1.0, 0.0];
 nreqarg = 5;
+disp('im in here')
 
 if isscalar(dom) && isa(dom{1},'surfacemesh')
     dom = dom{1};

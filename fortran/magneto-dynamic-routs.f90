@@ -16,24 +16,24 @@ subroutine getnearquad_magnetodynamics(npatches,norders,ixyzs,iptype,npts,&
   ! 
 
   implicit none
-  integer, intent(in) :: npatches,norders(npatches),ixyzs(npatches+1)
-  integer, intent(in) :: iptype(npatches),npts
+  integer *8, intent(in) :: npatches,norders(npatches),ixyzs(npatches+1)
+  integer *8, intent(in) :: iptype(npatches),npts
   real *8, intent(in) :: srccoefs(9,npts),srcvals(12,npts)
-  integer, intent(in) :: ndtarg,ntarg
+  integer *8, intent(in) :: ndtarg,ntarg
   real *8, intent(in) :: targs(ndtarg,ntarg),uvs_targ(2,ntarg)
-  integer, intent(in) :: ipatch_id(ntarg)
+  integer *8, intent(in) :: ipatch_id(ntarg)
   real *8, intent(in) :: eps
   complex *16, intent(in) :: zk
-  integer, intent(in) :: iquadtype,nnz
-  integer, intent(in) :: row_ptr(ntarg+1),col_ind(nnz),iquad(nnz+1)
+  integer *8, intent(in) :: iquadtype,nnz
+  integer *8, intent(in) :: row_ptr(ntarg+1),col_ind(nnz),iquad(nnz+1)
   real *8, intent(in) :: rfac0
-  integer, intent(in) :: nquad
+  integer *8, intent(in) :: nquad
   complex *16, intent(out) :: wnear(nquad,3)
 
-  integer ndz,ndd,ndi
-  integer ipv
+  integer *8 ndz,ndd,ndi
+  integer *8 ipv
   real *8 dpars
-  integer ipars
+  integer *8 ipars
 
   procedure (), pointer :: fker
 
@@ -78,12 +78,12 @@ subroutine oversample_zfun_surf(nd,npatches,norders,ixyzs,iptype,npts,&
   !
   
   implicit none
-  integer nd,npatches,norders(npatches),ixyzs(npatches+1)
-  integer iptype(npatches),npts
+  integer *8 nd,npatches,norders(npatches),ixyzs(npatches+1)
+  integer *8 iptype(npatches),npts
   complex *16 u(nd,npts)
-  integer nfars(npatches),ixyzso(npatches+1),nptso
+  integer *8 nfars(npatches),ixyzso(npatches+1),nptso
   complex *16 uover(nd,nptso)
-  integer i,istart,istarto,npols,npolso
+  integer *8 i,istart,istarto,npols,npolso
 
   ! dummy variables
   real *8 uover_real(nd,nptso),uover_imag(nd,nptso)
@@ -114,28 +114,28 @@ subroutine lpcomp_gradcurlhelm(npatches,norders,ixyzs,iptype,npts,srccoefs,&
   ! 
 
   implicit none
-  integer, intent(in) :: npatches,norders(npatches)
-  integer, intent(in) :: iptype(npatches),ixyzs(npatches+1)
-  integer, intent(in) :: npts,ndtarg,ntarg
+  integer *8, intent(in) :: npatches,norders(npatches)
+  integer *8, intent(in) :: iptype(npatches),ixyzs(npatches+1)
+  integer *8, intent(in) :: npts,ndtarg,ntarg
   real *8, intent(in) :: srcvals(12,npts),srccoefs(9,npts)
   real *8, intent(in) :: targs(ndtarg)
-  integer, intent(in) :: ipatch_id(ntarg)
+  integer *8, intent(in) :: ipatch_id(ntarg)
   real *8, intent(in) :: uvs_targ(2,ntarg)
   real *8, intent(in) :: eps
   complex *16, intent(in) :: zk
   complex *16, intent(in) :: rho(npts),rjvec(3,npts)
   complex *16, intent(out) :: gradrho(3,ntarg),curlj(3,ntarg)
 
-  integer nptso,nnz,nquad
-  integer nover,npolso,npols,norder
-  integer, allocatable :: row_ptr(:),col_ind(:),iquad(:)
+  integer *8 nptso,nnz,nquad
+  integer *8 nover,npolso,npols,norder
+  integer *8, allocatable :: row_ptr(:),col_ind(:),iquad(:)
   complex *16, allocatable :: wnear(:,:)
 
   real *8, allocatable :: srcover(:,:),wover(:)
-  integer, allocatable :: ixyzso(:),novers(:)
+  integer *8, allocatable :: ixyzso(:),novers(:)
   real *8, allocatable :: cms(:,:),rads(:),rad_near(:)
-  integer iptype_avg,norder_avg,iquadtype,npts_over,ikerorder
-  integer i
+  integer *8 iptype_avg,norder_avg,iquadtype,npts_over,ikerorder
+  integer *8 i
   real *8 rfac,rfac0
 
   iptype_avg = floor(sum(iptype)/(npatches+0.0d0))
@@ -301,20 +301,20 @@ subroutine lpcomp_gradcurlhelm_addsub(npatches,norders,ixyzs,&
 !
 
   implicit none
-  integer npatches,norder,npols,npts
-  integer ndtarg,ntarg
-  integer norders(npatches),ixyzs(npatches+1)
-  integer ixyzso(npatches+1),iptype(npatches)
+  integer *8 npatches,norder,npols,npts
+  integer *8 ndtarg,ntarg
+  integer *8 norders(npatches),ixyzs(npatches+1)
+  integer *8 ixyzso(npatches+1),iptype(npatches)
   real *8 srccoefs(9,npts),srcvals(12,npts),eps
   complex *16 zk
   real *8 targs(ndtarg,ntarg) 
-  integer nnz,row_ptr(ntarg+1),col_ind(nnz),nquad
-  integer iquad(nnz+1)
+  integer *8 nnz,row_ptr(ntarg+1),col_ind(nnz),nquad
+  integer *8 iquad(nnz+1)
   complex *16 rjvec(3,npts),rho(npts)
   complex *16 wnear(nquad,3)
 
-  integer novers(npatches)
-  integer nover,npolso,nptso
+  integer *8 novers(npatches)
+  integer *8 nover,npolso,nptso
   real *8 srcover(12,nptso),whtsover(nptso)
   complex *16 curlj(3,ntarg),gradrho(3,ntarg)
   real *8, allocatable :: wts(:)
@@ -329,15 +329,15 @@ subroutine lpcomp_gradcurlhelm_addsub(npatches,norders,ixyzs,&
   complex *16, allocatable :: dpottmp(:),dgradtmp(:,:)
   real *8 vtmp1(3),vtmp2(3),vtmp3(3),rncj,errncj
 
-  integer ns,nt
-  integer ifcharge,ifdipole
-  integer ifpgh,ifpghtarg
+  integer *8 ns,nt
+  integer *8 ifcharge,ifdipole
+  integer *8 ifpgh,ifpghtarg
   complex *16 tmp(10),val,E(4)
 
-  integer i,j,jpatch,jquadstart,jstart,count1,count2
+  integer *8 i,j,jpatch,jquadstart,jstart,count1,count2
   real *8 radexp,epsfmm
 
-  integer ipars(2)
+  integer *8 ipars(2)
   real *8 dpars(1),timeinfo(10),t1,t2,omp_get_wtime
 
   real *8, allocatable :: radsrc(:)
@@ -347,11 +347,13 @@ subroutine lpcomp_gradcurlhelm_addsub(npatches,norders,ixyzs,&
   real *8 rr,rmin
   real *8 over4pi
   real *8 rbl(3),rbm(3)
-  integer nss,ii,l,npover
+  integer *8 nss,ii,l,npover
   complex *16 ima,ztmp
 
-  integer nd,ntarg0,nmax
-  integer ndd,ndz,ndi,ier
+  integer *8 nd,ntarg0,nmax
+  integer *8 ndd,ndz,ndi,ier
+
+  integer *8 int8_12
 
   real *8 ttot,done,pi
   data ima/(0.0d0,1.0d0)/
@@ -362,6 +364,8 @@ subroutine lpcomp_gradcurlhelm_addsub(npatches,norders,ixyzs,&
   ns = nptso
   done = 1
   pi = atan(done)*4
+  
+  int8_12 = 12
 
   ifpgh = 0
   ifpghtarg = 2
@@ -461,7 +465,7 @@ subroutine lpcomp_gradcurlhelm_addsub(npatches,norders,ixyzs,&
   ! print *, "nmax=",nmax
   ! print *, "nd=",nd
 
-  call get_fmm_thresh(12,ns,srcover,12,npts,srcvals,thresh)
+  call get_fmm_thresh(int8_12,ns,srcover,int8_12,npts,srcvals,thresh)
 
   ! print *, "Thresh=",thresh
 
@@ -520,28 +524,28 @@ subroutine lpcomp_gradhelm(npatches,norders,ixyzs,iptype,npts,srccoefs,&
   ! 
 
   implicit none
-  integer, intent(in) :: npatches,norders(npatches)
-  integer, intent(in) :: iptype(npatches),ixyzs(npatches+1)
-  integer, intent(in) :: npts,ndtarg,ntarg
+  integer *8, intent(in) :: npatches,norders(npatches)
+  integer *8, intent(in) :: iptype(npatches),ixyzs(npatches+1)
+  integer *8, intent(in) :: npts,ndtarg,ntarg
   real *8, intent(in) :: srcvals(12,npts),srccoefs(9,npts)
   real *8, intent(in) :: targs(ndtarg)
-  integer, intent(in) :: ipatch_id(ntarg)
+  integer *8, intent(in) :: ipatch_id(ntarg)
   real *8, intent(in) :: uvs_targ(2,ntarg)
   real *8, intent(in) :: eps
   complex *16, intent(in) :: zk
   complex *16, intent(in) :: rho(npts)
   complex *16, intent(out) :: gradrho(3,ntarg)
 
-  integer nptso,nnz,nquad
-  integer nover,npolso,npols,norder
-  integer, allocatable :: row_ptr(:),col_ind(:),iquad(:)
+  integer *8 nptso,nnz,nquad
+  integer *8 nover,npolso,npols,norder
+  integer *8, allocatable :: row_ptr(:),col_ind(:),iquad(:)
   complex *16, allocatable :: wnear(:,:)
 
   real *8, allocatable :: srcover(:,:),wover(:)
-  integer, allocatable :: ixyzso(:),novers(:)
+  integer *8, allocatable :: ixyzso(:),novers(:)
   real *8, allocatable :: cms(:,:),rads(:),rad_near(:)
-  integer iptype_avg,norder_avg,iquadtype,npts_over,ikerorder
-  integer i
+  integer *8 iptype_avg,norder_avg,iquadtype,npts_over,ikerorder
+  integer *8 i
   real *8 rfac,rfac0
 
   iptype_avg = floor(sum(iptype)/(npatches+0.0d0))
@@ -618,20 +622,20 @@ subroutine lpcomp_gradhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   !
 
   implicit none
-  integer npatches,norder,npols,npts
-  integer ndtarg,ntarg
-  integer norders(npatches),ixyzs(npatches+1)
-  integer ixyzso(npatches+1),iptype(npatches)
+  integer *8 npatches,norder,npols,npts
+  integer *8 ndtarg,ntarg
+  integer *8 norders(npatches),ixyzs(npatches+1)
+  integer *8 ixyzso(npatches+1),iptype(npatches)
   real *8 srccoefs(9,npts),srcvals(12,npts),eps
   complex *16 zk
   real *8 targs(ndtarg,ntarg) 
-  integer nnz,row_ptr(ntarg+1),col_ind(nnz),nquad
-  integer iquad(nnz+1)
+  integer *8 nnz,row_ptr(ntarg+1),col_ind(nnz),nquad
+  integer *8 iquad(nnz+1)
   complex *16 rho(npts)
   complex *16 wnear(nquad,3)
 
-  integer novers(npatches)
-  integer nover,npolso,nptso
+  integer *8 novers(npatches)
+  integer *8 nover,npolso,nptso
   real *8 srcover(12,nptso),whtsover(nptso)
   complex *16 gradrho(3,ntarg)
   real *8, allocatable :: wts(:)
@@ -646,15 +650,15 @@ subroutine lpcomp_gradhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   complex *16, allocatable :: dgradtmp(:)
   real *8 vtmp1(3),vtmp2(3),vtmp3(3),rncj,errncj
 
-  integer ns,nt
-  integer ifcharge,ifdipole
-  integer ifpgh,ifpghtarg
+  integer *8 ns,nt
+  integer *8 ifcharge,ifdipole
+  integer *8 ifpgh,ifpghtarg
   complex *16 tmp(10),val,E(4)
 
-  integer i,j,jpatch,jquadstart,jstart,count1,count2
+  integer *8 i,j,jpatch,jquadstart,jstart,count1,count2
   real *8 radexp,epsfmm
 
-  integer ipars(2)
+  integer *8 ipars(2)
   real *8 dpars(1),timeinfo(10),t1,t2,omp_get_wtime
 
   real *8, allocatable :: radsrc(:)
@@ -664,11 +668,13 @@ subroutine lpcomp_gradhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   real *8 rr,rmin
   real *8 over4pi
   real *8 rbl(3),rbm(3)
-  integer nss,ii,l,npover
+  integer *8 nss,ii,l,npover
   complex *16 ima,ztmp
 
-  integer nd,ntarg0,nmax
-  integer ndd,ndz,ndi,ier
+  integer *8 nd,ntarg0,nmax
+  integer *8 ndd,ndz,ndi,ier
+
+  integer *8 int8_12
 
   real *8 ttot,done,pi
   data ima/(0.0d0,1.0d0)/
@@ -679,6 +685,8 @@ subroutine lpcomp_gradhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   ns = nptso
   done = 1
   pi = atan(done)*4
+
+  int8_12 = 12
 
   ifpgh = 0
   ifpghtarg = 2
@@ -745,7 +753,7 @@ subroutine lpcomp_gradhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   enddo
   !$OMP END PARALLEL DO
 
-  call get_fmm_thresh(12,ns,srcover,12,npts,srcvals,thresh)
+  call get_fmm_thresh(int8_12,ns,srcover,int8_12,npts,srcvals,thresh)
 
   ! Subtract near contributions computed via fmm
   allocate(dgradtmp(3))
@@ -790,28 +798,28 @@ subroutine lpcomp_curlhelm(npatches,norders,ixyzs,iptype,npts,srccoefs,&
   !
 
   implicit none
-  integer, intent(in) :: npatches,norders(npatches)
-  integer, intent(in) :: iptype(npatches),ixyzs(npatches+1)
-  integer, intent(in) :: npts,ndtarg,ntarg
+  integer *8, intent(in) :: npatches,norders(npatches)
+  integer *8, intent(in) :: iptype(npatches),ixyzs(npatches+1)
+  integer *8, intent(in) :: npts,ndtarg,ntarg
   real *8, intent(in) :: srcvals(12,npts),srccoefs(9,npts)
   real *8, intent(in) :: targs(ndtarg)
-  integer, intent(in) :: ipatch_id(ntarg)
+  integer *8, intent(in) :: ipatch_id(ntarg)
   real *8, intent(in) :: uvs_targ(2,ntarg)
   real *8, intent(in) :: eps
   complex *16, intent(in) :: zk
   complex *16, intent(in) :: rjvec(3,npts)
   complex *16, intent(out) :: curlj(3,ntarg)
 
-  integer nptso,nnz,nquad
-  integer nover,npolso,npols,norder
-  integer, allocatable :: row_ptr(:),col_ind(:),iquad(:)
+  integer *8 nptso,nnz,nquad
+  integer *8 nover,npolso,npols,norder
+  integer *8, allocatable :: row_ptr(:),col_ind(:),iquad(:)
   complex *16, allocatable :: wnear(:,:)
 
   real *8, allocatable :: srcover(:,:),wover(:)
-  integer, allocatable :: ixyzso(:),novers(:)
+  integer *8, allocatable :: ixyzso(:),novers(:)
   real *8, allocatable :: cms(:,:),rads(:),rad_near(:)
-  integer iptype_avg,norder_avg,iquadtype,npts_over,ikerorder
-  integer i
+  integer *8 iptype_avg,norder_avg,iquadtype,npts_over,ikerorder
+  integer *8 i
   real *8 rfac,rfac0
   complex *16 zpars
 
@@ -891,20 +899,20 @@ subroutine lpcomp_curlhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   !
 
   implicit none
-  integer npatches,norder,npols,npts
-  integer ndtarg,ntarg
-  integer norders(npatches),ixyzs(npatches+1)
-  integer ixyzso(npatches+1),iptype(npatches)
+  integer *8 npatches,norder,npols,npts
+  integer *8 ndtarg,ntarg
+  integer *8 norders(npatches),ixyzs(npatches+1)
+  integer *8 ixyzso(npatches+1),iptype(npatches)
   real *8 srccoefs(9,npts),srcvals(12,npts),eps
   complex *16 zk
   real *8 targs(ndtarg,ntarg) 
-  integer nnz,row_ptr(ntarg+1),col_ind(nnz),nquad
-  integer iquad(nnz+1)
+  integer *8 nnz,row_ptr(ntarg+1),col_ind(nnz),nquad
+  integer *8 iquad(nnz+1)
   complex *16 rjvec(3,npts)
   complex *16 wnear(nquad,3)
 
-  integer novers(npatches)
-  integer nover,npolso,nptso
+  integer *8 novers(npatches)
+  integer *8 nover,npolso,nptso
   real *8 srcover(12,nptso),whtsover(nptso)
   complex *16 curlj(3,ntarg)
   real *8, allocatable :: wts(:)
@@ -919,15 +927,15 @@ subroutine lpcomp_curlhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   complex *16, allocatable :: dpottmp(:),dgradtmp(:,:)
   real *8 vtmp1(3),vtmp2(3),vtmp3(3),rncj,errncj
 
-  integer ns,nt
-  integer ifcharge,ifdipole
-  integer ifpgh,ifpghtarg
+  integer *8 ns,nt
+  integer *8 ifcharge,ifdipole
+  integer *8 ifpgh,ifpghtarg
   complex *16 tmp(10),val,E(4)
 
-  integer i,j,jpatch,jquadstart,jstart,count1,count2
+  integer *8 i,j,jpatch,jquadstart,jstart,count1,count2
   real *8 radexp,epsfmm
 
-  integer ipars(2)
+  integer *8 ipars(2)
   real *8 dpars(1),timeinfo(10),t1,t2,omp_get_wtime
 
   real *8, allocatable :: radsrc(:)
@@ -937,11 +945,12 @@ subroutine lpcomp_curlhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   real *8 rr,rmin
   real *8 over4pi
   real *8 rbl(3),rbm(3)
-  integer nss,ii,l,npover
+  integer *8 nss,ii,l,npover
   complex *16 ima,ztmp
 
-  integer nd,ntarg0,nmax
-  integer ndd,ndz,ndi,ier
+  integer *8 nd,ntarg0,nmax
+  integer *8 ndd,ndz,ndi,ier
+  integer *8 int8_12
   
   real *8 ttot,done,pi
   data ima/(0.0d0,1.0d0)/
@@ -952,6 +961,7 @@ subroutine lpcomp_curlhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   ns = nptso
   done = 1
   pi = atan(done)*4
+  int8_12 = 12
 
   ifpgh = 0
   ifpghtarg = 2
@@ -1029,7 +1039,7 @@ subroutine lpcomp_curlhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   enddo
   !$OMP END PARALLEL DO     
 
-  call get_fmm_thresh(12,ns,srcover,12,npts,srcvals,thresh)
+  call get_fmm_thresh(int8_12,ns,srcover,int8_12,npts,srcvals,thresh)
 
   ! Subtract near contributions computed via fmm
   allocate(dpottmp(nd),dgradtmp(nd,3))

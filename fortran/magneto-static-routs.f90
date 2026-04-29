@@ -102,23 +102,23 @@
 !               
 !
       implicit none
-      integer, intent(in) :: npatches,norders(npatches),ixyzs(npatches+1)
-      integer, intent(in) :: iptype(npatches),npts
+      integer *8, intent(in) :: npatches,norders(npatches),ixyzs(npatches+1)
+      integer *8, intent(in) :: iptype(npatches),npts
       real *8, intent(in) :: srccoefs(9,npts),srcvals(12,npts)
-      integer, intent(in) :: ndtarg,ntarg
+      integer *8, intent(in) :: ndtarg,ntarg
       real *8, intent(in) :: targs(ndtarg,ntarg),uvs_targ(2,ntarg)
-      integer, intent(in) :: ipatch_id(ntarg)
+      integer *8, intent(in) :: ipatch_id(ntarg)
       real *8, intent(in) :: eps
-      integer, intent(in) :: iquadtype,nnz
-      integer, intent(in) :: row_ptr(ntarg+1),col_ind(nnz),iquad(nnz+1)
+      integer *8, intent(in) :: iquadtype,nnz
+      integer *8, intent(in) :: row_ptr(ntarg+1),col_ind(nnz),iquad(nnz+1)
       real *8, intent(in) :: rfac0
-      integer, intent(in) :: nquad
+      integer *8, intent(in) :: nquad
       real *8, intent(out) :: wnear(nquad,3)
 
-      integer ndz,ndd,ndi
-      integer ipv
+      integer *8 ndz,ndd,ndi
+      integer *8 ipv
       real *8 dpars
-      integer ipars
+      integer *8 ipars
       complex *16 zpars
 
       procedure (), pointer :: fker
@@ -238,29 +238,32 @@
 !
 !
       implicit none
-      integer, intent(in) :: npatches,norders(npatches)
-      integer, intent(in) :: iptype(npatches),ixyzs(npatches+1)
-      integer, intent(in) :: npts,ndtarg,ntarg
+      integer *8, intent(in) :: npatches,norders(npatches)
+      integer *8, intent(in) :: iptype(npatches),ixyzs(npatches+1)
+      integer *8, intent(in) :: npts,ndtarg,ntarg
       real *8, intent(in) :: srcvals(12,npts),srccoefs(9,npts)
       real *8, intent(in) :: targs(ndtarg)
-      integer, intent(in) :: ipatch_id(ntarg)
+      integer *8, intent(in) :: ipatch_id(ntarg)
       real *8, intent(in) :: uvs_targ(2,ntarg)
       real *8, intent(in) :: eps
       real *8, intent(in) :: rjvec(3,npts),rho(npts)
       real *8, intent(out) :: curlj(3,ntarg),gradrho(3,ntarg)
 
-      integer nptso,nnz,nquad
-      integer nover,npolso,npols,norder
-      integer, allocatable :: row_ptr(:),col_ind(:),iquad(:)
+      integer *8 nptso,nnz,nquad
+      integer *8 nover,npolso,npols,norder
+      integer *8, allocatable :: row_ptr(:),col_ind(:),iquad(:)
       real *8, allocatable :: wnear(:,:)
 
       real *8, allocatable :: srcover(:,:),wover(:)
-      integer, allocatable :: ixyzso(:),novers(:)
+      integer *8, allocatable :: ixyzso(:),novers(:)
       real *8, allocatable :: cms(:,:),rads(:),rad_near(:)
-      integer iptype_avg,norder_avg,iquadtype,npts_over,ikerorder
-      integer i
+      integer *8 iptype_avg,norder_avg,iquadtype,npts_over,ikerorder
+      integer *8 i
       real *8 rfac,rfac0
       complex *16 zpars
+
+      integer *8 int8_12
+      int8_12 = 12
 
       iptype_avg = floor(sum(iptype)/(npatches+0.0d0))
       norder_avg = floor(sum(norders)/(npatches+0.0d0))
@@ -308,7 +311,7 @@
 
       npts_over = ixyzso(npatches+1)-1
 
-      allocate(srcover(12,npts_over),wover(npts_over))
+      allocate(srcover(int8_12,npts_over),wover(npts_over))
 
       call oversample_geom(npatches,norders,ixyzs,iptype,npts, &
         srccoefs,srcvals,novers,ixyzso,npts_over,srcover)
@@ -453,19 +456,19 @@
 !
 
       implicit none
-      integer npatches,norder,npols,npts
-      integer ndtarg,ntarg
-      integer norders(npatches),ixyzs(npatches+1)
-      integer ixyzso(npatches+1),iptype(npatches)
+      integer *8 npatches,norder,npols,npts
+      integer *8 ndtarg,ntarg
+      integer *8 norders(npatches),ixyzs(npatches+1)
+      integer *8 ixyzso(npatches+1),iptype(npatches)
       real *8 srccoefs(9,npts),srcvals(12,npts),eps
       real *8 targs(ndtarg,ntarg) 
-      integer nnz,row_ptr(ntarg+1),col_ind(nnz),nquad
-      integer iquad(nnz+1)
+      integer *8 nnz,row_ptr(ntarg+1),col_ind(nnz),nquad
+      integer *8 iquad(nnz+1)
       complex *16 rjvec(3,npts),rho(npts)
       real *8 wnear(nquad,3)
 
-      integer novers(npatches)
-      integer nover,npolso,nptso
+      integer *8 novers(npatches)
+      integer *8 nover,npolso,nptso
       real *8 srcover(12,nptso),whtsover(nptso)
       complex *16 curlj(3,ntarg),gradrho(3,ntarg)
       real *8, allocatable :: wts(:)
@@ -484,15 +487,15 @@
       real *8, allocatable :: dpottmpi(:),dgradtmpi(:,:)
       real *8 vtmp1(3),vtmp2(3),vtmp3(3),rncj,errncj
 
-      integer ns,nt
-      integer ifcharge,ifdipole
-      integer ifpgh,ifpghtarg
+      integer *8 ns,nt
+      integer *8 ifcharge,ifdipole
+      integer *8 ifpgh,ifpghtarg
       complex *16 tmp(10),val,E(4)
 
-      integer i,j,jpatch,jquadstart,jstart,count1,count2
+      integer *8 i,j,jpatch,jquadstart,jstart,count1,count2
       real *8 radexp,epsfmm
 
-      integer ipars(2)
+      integer *8 ipars(2)
       real *8 dpars(1),timeinfo(10),t1,t2,omp_get_wtime
 
       real *8, allocatable :: radsrc(:)
@@ -502,11 +505,13 @@
       real *8 rr,rmin
       real *8 over4pi
       real *8 rbl(3),rbm(3)
-      integer nss,ii,l,npover
+      integer *8 nss,ii,l,npover
       complex *16 ima,ztmp
 
-      integer nd,ntarg0,nmax
-      integer ndd,ndz,ndi,ier
+      integer *8 nd,ntarg0,nmax
+      integer *8 ndd,ndz,ndi,ier
+
+      integer *8 int8_12
 
       real *8 ttot,done,pi
       data ima/(0.0d0,1.0d0)/
@@ -517,6 +522,7 @@
       ns = nptso
       done = 1
       pi = atan(done)*4
+      int8_12 = 12
 
       ifpgh = 0
       ifpghtarg = 2
@@ -652,7 +658,7 @@
 !      print *, "nmax=",nmax
 !      print *, "nd=",nd
 
-      call get_fmm_thresh(12,ns,srcover,12,npts,srcvals,thresh)
+      call get_fmm_thresh(int8_12,ns,srcover,int8_12,npts,srcvals,thresh)
 
 !      print *, "Thresh=",thresh
 
@@ -719,30 +725,30 @@
 !
 !
       implicit none
-      integer, intent(in) :: npatches,norders(npatches)
-      integer, intent(in) :: iptype(npatches),ixyzs(npatches+1)
-      integer, intent(in) :: npts,ndtarg,ntarg
+      integer *8, intent(in) :: npatches,norders(npatches)
+      integer *8, intent(in) :: iptype(npatches),ixyzs(npatches+1)
+      integer *8, intent(in) :: npts,ndtarg,ntarg
       real *8, intent(in) :: srcvals(12,npts),srccoefs(9,npts)
       real *8, intent(in) :: targs(ndtarg)
-      integer, intent(in) :: ipatch_id(ntarg)
+      integer *8, intent(in) :: ipatch_id(ntarg)
       real *8, intent(in) :: uvs_targ(2,ntarg)
       real *8, intent(in) :: eps
       complex *16, intent(in) :: rho(npts)
       complex *16, intent(out) :: gradrho(3,ntarg)
 
-      integer nptso,nnz,nquad
-      integer nover,npolso,npols,norder
-      integer, allocatable :: row_ptr(:),col_ind(:),iquad(:)
+      integer *8 nptso,nnz,nquad
+      integer *8 nover,npolso,npols,norder
+      integer *8, allocatable :: row_ptr(:),col_ind(:),iquad(:)
       real *8, allocatable :: wnear(:,:)
 
       real *8, allocatable :: srcover(:,:),wover(:)
-      integer, allocatable :: ixyzso(:),novers(:)
+      integer *8, allocatable :: ixyzso(:),novers(:)
       real *8, allocatable :: cms(:,:),rads(:),rad_near(:)
-      integer iptype_avg,norder_avg,iquadtype,npts_over,ikerorder
-      integer i
+      integer *8 iptype_avg,norder_avg,iquadtype,npts_over,ikerorder
+      integer *8 i
       real *8 rfac,rfac0
       complex *16 zpars
-
+      
       iptype_avg = floor(sum(iptype)/(npatches+0.0d0))
       norder_avg = floor(sum(norders)/(npatches+0.0d0))
 
@@ -837,19 +843,19 @@
 !
 
            implicit none
-           integer npatches,norder,npols,npts
-           integer ndtarg,ntarg
-           integer norders(npatches),ixyzs(npatches+1)
-           integer ixyzso(npatches+1),iptype(npatches)
+           integer *8 npatches,norder,npols,npts
+           integer *8 ndtarg,ntarg
+           integer *8 norders(npatches),ixyzs(npatches+1)
+           integer *8 ixyzso(npatches+1),iptype(npatches)
            real *8 srccoefs(9,npts),srcvals(12,npts),eps
            real *8 targs(ndtarg,ntarg) 
-           integer nnz,row_ptr(ntarg+1),col_ind(nnz),nquad
-           integer iquad(nnz+1)
+           integer *8 nnz,row_ptr(ntarg+1),col_ind(nnz),nquad
+           integer *8 iquad(nnz+1)
            complex *16 rho(npts)
            real *8 wnear(nquad,3)
 
-           integer novers(npatches)
-           integer nover,npolso,nptso
+           integer *8 novers(npatches)
+           integer *8 nover,npolso,nptso
            real *8 srcover(12,nptso),whtsover(nptso)
            complex *16 gradrho(3,ntarg)
            real *8 gradrhor(3,ntarg), gradrhoi(3,ntarg)
@@ -867,15 +873,15 @@
            real *8, allocatable :: dgradtmpr(:),dgradtmpi(:)
            real *8 vtmp1(3),vtmp2(3),vtmp3(3),rncj,errncj
 
-           integer ns,nt
-           integer ifcharge,ifdipole
-           integer ifpgh,ifpghtarg
+           integer *8 ns,nt
+           integer *8 ifcharge,ifdipole
+           integer *8 ifpgh,ifpghtarg
            complex *16 tmp(10),val,E(4)
 
-           integer i,j,jpatch,jquadstart,jstart,count1,count2
+           integer *8 i,j,jpatch,jquadstart,jstart,count1,count2
            real *8 radexp,epsfmm
 
-           integer ipars(2)
+           integer *8 ipars(2)
            real *8 dpars(1),timeinfo(10),t1,t2,omp_get_wtime
 
            real *8, allocatable :: radsrc(:)
@@ -885,11 +891,12 @@
            real *8 rr,rmin
            real *8 over4pi
            real *8 rbl(3),rbm(3)
-           integer nss,ii,l,npover,m
+           integer *8 nss,ii,l,npover,m
            complex *16 ima,ztmp
 
-           integer nd,ntarg0,nmax
-           integer ndd,ndz,ndi,ier
+           integer *8 nd,ntarg0,nmax
+           integer *8 ndd,ndz,ndi,ier
+           integer *8 int8_12
 
            real *8 ttot,done,pi
            data ima/(0.0d0,1.0d0)/
@@ -900,6 +907,7 @@
            ns = nptso
            done = 1
            pi = atan(done)*4
+           int8_12 = 12
 
            ifpgh = 0
            ifpghtarg = 2
@@ -999,7 +1007,7 @@
      !      print *, "nmax=",nmax
      !      print *, "nd=",nd
 
-           call get_fmm_thresh(12,ns,srcover,12,npts,srcvals,thresh)
+           call get_fmm_thresh(int8_12,ns,srcover,int8_12,npts,srcvals,thresh)
 
      !      print *, "Thresh=",thresh
 
@@ -1040,7 +1048,7 @@
            enddo
      !$OMP END PARALLEL DO      
 
-     !      print *, "finished pot eval"
+!           print *, "finished pot eval"
 
            return
            end subroutine lpcomp_gradlap_addsub
@@ -1059,27 +1067,27 @@
 !
 !
       implicit none
-      integer, intent(in) :: npatches,norders(npatches)
-      integer, intent(in) :: iptype(npatches),ixyzs(npatches+1)
-      integer, intent(in) :: npts,ndtarg,ntarg
+      integer *8, intent(in) :: npatches,norders(npatches)
+      integer *8, intent(in) :: iptype(npatches),ixyzs(npatches+1)
+      integer *8, intent(in) :: npts,ndtarg,ntarg
       real *8, intent(in) :: srcvals(12,npts),srccoefs(9,npts)
       real *8, intent(in) :: targs(ndtarg)
-      integer, intent(in) :: ipatch_id(ntarg)
+      integer *8, intent(in) :: ipatch_id(ntarg)
       real *8, intent(in) :: uvs_targ(2,ntarg)
       real *8, intent(in) :: eps
       complex *16, intent(in) :: rjvec(3,npts)
       complex *16, intent(out) :: curlj(3,ntarg)
 
-      integer nptso,nnz,nquad
-      integer nover,npolso,npols,norder
-      integer, allocatable :: row_ptr(:),col_ind(:),iquad(:)
+      integer *8 nptso,nnz,nquad
+      integer *8 nover,npolso,npols,norder
+      integer *8, allocatable :: row_ptr(:),col_ind(:),iquad(:)
       real *8, allocatable :: wnear(:,:)
 
       real *8, allocatable :: srcover(:,:),wover(:)
-      integer, allocatable :: ixyzso(:),novers(:)
+      integer *8, allocatable :: ixyzso(:),novers(:)
       real *8, allocatable :: cms(:,:),rads(:),rad_near(:)
-      integer iptype_avg,norder_avg,iquadtype,npts_over,ikerorder
-      integer i
+      integer *8 iptype_avg,norder_avg,iquadtype,npts_over,ikerorder
+      integer *8 i
       real *8 rfac,rfac0
       complex *16 zpars
 
@@ -1176,19 +1184,19 @@
 !
 
       implicit none
-      integer npatches,norder,npols,npts
-      integer ndtarg,ntarg
-      integer norders(npatches),ixyzs(npatches+1)
-      integer ixyzso(npatches+1),iptype(npatches)
+      integer *8 npatches,norder,npols,npts
+      integer *8 ndtarg,ntarg
+      integer *8 norders(npatches),ixyzs(npatches+1)
+      integer *8 ixyzso(npatches+1),iptype(npatches)
       real *8 srccoefs(9,npts),srcvals(12,npts),eps
       real *8 targs(ndtarg,ntarg) 
-      integer nnz,row_ptr(ntarg+1),col_ind(nnz),nquad
-      integer iquad(nnz+1)
+      integer *8 nnz,row_ptr(ntarg+1),col_ind(nnz),nquad
+      integer *8 iquad(nnz+1)
       complex *16 rjvec(3,npts)
       real *8 wnear(nquad,3)
 
-      integer novers(npatches)
-      integer nover,npolso,nptso
+      integer *8 novers(npatches)
+      integer *8 nover,npolso,nptso
       real *8 srcover(12,nptso),whtsover(nptso)
       complex *16 curlj(3,ntarg)
       real *8, allocatable :: wts(:)
@@ -1205,15 +1213,15 @@
       real *8, allocatable :: dpottmp(:),dgradtmpr(:,:),dgradtmpi(:,:)
       real *8 vtmp1(3),vtmp2(3),vtmp3(3),rncj,errncj
 
-      integer ns,nt
-      integer ifcharge,ifdipole
-      integer ifpgh,ifpghtarg
+      integer *8 ns,nt
+      integer *8 ifcharge,ifdipole
+      integer *8 ifpgh,ifpghtarg
       complex *16 tmp(10),val,E(4)
 
-      integer i,j,jpatch,jquadstart,jstart,count1,count2
+      integer *8 i,j,jpatch,jquadstart,jstart,count1,count2
       real *8 radexp,epsfmm
 
-      integer ipars(2)
+      integer *8 ipars(2)
       real *8 dpars(1),timeinfo(10),t1,t2,omp_get_wtime
 
       real *8, allocatable :: radsrc(:)
@@ -1223,11 +1231,12 @@
       real *8 rr,rmin
       real *8 over4pi
       real *8 rbl(3),rbm(3)
-      integer nss,ii,l,npover
+      integer *8 nss,ii,l,npover
       complex *16 ima,ztmp
 
-      integer nd,ntarg0,nmax
-      integer ndd,ndz,ndi,ier
+      integer *8 nd,ntarg0,nmax
+      integer *8 ndd,ndz,ndi,ier
+      integer *8 int8_12
 
       real *8 ttot,done,pi
       data ima/(0.0d0,1.0d0)/
@@ -1238,6 +1247,7 @@
       ns = nptso
       done = 1
       pi = atan(done)*4
+      int8_12 = 12
 
       ifpgh = 0
       ifpghtarg = 2
@@ -1348,7 +1358,7 @@
 !      print *, "nmax=",nmax
 !      print *, "nd=",nd
 
-      call get_fmm_thresh(12,ns,srcover,12,npts,srcvals,thresh)
+      call get_fmm_thresh(int8_12,ns,srcover,int8_12,npts,srcvals,thresh)
 
 !      print *, "Thresh=",thresh
 

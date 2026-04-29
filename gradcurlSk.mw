@@ -66,7 +66,7 @@ function gradrho = eval_gradSk(S,zk,rho,eps,varargin)
       targinfo.n = S.n;
       patch_id  = zeros(npts,1);
       uvs_targ = zeros(2,npts);
-      # FORTRAN get_patch_id_uvs(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, inout int[npts] patch_id, inout double[2,npts] uvs_targ);
+      # FORTRAN get_patch_id_uvs(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npatp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, inout int64_t[npts] patch_id, inout double[2,npts] uvs_targ);
       targinfo.patch_id = patch_id;
       targinfo.uvs_targ = uvs_targ;
       opts = [];
@@ -121,7 +121,7 @@ function gradrho = eval_gradSk(S,zk,rho,eps,varargin)
     gradrho = complex(zeros(3,ntarg));
 
 % Call layer potential evaluator
-    # FORTRAN lpcomp_gradhelm_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps, dcomplex[1] zk, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, dcomplex[nquad,3] wnear, dcomplex[npts] rho, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout dcomplex[3,ntarg] gradrho);
+    # FORTRAN lpcomp_gradhelm_addsub(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npatp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int64_t[1] ndtarg, int64_t[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps, dcomplex[1] zk, int64_t[1] nnz, int64_t[ntargp1] row_ptr, int64_t[nnz] col_ind, int64_t[nnzp1] iquad, int64_t[1] nquad, dcomplex[nquad,3] wnear, dcomplex[npts] rho, int64_t[npatches] novers, int64_t[1] nptso, int64_t[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout dcomplex[3,ntarg] gradrho);
     
 end
 
@@ -199,7 +199,7 @@ function curlj = eval_curlSk(S,zk,rjvec,eps,varargin)
       targinfo.n = S.n;
       patch_id  = zeros(npts,1);
       uvs_targ = zeros(2,npts);
-      # FORTRAN get_patch_id_uvs(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, inout int[npts] patch_id, inout double[2,npts] uvs_targ);
+      # FORTRAN get_patch_id_uvs(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npatp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, inout int64_t[npts] patch_id, inout double[2,npts] uvs_targ);
       targinfo.patch_id = patch_id;
       targinfo.uvs_targ = uvs_targ;
       opts = [];
@@ -254,7 +254,7 @@ function curlj = eval_curlSk(S,zk,rjvec,eps,varargin)
     curlj = complex(zeros(3,ntarg));
 
 % Call layer potential evaluator
-    # FORTRAN lpcomp_curlhelm_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps, dcomplex[1] zk, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, dcomplex[nquad,3] wnear, dcomplex[3,npts] rjvec, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout dcomplex[3,ntarg] curlj);
+    # FORTRAN lpcomp_curlhelm_addsub(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npatp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int64_t[1] ndtarg, int64_t[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps, dcomplex[1] zk, int64_t[1] nnz, int64_t[ntargp1] row_ptr, int64_t[nnz] col_ind, int64_t[nnzp1] iquad, int64_t[1] nquad, dcomplex[nquad,3] wnear, dcomplex[3,npts] rjvec, int64_t[npatches] novers, int64_t[1] nptso, int64_t[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout dcomplex[3,ntarg] curlj);
     
 end
 
@@ -328,7 +328,7 @@ function [gradrho, curlj] = eval_gradcurlSk(S,zk,rho,rjvec,eps,varargin)
       targinfo.n = S.n;
       patch_id  = zeros(npts,1);
       uvs_targ = zeros(2,npts);
-      # FORTRAN get_patch_id_uvs(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, inout int[npts] patch_id, inout double[2,npts] uvs_targ);
+      # FORTRAN get_patch_id_uvs(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npatp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, inout int64_t[npts] patch_id, inout double[2,npts] uvs_targ);
       targinfo.patch_id = patch_id;
       targinfo.uvs_targ = uvs_targ;
       opts = [];
@@ -384,7 +384,7 @@ function [gradrho, curlj] = eval_gradcurlSk(S,zk,rho,rjvec,eps,varargin)
     curlj = complex(zeros(3,ntarg));
 
 % Call layer potential evaluator
-    # FORTRAN lpcomp_gradcurlhelm_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps, dcomplex[1] zk, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, dcomplex[nquad,3] wnear, dcomplex[3,npts] rjvec, dcomplex[npts] rho, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout dcomplex[3,ntarg] curlj, inout dcomplex[3,ntarg] gradrho);
+    # FORTRAN lpcomp_gradcurlhelm_addsub(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npatp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int64_t[1] ndtarg, int64_t[1] ntarg, double[ndtarg,ntarg] targs, double[1] eps, dcomplex[1] zk, int64_t[1] nnz, int64_t[ntargp1] row_ptr, int64_t[nnz] col_ind, int64_t[nnzp1] iquad, int64_t[1] nquad, dcomplex[nquad,3] wnear, dcomplex[3,npts] rjvec, dcomplex[npts] rho, int64_t[npatches] novers, int64_t[1] nptso, int64_t[npatp1] ixyzso, double[12,nptso] srcover, double[nptso] wover, inout dcomplex[3,ntarg] curlj, inout dcomplex[3,ntarg] gradrho);
     
 end
 
@@ -497,25 +497,25 @@ function Q = get_quadrature_correction(S, zk, eps, targinfo, opts)
     norder0 = norders(1);
     rfac = 0.0;
     rfac0 = 0.0;
-    # FORTRAN get_rfacs(int[1] norder0, int[1] iptype0, inout double[1] rfac, inout double[1] rfac0);
+    # FORTRAN get_rfacs(int64_t[1] norder0, int64_t[1] iptype0, inout double[1] rfac, inout double[1] rfac0);
     
 
     cms = zeros(3,npatches);
     rads = zeros(npatches,1);
-    # FORTRAN get_centroid_rads(int[1] npatches,int[npatches] norders,int[npp1] ixyzs,int[npatches] iptype,int[1] npts,double[n9,npts] srccoefs,inout double[n3,npatches] cms,inout double[npatches] rads);
+    # FORTRAN get_centroid_rads(int64_t[1] npatches,int64_t[npatches] norders,int64_t[npp1] ixyzs,int64_t[npatches] iptype,int64_t[1] npts,double[n9,npts] srccoefs,inout double[n3,npatches] cms,inout double[npatches] rads);
 
     rad_near = rads*rfac;
     nnz = 0;
-    # FORTRAN findnearmem(double[n3,npatches] cms,int[1] npatches,double[npatches] rad_near,int[1] ndtarg,double [ndtarg,ntarg] targs,int[1] ntarg,inout int[1] nnz);
+    # FORTRAN findnearmem(double[n3,npatches] cms,int64_t[1] npatches,double[npatches] rad_near,int64_t[1] ndtarg,double [ndtarg,ntarg] targs,int64_t[1] ntarg,inout int64_t[1] nnz);
 
     row_ptr = zeros(ntarg+1,1);
     col_ind = zeros(nnz,1);
     ntp1 = ntarg+1;
     nnzp1 = nnz+1;
-    # FORTRAN findnear(double[n3,npatches] cms,int[1] npatches,double[npatches] rad_near,int[1] ndtarg,double [ndtarg,ntarg] targs, int[1] ntarg,inout int[ntp1] row_ptr,inout int[nnz] col_ind); 
+    # FORTRAN findnear(double[n3,npatches] cms,int64_t[1] npatches,double[npatches] rad_near,int64_t[1] ndtarg,double [ndtarg,ntarg] targs, int64_t[1] ntarg,inout int64_t[ntp1] row_ptr,inout int64_t[nnz] col_ind); 
 
     iquad = zeros(nnz+1,1);
-    # FORTRAN get_iquad_rsc(int[1] npatches,int[npp1] ixyzs,int[1] npts,int[1] nnz,int[ntp1] row_ptr,int[nnz] col_ind,inout int[nnzp1] iquad);
+    # FORTRAN get_iquad_rsc(int64_t[1] npatches,int64_t[npp1] ixyzs,int64_t[1] npts,int64_t[1] nnz,int64_t[ntp1] row_ptr,int64_t[nnz] col_ind,inout int64_t[nnzp1] iquad);
 
     nquad = iquad(nnz+1)-1;
     wnear = complex(zeros(nquad,3));
@@ -529,7 +529,7 @@ function Q = get_quadrature_correction(S, zk, eps, targinfo, opts)
       end
     end
 
-    # FORTRAN getnearquad_magnetodynamics(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg,ntarg] targs, int[ntarg] patch_id, double[2,ntarg] uvs_targ, double[1] eps, dcomplex[1] zk, int[1] iquadtype, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0, int[1] nquad, inout dcomplex[nquad,3] wnear);
+    # FORTRAN getnearquad_magnetodynamics(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, double[n9,npts] srccoefs, double[n12,npts] srcvals, int64_t[1] ndtarg, int64_t[1] ntarg, double[ndtarg,ntarg] targs, int64_t[ntarg] patch_id, double[2,ntarg] uvs_targ, double[1] eps, dcomplex[1] zk, int64_t[1] iquadtype, int64_t[1] nnz, int64_t[ntp1] row_ptr, int64_t[nnz] col_ind, int64_t[nnzp1] iquad, double[1] rfac0, int64_t[1] nquad, inout dcomplex[nquad,3] wnear);
 
     Q = [];
     Q.targinfo = targinfo;
@@ -550,7 +550,7 @@ function Q = get_quadrature_correction(S, zk, eps, targinfo, opts)
         row_ind = zeros(nnz,1);
         iper = zeros(nnz,1);
         npatp1 = npatches+1;
-        # FORTRAN rsc_to_csc(int[1] npatches, int[1] ntarg, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, inout int[npatp1] col_ptr, inout int[nnz] row_ind, inout int[nnz] iper); 
+        # FORTRAN rsc_to_csc(int64_t[1] npatches, int64_t[1] ntarg, int64_t[1] nnz, int64_t[ntp1] row_ptr, int64_t[nnz] col_ind, inout int64_t[npatp1] col_ptr, inout int64_t[nnz] row_ind, inout int64_t[nnz] iper); 
         Q.iquad = iquad;
         Q.iper = iper;
         Q.wnear = wnear;

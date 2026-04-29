@@ -312,6 +312,7 @@ classdef TaylorState
                 fprintf('get +taylor rout quad. corr.: %f s\n',t2)
                 t1 = tic;
             end
+	    disp('here in solve')
             obj = obj.compute_sigma_alpha(time);
             if time
                 t2 = toc(t1);

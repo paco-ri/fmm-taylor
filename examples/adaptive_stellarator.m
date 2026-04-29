@@ -15,7 +15,7 @@ mode = 1;
 % 75 patches initially
 marked = 1:10; % just mark first ten for refinement for demonstration
 % TURN OFF AMR FOR NOW
-dom = surfacemesh.adap_ref(dom, amr_tol, rmax, mode, marked);
+% dom = surfacemesh.adap_ref(dom, amr_tol, rmax, mode, marked);
 % plot(dom)
 
 domparams = [n, nu, nv];
@@ -27,6 +27,7 @@ tol = 1e-6;
 
 ts = TaylorState(dom, domparams, zk, flux, tol);
 ts = ts.solve(true);
+% ts.get_quad_corr_taylor()
 t1 = tic;
 B = ts.surface_B();
 t2 = toc(t1);

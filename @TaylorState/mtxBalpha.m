@@ -37,6 +37,7 @@ S = domain.surf;
 dom = domain.dom;
 vn = domain.vn;
 mH = domain.mH;
+disp('in mtxBalpha')
 
 nreqarg = 4;
 % torus case

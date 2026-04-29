@@ -5,8 +5,8 @@ tol = 1e-4;
 zk = 0;
 
 % --- Geometry parameters ---
-ns = [5];% 7];% 9]; % polynomial order + 1
-nvs = [6 8 10]; % number of patches in poloidal direction
+ns = [5 7];% 9 11]; % polynomial order + 1
+nvs = [6 8];% 10 12]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
@@ -54,7 +54,10 @@ for n = ns
         dom = {dom};
         ts = RefTaylorState(dom,domparams,zk,flux,B0,qnodes,qweights,tol);
         ts = ts.solve(true);
+	t1 = tic;
         B = ts.surface_B();
+	t2 = toc;
+        fprintf('get surface B: %f s\n',t2)
 
         lerr(1,lind) = n; % number of points on each patch
         lerr(2,lind) = nv; % geom. param. 
@@ -65,6 +68,7 @@ for n = ns
     end
     tol = tol*1e-2;
 end
+save("save_convoop_lerr.mat", "lerr")
 
 loglog(sqrt(lerr(1,1:size(nvs,2)).^2.*lerr(2,1:size(nvs,2)).* ...
     lerr(3,1:size(nvs,2))), lerr(4,1:size(nvs,2)), 'o-')

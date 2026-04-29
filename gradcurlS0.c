@@ -979,6 +979,7 @@ typedef _Complex float fcomplex;
 #define imag_fcomplex(z) cimagf(z)
 #define setz_fcomplex(z,r,i)  *z = r + i*_Complex_I
 
+ #include <stdint.h>
 
 
 
@@ -1013,6 +1014,12 @@ mxWrapReturnDef  (mxWrapReturn_int,   int)
 mxWrapGetArrayDef_single(mxWrapGetArray_single_int, int)
 mxWrapCopyDef_single    (mxWrapCopy_single_int,     int)
 mxWrapReturnDef_single  (mxWrapReturn_single_int,   int)
+mxWrapGetArrayDef(mxWrapGetArray_int64_t, int64_t)
+mxWrapCopyDef    (mxWrapCopy_int64_t,     int64_t)
+mxWrapReturnDef  (mxWrapReturn_int64_t,   int64_t)
+mxWrapGetArrayDef_single(mxWrapGetArray_single_int64_t, int64_t)
+mxWrapCopyDef_single    (mxWrapCopy_single_int64_t,     int64_t)
+mxWrapReturnDef_single  (mxWrapReturn_single_int64_t,   int64_t)
 mxWrapGetArrayDef(mxWrapGetArray_long, long)
 mxWrapCopyDef    (mxWrapCopy_long,     long)
 mxWrapReturnDef  (mxWrapReturn_long,   long)
@@ -1128,37 +1135,37 @@ extern "C" { /* Prevent C++ name mangling */
 #define MWF77_RETURN int
 #endif
 
-MWF77_RETURN MWF77_get_patch_id_uvs(int*, int*, int*, int*, int*, int*, double*);
-MWF77_RETURN MWF77_lpcomp_gradlap_addsub(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, double*, int*, int*, int*, int*, int*, double*, dcomplex*, int*, int*, int*, double*, double*, dcomplex*);
-MWF77_RETURN MWF77_lpcomp_curllap_addsub(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, double*, int*, int*, int*, int*, int*, double*, dcomplex*, int*, int*, int*, double*, double*, dcomplex*);
-MWF77_RETURN MWF77_lpcomp_virtualcasing_addsub(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, double*, int*, int*, int*, int*, int*, double*, dcomplex*, dcomplex*, int*, int*, int*, double*, double*, dcomplex*, dcomplex*);
-MWF77_RETURN MWF77_get_rfacs(int*, int*, double*, double*);
-MWF77_RETURN MWF77_get_centroid_rads(int*, int*, int*, int*, int*, double*, double*, double*);
-MWF77_RETURN MWF77_findnearmem(double*, int*, double*, int*, double*, int*, int*);
-MWF77_RETURN MWF77_findnear(double*, int*, double*, int*, double*, int*, int*, int*);
-MWF77_RETURN MWF77_get_iquad_rsc(int*, int*, int*, int*, int*, int*, int*);
-MWF77_RETURN MWF77_getnearquad_magnetostatics(int*, int*, int*, int*, int*, double*, double*, int*, int*, double*, int*, double*, double*, int*, int*, int*, int*, int*, double*, int*, double*);
-MWF77_RETURN MWF77_rsc_to_csc(int*, int*, int*, int*, int*, int*, int*, int*);
+MWF77_RETURN MWF77_get_patch_id_uvs(int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, double*);
+MWF77_RETURN MWF77_lpcomp_gradlap_addsub(int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, double*, double*, int64_t*, int64_t*, double*, double*, int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, double*, dcomplex*, int64_t*, int64_t*, int64_t*, double*, double*, dcomplex*);
+MWF77_RETURN MWF77_lpcomp_curllap_addsub(int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, double*, double*, int64_t*, int64_t*, double*, double*, int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, double*, dcomplex*, int64_t*, int64_t*, int64_t*, double*, double*, dcomplex*);
+MWF77_RETURN MWF77_lpcomp_virtualcasing_addsub(int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, double*, double*, int64_t*, int64_t*, double*, double*, int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, double*, dcomplex*, dcomplex*, int64_t*, int64_t*, int64_t*, double*, double*, dcomplex*, dcomplex*);
+MWF77_RETURN MWF77_get_rfacs(int64_t*, int64_t*, double*, double*);
+MWF77_RETURN MWF77_get_centroid_rads(int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, double*, double*, double*);
+MWF77_RETURN MWF77_findnearmem(double*, int64_t*, double*, int64_t*, double*, int64_t*, int64_t*);
+MWF77_RETURN MWF77_findnear(double*, int64_t*, double*, int64_t*, double*, int64_t*, int64_t*, int64_t*);
+MWF77_RETURN MWF77_get_iquad_rsc(int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, int64_t*);
+MWF77_RETURN MWF77_getnearquad_magnetostatics(int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, double*, double*, int64_t*, int64_t*, double*, int64_t*, double*, double*, int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, double*, int64_t*, double*);
+MWF77_RETURN MWF77_rsc_to_csc(int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, int64_t*, int64_t*);
 
 #ifdef __cplusplus
 } /* end extern C */
 #endif
 
-/* ---- gradcurlS0.mw: 68 ----
- * get_patch_id_uvs(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, inout int[npts] patch_id, inout double[2, npts] uvs_targ);
+/* ---- gradcurlS0.mw: 69 ----
+ * get_patch_id_uvs(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npatp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, inout int64_t[npts] patch_id, inout double[2, npts] uvs_targ);
  */
-static const char* stubids1_ = "get_patch_id_uvs(c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c io int[x], c io double[xx])";
+static const char* stubids1_ = "get_patch_id_uvs(c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c io int64_t[x], c io double[xx])";
 
 void mexStub1(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
-    int*        in0_ =0; /* npatches   */
-    int*        in1_ =0; /* norders    */
-    int*        in2_ =0; /* ixyzs      */
-    int*        in3_ =0; /* iptype     */
-    int*        in4_ =0; /* npts       */
-    int*        in5_ =0; /* patch_id   */
+    int64_t*    in0_ =0; /* npatches   */
+    int64_t*    in1_ =0; /* norders    */
+    int64_t*    in2_ =0; /* ixyzs      */
+    int64_t*    in3_ =0; /* iptype     */
+    int64_t*    in4_ =0; /* npts       */
+    int64_t*    in5_ =0; /* patch_id   */
     double*     in6_ =0; /* uvs_targ   */
     mwSize      dim7_;   /* 1          */
     mwSize      dim8_;   /* npatches   */
@@ -1209,42 +1216,42 @@ void mexStub1(int nlhs, mxArray* plhs[],
     }
 
     if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
-        in0_ = mxWrapGetArray_int(prhs[0], &mw_err_txt_);
+        in0_ = mxWrapGetArray_int64_t(prhs[0], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in0_ = NULL;
 
     if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
-        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        in1_ = mxWrapGetArray_int64_t(prhs[1], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in1_ = NULL;
 
     if (mxGetM(prhs[2])*mxGetN(prhs[2]) != 0) {
-        in2_ = mxWrapGetArray_int(prhs[2], &mw_err_txt_);
+        in2_ = mxWrapGetArray_int64_t(prhs[2], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in2_ = NULL;
 
     if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
-        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        in3_ = mxWrapGetArray_int64_t(prhs[3], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in3_ = NULL;
 
     if (mxGetM(prhs[4])*mxGetN(prhs[4]) != 0) {
-        in4_ = mxWrapGetArray_int(prhs[4], &mw_err_txt_);
+        in4_ = mxWrapGetArray_int64_t(prhs[4], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in4_ = NULL;
 
     if (mxGetM(prhs[5])*mxGetN(prhs[5]) != 0) {
-        in5_ = mxWrapGetArray_int(prhs[5], &mw_err_txt_);
+        in5_ = mxWrapGetArray_int64_t(prhs[5], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -1261,7 +1268,7 @@ void mexStub1(int nlhs, mxArray* plhs[],
         mexprofrecord_[1]++;
     MWF77_get_patch_id_uvs(in0_, in1_, in2_, in3_, in4_, in5_, in6_);
     plhs[0] = mxCreateDoubleMatrix(dim12_, 1, mxREAL);
-    mxWrapCopy_int(plhs[0], in5_, dim12_);
+    mxWrapCopy_int64_t(plhs[0], in5_, dim12_);
     plhs[1] = mxCreateDoubleMatrix(dim13_, dim14_, mxREAL);
     mxWrapCopy_double(plhs[1], in6_, dim13_*dim14_);
 
@@ -1277,36 +1284,36 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 123 ----
- * lpcomp_gradlap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad, 3] wnear, dcomplex[npts] rho, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout dcomplex[3, ntarg] gradrho);
+/* ---- gradcurlS0.mw: 124 ----
+ * lpcomp_gradlap_addsub(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npatp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int64_t[1] ndtarg, int64_t[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int64_t[1] nnz, int64_t[ntargp1] row_ptr, int64_t[nnz] col_ind, int64_t[nnzp1] iquad, int64_t[1] nquad, double[nquad, 3] wnear, dcomplex[npts] rho, int64_t[npatches] novers, int64_t[1] nptso, int64_t[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout dcomplex[3, ntarg] gradrho);
  */
-static const char* stubids2_ = "lpcomp_gradlap_addsub(c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c i double[xx], c i double[xx], c i int[x], c i int[x], c i double[xx], c i double[x], c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c i double[xx], c i dcomplex[x], c i int[x], c i int[x], c i int[x], c i double[xx], c i double[x], c io dcomplex[xx])";
+static const char* stubids2_ = "lpcomp_gradlap_addsub(c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i double[xx], c i double[xx], c i int64_t[x], c i int64_t[x], c i double[xx], c i double[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i double[xx], c i dcomplex[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i double[xx], c i double[x], c io dcomplex[xx])";
 
 void mexStub2(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
-    int*        in0_ =0; /* npatches   */
-    int*        in1_ =0; /* norders    */
-    int*        in2_ =0; /* ixyzs      */
-    int*        in3_ =0; /* iptype     */
-    int*        in4_ =0; /* npts       */
+    int64_t*    in0_ =0; /* npatches   */
+    int64_t*    in1_ =0; /* norders    */
+    int64_t*    in2_ =0; /* ixyzs      */
+    int64_t*    in3_ =0; /* iptype     */
+    int64_t*    in4_ =0; /* npts       */
     double*     in5_ =0; /* srccoefs   */
     double*     in6_ =0; /* srcvals    */
-    int*        in7_ =0; /* ndtarg     */
-    int*        in8_ =0; /* ntarg      */
+    int64_t*    in7_ =0; /* ndtarg     */
+    int64_t*    in8_ =0; /* ntarg      */
     double*     in9_ =0; /* targs      */
     double*     in10_ =0; /* eps        */
-    int*        in11_ =0; /* nnz        */
-    int*        in12_ =0; /* row_ptr    */
-    int*        in13_ =0; /* col_ind    */
-    int*        in14_ =0; /* iquad      */
-    int*        in15_ =0; /* nquad      */
+    int64_t*    in11_ =0; /* nnz        */
+    int64_t*    in12_ =0; /* row_ptr    */
+    int64_t*    in13_ =0; /* col_ind    */
+    int64_t*    in14_ =0; /* iquad      */
+    int64_t*    in15_ =0; /* nquad      */
     double*     in16_ =0; /* wnear      */
     dcomplex*   in17_ =0; /* rho        */
-    int*        in18_ =0; /* novers     */
-    int*        in19_ =0; /* nptso      */
-    int*        in20_ =0; /* ixyzso     */
+    int64_t*    in18_ =0; /* novers     */
+    int64_t*    in19_ =0; /* nptso      */
+    int64_t*    in20_ =0; /* ixyzso     */
     double*     in21_ =0; /* srcover    */
     double*     in22_ =0; /* wover      */
     dcomplex*   in23_ =0; /* gradrho    */
@@ -1481,35 +1488,35 @@ void mexStub2(int nlhs, mxArray* plhs[],
     }
 
     if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
-        in0_ = mxWrapGetArray_int(prhs[0], &mw_err_txt_);
+        in0_ = mxWrapGetArray_int64_t(prhs[0], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in0_ = NULL;
 
     if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
-        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        in1_ = mxWrapGetArray_int64_t(prhs[1], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in1_ = NULL;
 
     if (mxGetM(prhs[2])*mxGetN(prhs[2]) != 0) {
-        in2_ = mxWrapGetArray_int(prhs[2], &mw_err_txt_);
+        in2_ = mxWrapGetArray_int64_t(prhs[2], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in2_ = NULL;
 
     if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
-        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        in3_ = mxWrapGetArray_int64_t(prhs[3], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in3_ = NULL;
 
     if (mxGetM(prhs[4])*mxGetN(prhs[4]) != 0) {
-        in4_ = mxWrapGetArray_int(prhs[4], &mw_err_txt_);
+        in4_ = mxWrapGetArray_int64_t(prhs[4], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -1540,14 +1547,14 @@ void mexStub2(int nlhs, mxArray* plhs[],
         in6_ = NULL;
 
     if (mxGetM(prhs[7])*mxGetN(prhs[7]) != 0) {
-        in7_ = mxWrapGetArray_int(prhs[7], &mw_err_txt_);
+        in7_ = mxWrapGetArray_int64_t(prhs[7], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in7_ = NULL;
 
     if (mxGetM(prhs[8])*mxGetN(prhs[8]) != 0) {
-        in8_ = mxWrapGetArray_int(prhs[8], &mw_err_txt_);
+        in8_ = mxWrapGetArray_int64_t(prhs[8], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -1578,35 +1585,35 @@ void mexStub2(int nlhs, mxArray* plhs[],
         in10_ = NULL;
 
     if (mxGetM(prhs[11])*mxGetN(prhs[11]) != 0) {
-        in11_ = mxWrapGetArray_int(prhs[11], &mw_err_txt_);
+        in11_ = mxWrapGetArray_int64_t(prhs[11], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in11_ = NULL;
 
     if (mxGetM(prhs[12])*mxGetN(prhs[12]) != 0) {
-        in12_ = mxWrapGetArray_int(prhs[12], &mw_err_txt_);
+        in12_ = mxWrapGetArray_int64_t(prhs[12], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in12_ = NULL;
 
     if (mxGetM(prhs[13])*mxGetN(prhs[13]) != 0) {
-        in13_ = mxWrapGetArray_int(prhs[13], &mw_err_txt_);
+        in13_ = mxWrapGetArray_int64_t(prhs[13], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in13_ = NULL;
 
     if (mxGetM(prhs[14])*mxGetN(prhs[14]) != 0) {
-        in14_ = mxWrapGetArray_int(prhs[14], &mw_err_txt_);
+        in14_ = mxWrapGetArray_int64_t(prhs[14], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in14_ = NULL;
 
     if (mxGetM(prhs[15])*mxGetN(prhs[15]) != 0) {
-        in15_ = mxWrapGetArray_int(prhs[15], &mw_err_txt_);
+        in15_ = mxWrapGetArray_int64_t(prhs[15], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -1635,21 +1642,21 @@ void mexStub2(int nlhs, mxArray* plhs[],
         in17_ = NULL;
 
     if (mxGetM(prhs[18])*mxGetN(prhs[18]) != 0) {
-        in18_ = mxWrapGetArray_int(prhs[18], &mw_err_txt_);
+        in18_ = mxWrapGetArray_int64_t(prhs[18], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in18_ = NULL;
 
     if (mxGetM(prhs[19])*mxGetN(prhs[19]) != 0) {
-        in19_ = mxWrapGetArray_int(prhs[19], &mw_err_txt_);
+        in19_ = mxWrapGetArray_int64_t(prhs[19], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in19_ = NULL;
 
     if (mxGetM(prhs[20])*mxGetN(prhs[20]) != 0) {
-        in20_ = mxWrapGetArray_int(prhs[20], &mw_err_txt_);
+        in20_ = mxWrapGetArray_int64_t(prhs[20], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -1717,22 +1724,22 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 200 ----
- * get_patch_id_uvs(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, inout int[npts] patch_id, inout double[2, npts] uvs_targ);
- * Also at gradcurlS0.mw: 328
+/* ---- gradcurlS0.mw: 201 ----
+ * get_patch_id_uvs(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npatp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, inout int64_t[npts] patch_id, inout double[2, npts] uvs_targ);
+ * Also at gradcurlS0.mw: 329
  */
-static const char* stubids3_ = "get_patch_id_uvs(c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c io int[x], c io double[xx])";
+static const char* stubids3_ = "get_patch_id_uvs(c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c io int64_t[x], c io double[xx])";
 
 void mexStub3(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
-    int*        in0_ =0; /* npatches   */
-    int*        in1_ =0; /* norders    */
-    int*        in2_ =0; /* ixyzs      */
-    int*        in3_ =0; /* iptype     */
-    int*        in4_ =0; /* npts       */
-    int*        in5_ =0; /* patch_id   */
+    int64_t*    in0_ =0; /* npatches   */
+    int64_t*    in1_ =0; /* norders    */
+    int64_t*    in2_ =0; /* ixyzs      */
+    int64_t*    in3_ =0; /* iptype     */
+    int64_t*    in4_ =0; /* npts       */
+    int64_t*    in5_ =0; /* patch_id   */
     double*     in6_ =0; /* uvs_targ   */
     mwSize      dim7_;   /* 1          */
     mwSize      dim8_;   /* npatches   */
@@ -1783,42 +1790,42 @@ void mexStub3(int nlhs, mxArray* plhs[],
     }
 
     if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
-        in0_ = mxWrapGetArray_int(prhs[0], &mw_err_txt_);
+        in0_ = mxWrapGetArray_int64_t(prhs[0], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in0_ = NULL;
 
     if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
-        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        in1_ = mxWrapGetArray_int64_t(prhs[1], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in1_ = NULL;
 
     if (mxGetM(prhs[2])*mxGetN(prhs[2]) != 0) {
-        in2_ = mxWrapGetArray_int(prhs[2], &mw_err_txt_);
+        in2_ = mxWrapGetArray_int64_t(prhs[2], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in2_ = NULL;
 
     if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
-        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        in3_ = mxWrapGetArray_int64_t(prhs[3], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in3_ = NULL;
 
     if (mxGetM(prhs[4])*mxGetN(prhs[4]) != 0) {
-        in4_ = mxWrapGetArray_int(prhs[4], &mw_err_txt_);
+        in4_ = mxWrapGetArray_int64_t(prhs[4], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in4_ = NULL;
 
     if (mxGetM(prhs[5])*mxGetN(prhs[5]) != 0) {
-        in5_ = mxWrapGetArray_int(prhs[5], &mw_err_txt_);
+        in5_ = mxWrapGetArray_int64_t(prhs[5], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -1835,7 +1842,7 @@ void mexStub3(int nlhs, mxArray* plhs[],
         mexprofrecord_[3]++;
     MWF77_get_patch_id_uvs(in0_, in1_, in2_, in3_, in4_, in5_, in6_);
     plhs[0] = mxCreateDoubleMatrix(dim12_, 1, mxREAL);
-    mxWrapCopy_int(plhs[0], in5_, dim12_);
+    mxWrapCopy_int64_t(plhs[0], in5_, dim12_);
     plhs[1] = mxCreateDoubleMatrix(dim13_, dim14_, mxREAL);
     mxWrapCopy_double(plhs[1], in6_, dim13_*dim14_);
 
@@ -1851,36 +1858,36 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 255 ----
- * lpcomp_curllap_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad, 3] wnear, dcomplex[3, npts] rjvec, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout dcomplex[3, ntarg] curlj);
+/* ---- gradcurlS0.mw: 256 ----
+ * lpcomp_curllap_addsub(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npatp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int64_t[1] ndtarg, int64_t[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int64_t[1] nnz, int64_t[ntargp1] row_ptr, int64_t[nnz] col_ind, int64_t[nnzp1] iquad, int64_t[1] nquad, double[nquad, 3] wnear, dcomplex[3, npts] rjvec, int64_t[npatches] novers, int64_t[1] nptso, int64_t[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout dcomplex[3, ntarg] curlj);
  */
-static const char* stubids4_ = "lpcomp_curllap_addsub(c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c i double[xx], c i double[xx], c i int[x], c i int[x], c i double[xx], c i double[x], c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c i double[xx], c i dcomplex[xx], c i int[x], c i int[x], c i int[x], c i double[xx], c i double[x], c io dcomplex[xx])";
+static const char* stubids4_ = "lpcomp_curllap_addsub(c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i double[xx], c i double[xx], c i int64_t[x], c i int64_t[x], c i double[xx], c i double[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i double[xx], c i dcomplex[xx], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i double[xx], c i double[x], c io dcomplex[xx])";
 
 void mexStub4(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
-    int*        in0_ =0; /* npatches   */
-    int*        in1_ =0; /* norders    */
-    int*        in2_ =0; /* ixyzs      */
-    int*        in3_ =0; /* iptype     */
-    int*        in4_ =0; /* npts       */
+    int64_t*    in0_ =0; /* npatches   */
+    int64_t*    in1_ =0; /* norders    */
+    int64_t*    in2_ =0; /* ixyzs      */
+    int64_t*    in3_ =0; /* iptype     */
+    int64_t*    in4_ =0; /* npts       */
     double*     in5_ =0; /* srccoefs   */
     double*     in6_ =0; /* srcvals    */
-    int*        in7_ =0; /* ndtarg     */
-    int*        in8_ =0; /* ntarg      */
+    int64_t*    in7_ =0; /* ndtarg     */
+    int64_t*    in8_ =0; /* ntarg      */
     double*     in9_ =0; /* targs      */
     double*     in10_ =0; /* eps        */
-    int*        in11_ =0; /* nnz        */
-    int*        in12_ =0; /* row_ptr    */
-    int*        in13_ =0; /* col_ind    */
-    int*        in14_ =0; /* iquad      */
-    int*        in15_ =0; /* nquad      */
+    int64_t*    in11_ =0; /* nnz        */
+    int64_t*    in12_ =0; /* row_ptr    */
+    int64_t*    in13_ =0; /* col_ind    */
+    int64_t*    in14_ =0; /* iquad      */
+    int64_t*    in15_ =0; /* nquad      */
     double*     in16_ =0; /* wnear      */
     dcomplex*   in17_ =0; /* rjvec      */
-    int*        in18_ =0; /* novers     */
-    int*        in19_ =0; /* nptso      */
-    int*        in20_ =0; /* ixyzso     */
+    int64_t*    in18_ =0; /* novers     */
+    int64_t*    in19_ =0; /* nptso      */
+    int64_t*    in20_ =0; /* ixyzso     */
     double*     in21_ =0; /* srcover    */
     double*     in22_ =0; /* wover      */
     dcomplex*   in23_ =0; /* curlj      */
@@ -2059,35 +2066,35 @@ void mexStub4(int nlhs, mxArray* plhs[],
     }
 
     if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
-        in0_ = mxWrapGetArray_int(prhs[0], &mw_err_txt_);
+        in0_ = mxWrapGetArray_int64_t(prhs[0], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in0_ = NULL;
 
     if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
-        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        in1_ = mxWrapGetArray_int64_t(prhs[1], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in1_ = NULL;
 
     if (mxGetM(prhs[2])*mxGetN(prhs[2]) != 0) {
-        in2_ = mxWrapGetArray_int(prhs[2], &mw_err_txt_);
+        in2_ = mxWrapGetArray_int64_t(prhs[2], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in2_ = NULL;
 
     if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
-        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        in3_ = mxWrapGetArray_int64_t(prhs[3], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in3_ = NULL;
 
     if (mxGetM(prhs[4])*mxGetN(prhs[4]) != 0) {
-        in4_ = mxWrapGetArray_int(prhs[4], &mw_err_txt_);
+        in4_ = mxWrapGetArray_int64_t(prhs[4], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -2118,14 +2125,14 @@ void mexStub4(int nlhs, mxArray* plhs[],
         in6_ = NULL;
 
     if (mxGetM(prhs[7])*mxGetN(prhs[7]) != 0) {
-        in7_ = mxWrapGetArray_int(prhs[7], &mw_err_txt_);
+        in7_ = mxWrapGetArray_int64_t(prhs[7], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in7_ = NULL;
 
     if (mxGetM(prhs[8])*mxGetN(prhs[8]) != 0) {
-        in8_ = mxWrapGetArray_int(prhs[8], &mw_err_txt_);
+        in8_ = mxWrapGetArray_int64_t(prhs[8], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -2156,35 +2163,35 @@ void mexStub4(int nlhs, mxArray* plhs[],
         in10_ = NULL;
 
     if (mxGetM(prhs[11])*mxGetN(prhs[11]) != 0) {
-        in11_ = mxWrapGetArray_int(prhs[11], &mw_err_txt_);
+        in11_ = mxWrapGetArray_int64_t(prhs[11], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in11_ = NULL;
 
     if (mxGetM(prhs[12])*mxGetN(prhs[12]) != 0) {
-        in12_ = mxWrapGetArray_int(prhs[12], &mw_err_txt_);
+        in12_ = mxWrapGetArray_int64_t(prhs[12], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in12_ = NULL;
 
     if (mxGetM(prhs[13])*mxGetN(prhs[13]) != 0) {
-        in13_ = mxWrapGetArray_int(prhs[13], &mw_err_txt_);
+        in13_ = mxWrapGetArray_int64_t(prhs[13], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in13_ = NULL;
 
     if (mxGetM(prhs[14])*mxGetN(prhs[14]) != 0) {
-        in14_ = mxWrapGetArray_int(prhs[14], &mw_err_txt_);
+        in14_ = mxWrapGetArray_int64_t(prhs[14], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in14_ = NULL;
 
     if (mxGetM(prhs[15])*mxGetN(prhs[15]) != 0) {
-        in15_ = mxWrapGetArray_int(prhs[15], &mw_err_txt_);
+        in15_ = mxWrapGetArray_int64_t(prhs[15], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -2213,21 +2220,21 @@ void mexStub4(int nlhs, mxArray* plhs[],
         in17_ = NULL;
 
     if (mxGetM(prhs[18])*mxGetN(prhs[18]) != 0) {
-        in18_ = mxWrapGetArray_int(prhs[18], &mw_err_txt_);
+        in18_ = mxWrapGetArray_int64_t(prhs[18], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in18_ = NULL;
 
     if (mxGetM(prhs[19])*mxGetN(prhs[19]) != 0) {
-        in19_ = mxWrapGetArray_int(prhs[19], &mw_err_txt_);
+        in19_ = mxWrapGetArray_int64_t(prhs[19], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in19_ = NULL;
 
     if (mxGetM(prhs[20])*mxGetN(prhs[20]) != 0) {
-        in20_ = mxWrapGetArray_int(prhs[20], &mw_err_txt_);
+        in20_ = mxWrapGetArray_int64_t(prhs[20], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -2295,37 +2302,37 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 384 ----
- * lpcomp_virtualcasing_addsub(int[1] npatches, int[npatches] norders, int[npatp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int[1] nnz, int[ntargp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, int[1] nquad, double[nquad, 3] wnear, dcomplex[3, npts] rjvec, dcomplex[npts] rho, int[npatches] novers, int[1] nptso, int[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout dcomplex[3, ntarg] curlj, inout dcomplex[3, ntarg] gradrho);
+/* ---- gradcurlS0.mw: 385 ----
+ * lpcomp_virtualcasing_addsub(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npatp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int64_t[1] ndtarg, int64_t[1] ntarg, double[ndtarg, ntarg] targs, double[1] eps, int64_t[1] nnz, int64_t[ntargp1] row_ptr, int64_t[nnz] col_ind, int64_t[nnzp1] iquad, int64_t[1] nquad, double[nquad, 3] wnear, dcomplex[3, npts] rjvec, dcomplex[npts] rho, int64_t[npatches] novers, int64_t[1] nptso, int64_t[npatp1] ixyzso, double[12, nptso] srcover, double[nptso] wover, inout dcomplex[3, ntarg] curlj, inout dcomplex[3, ntarg] gradrho);
  */
-static const char* stubids6_ = "lpcomp_virtualcasing_addsub(c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c i double[xx], c i double[xx], c i int[x], c i int[x], c i double[xx], c i double[x], c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c i double[xx], c i dcomplex[xx], c i dcomplex[x], c i int[x], c i int[x], c i int[x], c i double[xx], c i double[x], c io dcomplex[xx], c io dcomplex[xx])";
+static const char* stubids6_ = "lpcomp_virtualcasing_addsub(c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i double[xx], c i double[xx], c i int64_t[x], c i int64_t[x], c i double[xx], c i double[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i double[xx], c i dcomplex[xx], c i dcomplex[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i double[xx], c i double[x], c io dcomplex[xx], c io dcomplex[xx])";
 
 void mexStub6(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
-    int*        in0_ =0; /* npatches   */
-    int*        in1_ =0; /* norders    */
-    int*        in2_ =0; /* ixyzs      */
-    int*        in3_ =0; /* iptype     */
-    int*        in4_ =0; /* npts       */
+    int64_t*    in0_ =0; /* npatches   */
+    int64_t*    in1_ =0; /* norders    */
+    int64_t*    in2_ =0; /* ixyzs      */
+    int64_t*    in3_ =0; /* iptype     */
+    int64_t*    in4_ =0; /* npts       */
     double*     in5_ =0; /* srccoefs   */
     double*     in6_ =0; /* srcvals    */
-    int*        in7_ =0; /* ndtarg     */
-    int*        in8_ =0; /* ntarg      */
+    int64_t*    in7_ =0; /* ndtarg     */
+    int64_t*    in8_ =0; /* ntarg      */
     double*     in9_ =0; /* targs      */
     double*     in10_ =0; /* eps        */
-    int*        in11_ =0; /* nnz        */
-    int*        in12_ =0; /* row_ptr    */
-    int*        in13_ =0; /* col_ind    */
-    int*        in14_ =0; /* iquad      */
-    int*        in15_ =0; /* nquad      */
+    int64_t*    in11_ =0; /* nnz        */
+    int64_t*    in12_ =0; /* row_ptr    */
+    int64_t*    in13_ =0; /* col_ind    */
+    int64_t*    in14_ =0; /* iquad      */
+    int64_t*    in15_ =0; /* nquad      */
     double*     in16_ =0; /* wnear      */
     dcomplex*   in17_ =0; /* rjvec      */
     dcomplex*   in18_ =0; /* rho        */
-    int*        in19_ =0; /* novers     */
-    int*        in20_ =0; /* nptso      */
-    int*        in21_ =0; /* ixyzso     */
+    int64_t*    in19_ =0; /* novers     */
+    int64_t*    in20_ =0; /* nptso      */
+    int64_t*    in21_ =0; /* ixyzso     */
     double*     in22_ =0; /* srcover    */
     double*     in23_ =0; /* wover      */
     dcomplex*   in24_ =0; /* curlj      */
@@ -2521,35 +2528,35 @@ void mexStub6(int nlhs, mxArray* plhs[],
     }
 
     if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
-        in0_ = mxWrapGetArray_int(prhs[0], &mw_err_txt_);
+        in0_ = mxWrapGetArray_int64_t(prhs[0], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in0_ = NULL;
 
     if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
-        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        in1_ = mxWrapGetArray_int64_t(prhs[1], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in1_ = NULL;
 
     if (mxGetM(prhs[2])*mxGetN(prhs[2]) != 0) {
-        in2_ = mxWrapGetArray_int(prhs[2], &mw_err_txt_);
+        in2_ = mxWrapGetArray_int64_t(prhs[2], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in2_ = NULL;
 
     if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
-        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        in3_ = mxWrapGetArray_int64_t(prhs[3], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in3_ = NULL;
 
     if (mxGetM(prhs[4])*mxGetN(prhs[4]) != 0) {
-        in4_ = mxWrapGetArray_int(prhs[4], &mw_err_txt_);
+        in4_ = mxWrapGetArray_int64_t(prhs[4], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -2580,14 +2587,14 @@ void mexStub6(int nlhs, mxArray* plhs[],
         in6_ = NULL;
 
     if (mxGetM(prhs[7])*mxGetN(prhs[7]) != 0) {
-        in7_ = mxWrapGetArray_int(prhs[7], &mw_err_txt_);
+        in7_ = mxWrapGetArray_int64_t(prhs[7], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in7_ = NULL;
 
     if (mxGetM(prhs[8])*mxGetN(prhs[8]) != 0) {
-        in8_ = mxWrapGetArray_int(prhs[8], &mw_err_txt_);
+        in8_ = mxWrapGetArray_int64_t(prhs[8], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -2618,35 +2625,35 @@ void mexStub6(int nlhs, mxArray* plhs[],
         in10_ = NULL;
 
     if (mxGetM(prhs[11])*mxGetN(prhs[11]) != 0) {
-        in11_ = mxWrapGetArray_int(prhs[11], &mw_err_txt_);
+        in11_ = mxWrapGetArray_int64_t(prhs[11], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in11_ = NULL;
 
     if (mxGetM(prhs[12])*mxGetN(prhs[12]) != 0) {
-        in12_ = mxWrapGetArray_int(prhs[12], &mw_err_txt_);
+        in12_ = mxWrapGetArray_int64_t(prhs[12], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in12_ = NULL;
 
     if (mxGetM(prhs[13])*mxGetN(prhs[13]) != 0) {
-        in13_ = mxWrapGetArray_int(prhs[13], &mw_err_txt_);
+        in13_ = mxWrapGetArray_int64_t(prhs[13], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in13_ = NULL;
 
     if (mxGetM(prhs[14])*mxGetN(prhs[14]) != 0) {
-        in14_ = mxWrapGetArray_int(prhs[14], &mw_err_txt_);
+        in14_ = mxWrapGetArray_int64_t(prhs[14], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in14_ = NULL;
 
     if (mxGetM(prhs[15])*mxGetN(prhs[15]) != 0) {
-        in15_ = mxWrapGetArray_int(prhs[15], &mw_err_txt_);
+        in15_ = mxWrapGetArray_int64_t(prhs[15], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -2685,21 +2692,21 @@ void mexStub6(int nlhs, mxArray* plhs[],
         in18_ = NULL;
 
     if (mxGetM(prhs[19])*mxGetN(prhs[19]) != 0) {
-        in19_ = mxWrapGetArray_int(prhs[19], &mw_err_txt_);
+        in19_ = mxWrapGetArray_int64_t(prhs[19], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in19_ = NULL;
 
     if (mxGetM(prhs[20])*mxGetN(prhs[20]) != 0) {
-        in20_ = mxWrapGetArray_int(prhs[20], &mw_err_txt_);
+        in20_ = mxWrapGetArray_int64_t(prhs[20], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in20_ = NULL;
 
     if (mxGetM(prhs[21])*mxGetN(prhs[21]) != 0) {
-        in21_ = mxWrapGetArray_int(prhs[21], &mw_err_txt_);
+        in21_ = mxWrapGetArray_int64_t(prhs[21], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -2781,17 +2788,17 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 496 ----
- * get_rfacs(int[1] norder0, int[1] iptype0, inout double[1] rfac, inout double[1] rfac0);
+/* ---- gradcurlS0.mw: 497 ----
+ * get_rfacs(int64_t[1] norder0, int64_t[1] iptype0, inout double[1] rfac, inout double[1] rfac0);
  */
-static const char* stubids7_ = "get_rfacs(c i int[x], c i int[x], c io double[x], c io double[x])";
+static const char* stubids7_ = "get_rfacs(c i int64_t[x], c i int64_t[x], c io double[x], c io double[x])";
 
 void mexStub7(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
-    int*        in0_ =0; /* norder0    */
-    int*        in1_ =0; /* iptype0    */
+    int64_t*    in0_ =0; /* norder0    */
+    int64_t*    in1_ =0; /* iptype0    */
     double*     in2_ =0; /* rfac       */
     double*     in3_ =0; /* rfac0      */
     mwSize      dim4_;   /* 1          */
@@ -2821,14 +2828,14 @@ void mexStub7(int nlhs, mxArray* plhs[],
     }
 
     if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
-        in0_ = mxWrapGetArray_int(prhs[0], &mw_err_txt_);
+        in0_ = mxWrapGetArray_int64_t(prhs[0], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in0_ = NULL;
 
     if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
-        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        in1_ = mxWrapGetArray_int64_t(prhs[1], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -2865,20 +2872,20 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 501 ----
- * get_centroid_rads(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, inout double[n3, npatches] cms, inout double[npatches] rads);
+/* ---- gradcurlS0.mw: 502 ----
+ * get_centroid_rads(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, double[n9, npts] srccoefs, inout double[n3, npatches] cms, inout double[npatches] rads);
  */
-static const char* stubids8_ = "get_centroid_rads(c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c i double[xx], c io double[xx], c io double[x])";
+static const char* stubids8_ = "get_centroid_rads(c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i double[xx], c io double[xx], c io double[x])";
 
 void mexStub8(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
-    int*        in0_ =0; /* npatches   */
-    int*        in1_ =0; /* norders    */
-    int*        in2_ =0; /* ixyzs      */
-    int*        in3_ =0; /* iptype     */
-    int*        in4_ =0; /* npts       */
+    int64_t*    in0_ =0; /* npatches   */
+    int64_t*    in1_ =0; /* norders    */
+    int64_t*    in2_ =0; /* ixyzs      */
+    int64_t*    in3_ =0; /* iptype     */
+    int64_t*    in4_ =0; /* npts       */
     double*     in5_ =0; /* srccoefs   */
     double*     in6_ =0; /* cms        */
     double*     in7_ =0; /* rads       */
@@ -2941,35 +2948,35 @@ void mexStub8(int nlhs, mxArray* plhs[],
     }
 
     if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
-        in0_ = mxWrapGetArray_int(prhs[0], &mw_err_txt_);
+        in0_ = mxWrapGetArray_int64_t(prhs[0], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in0_ = NULL;
 
     if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
-        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        in1_ = mxWrapGetArray_int64_t(prhs[1], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in1_ = NULL;
 
     if (mxGetM(prhs[2])*mxGetN(prhs[2]) != 0) {
-        in2_ = mxWrapGetArray_int(prhs[2], &mw_err_txt_);
+        in2_ = mxWrapGetArray_int64_t(prhs[2], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in2_ = NULL;
 
     if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
-        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        in3_ = mxWrapGetArray_int64_t(prhs[3], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in3_ = NULL;
 
     if (mxGetM(prhs[4])*mxGetN(prhs[4]) != 0) {
-        in4_ = mxWrapGetArray_int(prhs[4], &mw_err_txt_);
+        in4_ = mxWrapGetArray_int64_t(prhs[4], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3021,22 +3028,22 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 505 ----
- * findnearmem(double[n3, npatches] cms, int[1] npatches, double[npatches] rad_near, int[1] ndtarg, double[ndtarg, ntarg] targs, int[1] ntarg, inout int[1] nnz);
+/* ---- gradcurlS0.mw: 506 ----
+ * findnearmem(double[n3, npatches] cms, int64_t[1] npatches, double[npatches] rad_near, int64_t[1] ndtarg, double[ndtarg, ntarg] targs, int64_t[1] ntarg, inout int64_t[1] nnz);
  */
-static const char* stubids9_ = "findnearmem(c i double[xx], c i int[x], c i double[x], c i int[x], c i double[xx], c i int[x], c io int[x])";
+static const char* stubids9_ = "findnearmem(c i double[xx], c i int64_t[x], c i double[x], c i int64_t[x], c i double[xx], c i int64_t[x], c io int64_t[x])";
 
 void mexStub9(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
     double*     in0_ =0; /* cms        */
-    int*        in1_ =0; /* npatches   */
+    int64_t*    in1_ =0; /* npatches   */
     double*     in2_ =0; /* rad_near   */
-    int*        in3_ =0; /* ndtarg     */
+    int64_t*    in3_ =0; /* ndtarg     */
     double*     in4_ =0; /* targs      */
-    int*        in5_ =0; /* ntarg      */
-    int*        in6_ =0; /* nnz        */
+    int64_t*    in5_ =0; /* ntarg      */
+    int64_t*    in6_ =0; /* nnz        */
     mwSize      dim7_;   /* n3         */
     mwSize      dim8_;   /* npatches   */
     mwSize      dim9_;   /* 1          */
@@ -3102,7 +3109,7 @@ void mexStub9(int nlhs, mxArray* plhs[],
         in0_ = NULL;
 
     if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
-        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        in1_ = mxWrapGetArray_int64_t(prhs[1], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3121,7 +3128,7 @@ void mexStub9(int nlhs, mxArray* plhs[],
         in2_ = NULL;
 
     if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
-        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        in3_ = mxWrapGetArray_int64_t(prhs[3], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3140,14 +3147,14 @@ void mexStub9(int nlhs, mxArray* plhs[],
         in4_ = NULL;
 
     if (mxGetM(prhs[5])*mxGetN(prhs[5]) != 0) {
-        in5_ = mxWrapGetArray_int(prhs[5], &mw_err_txt_);
+        in5_ = mxWrapGetArray_int64_t(prhs[5], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in5_ = NULL;
 
     if (mxGetM(prhs[6])*mxGetN(prhs[6]) != 0) {
-        in6_ = mxWrapGetArray_int(prhs[6], &mw_err_txt_);
+        in6_ = mxWrapGetArray_int64_t(prhs[6], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3157,7 +3164,7 @@ void mexStub9(int nlhs, mxArray* plhs[],
         mexprofrecord_[9]++;
     MWF77_findnearmem(in0_, in1_, in2_, in3_, in4_, in5_, in6_);
     plhs[0] = mxCreateDoubleMatrix(dim15_, 1, mxREAL);
-    mxWrapCopy_int(plhs[0], in6_, dim15_);
+    mxWrapCopy_int64_t(plhs[0], in6_, dim15_);
 
 mw_err_label:
     if (in1_)  mxFree(in1_);
@@ -3168,23 +3175,23 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 511 ----
- * findnear(double[n3, npatches] cms, int[1] npatches, double[npatches] rad_near, int[1] ndtarg, double[ndtarg, ntarg] targs, int[1] ntarg, inout int[ntp1] row_ptr, inout int[nnz] col_ind);
+/* ---- gradcurlS0.mw: 512 ----
+ * findnear(double[n3, npatches] cms, int64_t[1] npatches, double[npatches] rad_near, int64_t[1] ndtarg, double[ndtarg, ntarg] targs, int64_t[1] ntarg, inout int64_t[ntp1] row_ptr, inout int64_t[nnz] col_ind);
  */
-static const char* stubids10_ = "findnear(c i double[xx], c i int[x], c i double[x], c i int[x], c i double[xx], c i int[x], c io int[x], c io int[x])";
+static const char* stubids10_ = "findnear(c i double[xx], c i int64_t[x], c i double[x], c i int64_t[x], c i double[xx], c i int64_t[x], c io int64_t[x], c io int64_t[x])";
 
 void mexStub10(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
     double*     in0_ =0; /* cms        */
-    int*        in1_ =0; /* npatches   */
+    int64_t*    in1_ =0; /* npatches   */
     double*     in2_ =0; /* rad_near   */
-    int*        in3_ =0; /* ndtarg     */
+    int64_t*    in3_ =0; /* ndtarg     */
     double*     in4_ =0; /* targs      */
-    int*        in5_ =0; /* ntarg      */
-    int*        in6_ =0; /* row_ptr    */
-    int*        in7_ =0; /* col_ind    */
+    int64_t*    in5_ =0; /* ntarg      */
+    int64_t*    in6_ =0; /* row_ptr    */
+    int64_t*    in7_ =0; /* col_ind    */
     mwSize      dim8_;   /* n3         */
     mwSize      dim9_;   /* npatches   */
     mwSize      dim10_;   /* 1          */
@@ -3256,7 +3263,7 @@ void mexStub10(int nlhs, mxArray* plhs[],
         in0_ = NULL;
 
     if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
-        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        in1_ = mxWrapGetArray_int64_t(prhs[1], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3275,7 +3282,7 @@ void mexStub10(int nlhs, mxArray* plhs[],
         in2_ = NULL;
 
     if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
-        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        in3_ = mxWrapGetArray_int64_t(prhs[3], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3294,21 +3301,21 @@ void mexStub10(int nlhs, mxArray* plhs[],
         in4_ = NULL;
 
     if (mxGetM(prhs[5])*mxGetN(prhs[5]) != 0) {
-        in5_ = mxWrapGetArray_int(prhs[5], &mw_err_txt_);
+        in5_ = mxWrapGetArray_int64_t(prhs[5], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in5_ = NULL;
 
     if (mxGetM(prhs[6])*mxGetN(prhs[6]) != 0) {
-        in6_ = mxWrapGetArray_int(prhs[6], &mw_err_txt_);
+        in6_ = mxWrapGetArray_int64_t(prhs[6], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in6_ = NULL;
 
     if (mxGetM(prhs[7])*mxGetN(prhs[7]) != 0) {
-        in7_ = mxWrapGetArray_int(prhs[7], &mw_err_txt_);
+        in7_ = mxWrapGetArray_int64_t(prhs[7], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3318,9 +3325,9 @@ void mexStub10(int nlhs, mxArray* plhs[],
         mexprofrecord_[10]++;
     MWF77_findnear(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_);
     plhs[0] = mxCreateDoubleMatrix(dim16_, 1, mxREAL);
-    mxWrapCopy_int(plhs[0], in6_, dim16_);
+    mxWrapCopy_int64_t(plhs[0], in6_, dim16_);
     plhs[1] = mxCreateDoubleMatrix(dim17_, 1, mxREAL);
-    mxWrapCopy_int(plhs[1], in7_, dim17_);
+    mxWrapCopy_int64_t(plhs[1], in7_, dim17_);
 
 mw_err_label:
     if (in1_)  mxFree(in1_);
@@ -3332,22 +3339,22 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 514 ----
- * get_iquad_rsc(int[1] npatches, int[npp1] ixyzs, int[1] npts, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, inout int[nnzp1] iquad);
+/* ---- gradcurlS0.mw: 515 ----
+ * get_iquad_rsc(int64_t[1] npatches, int64_t[npp1] ixyzs, int64_t[1] npts, int64_t[1] nnz, int64_t[ntp1] row_ptr, int64_t[nnz] col_ind, inout int64_t[nnzp1] iquad);
  */
-static const char* stubids11_ = "get_iquad_rsc(c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c io int[x])";
+static const char* stubids11_ = "get_iquad_rsc(c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c io int64_t[x])";
 
 void mexStub11(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
-    int*        in0_ =0; /* npatches   */
-    int*        in1_ =0; /* ixyzs      */
-    int*        in2_ =0; /* npts       */
-    int*        in3_ =0; /* nnz        */
-    int*        in4_ =0; /* row_ptr    */
-    int*        in5_ =0; /* col_ind    */
-    int*        in6_ =0; /* iquad      */
+    int64_t*    in0_ =0; /* npatches   */
+    int64_t*    in1_ =0; /* ixyzs      */
+    int64_t*    in2_ =0; /* npts       */
+    int64_t*    in3_ =0; /* nnz        */
+    int64_t*    in4_ =0; /* row_ptr    */
+    int64_t*    in5_ =0; /* col_ind    */
+    int64_t*    in6_ =0; /* iquad      */
     mwSize      dim7_;   /* 1          */
     mwSize      dim8_;   /* npp1       */
     mwSize      dim9_;   /* 1          */
@@ -3393,49 +3400,49 @@ void mexStub11(int nlhs, mxArray* plhs[],
     }
 
     if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
-        in0_ = mxWrapGetArray_int(prhs[0], &mw_err_txt_);
+        in0_ = mxWrapGetArray_int64_t(prhs[0], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in0_ = NULL;
 
     if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
-        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        in1_ = mxWrapGetArray_int64_t(prhs[1], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in1_ = NULL;
 
     if (mxGetM(prhs[2])*mxGetN(prhs[2]) != 0) {
-        in2_ = mxWrapGetArray_int(prhs[2], &mw_err_txt_);
+        in2_ = mxWrapGetArray_int64_t(prhs[2], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in2_ = NULL;
 
     if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
-        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        in3_ = mxWrapGetArray_int64_t(prhs[3], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in3_ = NULL;
 
     if (mxGetM(prhs[4])*mxGetN(prhs[4]) != 0) {
-        in4_ = mxWrapGetArray_int(prhs[4], &mw_err_txt_);
+        in4_ = mxWrapGetArray_int64_t(prhs[4], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in4_ = NULL;
 
     if (mxGetM(prhs[5])*mxGetN(prhs[5]) != 0) {
-        in5_ = mxWrapGetArray_int(prhs[5], &mw_err_txt_);
+        in5_ = mxWrapGetArray_int64_t(prhs[5], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in5_ = NULL;
 
     if (mxGetM(prhs[6])*mxGetN(prhs[6]) != 0) {
-        in6_ = mxWrapGetArray_int(prhs[6], &mw_err_txt_);
+        in6_ = mxWrapGetArray_int64_t(prhs[6], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3445,7 +3452,7 @@ void mexStub11(int nlhs, mxArray* plhs[],
         mexprofrecord_[11]++;
     MWF77_get_iquad_rsc(in0_, in1_, in2_, in3_, in4_, in5_, in6_);
     plhs[0] = mxCreateDoubleMatrix(dim13_, 1, mxREAL);
-    mxWrapCopy_int(plhs[0], in6_, dim13_);
+    mxWrapCopy_int64_t(plhs[0], in6_, dim13_);
 
 mw_err_label:
     if (in0_)  mxFree(in0_);
@@ -3459,35 +3466,35 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 528 ----
- * getnearquad_magnetostatics(int[1] npatches, int[npatches] norders, int[npp1] ixyzs, int[npatches] iptype, int[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int[1] ndtarg, int[1] ntarg, double[ndtarg, ntarg] targs, int[ntarg] patch_id, double[2, ntarg] uvs_targ, double[1] eps, int[1] iquadtype, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, int[nnzp1] iquad, double[1] rfac0, int[1] nquad, inout double[nquad, 3] wnear);
+/* ---- gradcurlS0.mw: 529 ----
+ * getnearquad_magnetostatics(int64_t[1] npatches, int64_t[npatches] norders, int64_t[npp1] ixyzs, int64_t[npatches] iptype, int64_t[1] npts, double[n9, npts] srccoefs, double[n12, npts] srcvals, int64_t[1] ndtarg, int64_t[1] ntarg, double[ndtarg, ntarg] targs, int64_t[ntarg] patch_id, double[2, ntarg] uvs_targ, double[1] eps, int64_t[1] iquadtype, int64_t[1] nnz, int64_t[ntp1] row_ptr, int64_t[nnz] col_ind, int64_t[nnzp1] iquad, double[1] rfac0, int64_t[1] nquad, inout double[nquad, 3] wnear);
  */
-static const char* stubids12_ = "getnearquad_magnetostatics(c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c i double[xx], c i double[xx], c i int[x], c i int[x], c i double[xx], c i int[x], c i double[xx], c i double[x], c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c i double[x], c i int[x], c io double[xx])";
+static const char* stubids12_ = "getnearquad_magnetostatics(c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i double[xx], c i double[xx], c i int64_t[x], c i int64_t[x], c i double[xx], c i int64_t[x], c i double[xx], c i double[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i double[x], c i int64_t[x], c io double[xx])";
 
 void mexStub12(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
-    int*        in0_ =0; /* npatches   */
-    int*        in1_ =0; /* norders    */
-    int*        in2_ =0; /* ixyzs      */
-    int*        in3_ =0; /* iptype     */
-    int*        in4_ =0; /* npts       */
+    int64_t*    in0_ =0; /* npatches   */
+    int64_t*    in1_ =0; /* norders    */
+    int64_t*    in2_ =0; /* ixyzs      */
+    int64_t*    in3_ =0; /* iptype     */
+    int64_t*    in4_ =0; /* npts       */
     double*     in5_ =0; /* srccoefs   */
     double*     in6_ =0; /* srcvals    */
-    int*        in7_ =0; /* ndtarg     */
-    int*        in8_ =0; /* ntarg      */
+    int64_t*    in7_ =0; /* ndtarg     */
+    int64_t*    in8_ =0; /* ntarg      */
     double*     in9_ =0; /* targs      */
-    int*        in10_ =0; /* patch_id   */
+    int64_t*    in10_ =0; /* patch_id   */
     double*     in11_ =0; /* uvs_targ   */
     double*     in12_ =0; /* eps        */
-    int*        in13_ =0; /* iquadtype  */
-    int*        in14_ =0; /* nnz        */
-    int*        in15_ =0; /* row_ptr    */
-    int*        in16_ =0; /* col_ind    */
-    int*        in17_ =0; /* iquad      */
+    int64_t*    in13_ =0; /* iquadtype  */
+    int64_t*    in14_ =0; /* nnz        */
+    int64_t*    in15_ =0; /* row_ptr    */
+    int64_t*    in16_ =0; /* col_ind    */
+    int64_t*    in17_ =0; /* iquad      */
     double*     in18_ =0; /* rfac0      */
-    int*        in19_ =0; /* nquad      */
+    int64_t*    in19_ =0; /* nquad      */
     double*     in20_ =0; /* wnear      */
     mwSize      dim21_;   /* 1          */
     mwSize      dim22_;   /* npatches   */
@@ -3638,35 +3645,35 @@ void mexStub12(int nlhs, mxArray* plhs[],
     }
 
     if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
-        in0_ = mxWrapGetArray_int(prhs[0], &mw_err_txt_);
+        in0_ = mxWrapGetArray_int64_t(prhs[0], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in0_ = NULL;
 
     if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
-        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        in1_ = mxWrapGetArray_int64_t(prhs[1], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in1_ = NULL;
 
     if (mxGetM(prhs[2])*mxGetN(prhs[2]) != 0) {
-        in2_ = mxWrapGetArray_int(prhs[2], &mw_err_txt_);
+        in2_ = mxWrapGetArray_int64_t(prhs[2], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in2_ = NULL;
 
     if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
-        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        in3_ = mxWrapGetArray_int64_t(prhs[3], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in3_ = NULL;
 
     if (mxGetM(prhs[4])*mxGetN(prhs[4]) != 0) {
-        in4_ = mxWrapGetArray_int(prhs[4], &mw_err_txt_);
+        in4_ = mxWrapGetArray_int64_t(prhs[4], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3697,14 +3704,14 @@ void mexStub12(int nlhs, mxArray* plhs[],
         in6_ = NULL;
 
     if (mxGetM(prhs[7])*mxGetN(prhs[7]) != 0) {
-        in7_ = mxWrapGetArray_int(prhs[7], &mw_err_txt_);
+        in7_ = mxWrapGetArray_int64_t(prhs[7], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in7_ = NULL;
 
     if (mxGetM(prhs[8])*mxGetN(prhs[8]) != 0) {
-        in8_ = mxWrapGetArray_int(prhs[8], &mw_err_txt_);
+        in8_ = mxWrapGetArray_int64_t(prhs[8], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3723,7 +3730,7 @@ void mexStub12(int nlhs, mxArray* plhs[],
         in9_ = NULL;
 
     if (mxGetM(prhs[10])*mxGetN(prhs[10]) != 0) {
-        in10_ = mxWrapGetArray_int(prhs[10], &mw_err_txt_);
+        in10_ = mxWrapGetArray_int64_t(prhs[10], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3754,35 +3761,35 @@ void mexStub12(int nlhs, mxArray* plhs[],
         in12_ = NULL;
 
     if (mxGetM(prhs[13])*mxGetN(prhs[13]) != 0) {
-        in13_ = mxWrapGetArray_int(prhs[13], &mw_err_txt_);
+        in13_ = mxWrapGetArray_int64_t(prhs[13], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in13_ = NULL;
 
     if (mxGetM(prhs[14])*mxGetN(prhs[14]) != 0) {
-        in14_ = mxWrapGetArray_int(prhs[14], &mw_err_txt_);
+        in14_ = mxWrapGetArray_int64_t(prhs[14], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in14_ = NULL;
 
     if (mxGetM(prhs[15])*mxGetN(prhs[15]) != 0) {
-        in15_ = mxWrapGetArray_int(prhs[15], &mw_err_txt_);
+        in15_ = mxWrapGetArray_int64_t(prhs[15], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in15_ = NULL;
 
     if (mxGetM(prhs[16])*mxGetN(prhs[16]) != 0) {
-        in16_ = mxWrapGetArray_int(prhs[16], &mw_err_txt_);
+        in16_ = mxWrapGetArray_int64_t(prhs[16], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in16_ = NULL;
 
     if (mxGetM(prhs[17])*mxGetN(prhs[17]) != 0) {
-        in17_ = mxWrapGetArray_int(prhs[17], &mw_err_txt_);
+        in17_ = mxWrapGetArray_int64_t(prhs[17], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3801,7 +3808,7 @@ void mexStub12(int nlhs, mxArray* plhs[],
         in18_ = NULL;
 
     if (mxGetM(prhs[19])*mxGetN(prhs[19]) != 0) {
-        in19_ = mxWrapGetArray_int(prhs[19], &mw_err_txt_);
+        in19_ = mxWrapGetArray_int64_t(prhs[19], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3840,23 +3847,23 @@ mw_err_label:
         mexErrMsgTxt(mw_err_txt_);
 }
 
-/* ---- gradcurlS0.mw: 549 ----
- * rsc_to_csc(int[1] npatches, int[1] ntarg, int[1] nnz, int[ntp1] row_ptr, int[nnz] col_ind, inout int[npatp1] col_ptr, inout int[nnz] row_ind, inout int[nnz] iper);
+/* ---- gradcurlS0.mw: 550 ----
+ * rsc_to_csc(int64_t[1] npatches, int64_t[1] ntarg, int64_t[1] nnz, int64_t[ntp1] row_ptr, int64_t[nnz] col_ind, inout int64_t[npatp1] col_ptr, inout int64_t[nnz] row_ind, inout int64_t[nnz] iper);
  */
-static const char* stubids13_ = "rsc_to_csc(c i int[x], c i int[x], c i int[x], c i int[x], c i int[x], c io int[x], c io int[x], c io int[x])";
+static const char* stubids13_ = "rsc_to_csc(c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c i int64_t[x], c io int64_t[x], c io int64_t[x], c io int64_t[x])";
 
 void mexStub13(int nlhs, mxArray* plhs[],
               int nrhs, const mxArray* prhs[])
 {
     const char* mw_err_txt_ = 0;
-    int*        in0_ =0; /* npatches   */
-    int*        in1_ =0; /* ntarg      */
-    int*        in2_ =0; /* nnz        */
-    int*        in3_ =0; /* row_ptr    */
-    int*        in4_ =0; /* col_ind    */
-    int*        in5_ =0; /* col_ptr    */
-    int*        in6_ =0; /* row_ind    */
-    int*        in7_ =0; /* iper       */
+    int64_t*    in0_ =0; /* npatches   */
+    int64_t*    in1_ =0; /* ntarg      */
+    int64_t*    in2_ =0; /* nnz        */
+    int64_t*    in3_ =0; /* row_ptr    */
+    int64_t*    in4_ =0; /* col_ind    */
+    int64_t*    in5_ =0; /* col_ptr    */
+    int64_t*    in6_ =0; /* row_ind    */
+    int64_t*    in7_ =0; /* iper       */
     mwSize      dim8_;   /* 1          */
     mwSize      dim9_;   /* 1          */
     mwSize      dim10_;   /* 1          */
@@ -3908,56 +3915,56 @@ void mexStub13(int nlhs, mxArray* plhs[],
     }
 
     if (mxGetM(prhs[0])*mxGetN(prhs[0]) != 0) {
-        in0_ = mxWrapGetArray_int(prhs[0], &mw_err_txt_);
+        in0_ = mxWrapGetArray_int64_t(prhs[0], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in0_ = NULL;
 
     if (mxGetM(prhs[1])*mxGetN(prhs[1]) != 0) {
-        in1_ = mxWrapGetArray_int(prhs[1], &mw_err_txt_);
+        in1_ = mxWrapGetArray_int64_t(prhs[1], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in1_ = NULL;
 
     if (mxGetM(prhs[2])*mxGetN(prhs[2]) != 0) {
-        in2_ = mxWrapGetArray_int(prhs[2], &mw_err_txt_);
+        in2_ = mxWrapGetArray_int64_t(prhs[2], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in2_ = NULL;
 
     if (mxGetM(prhs[3])*mxGetN(prhs[3]) != 0) {
-        in3_ = mxWrapGetArray_int(prhs[3], &mw_err_txt_);
+        in3_ = mxWrapGetArray_int64_t(prhs[3], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in3_ = NULL;
 
     if (mxGetM(prhs[4])*mxGetN(prhs[4]) != 0) {
-        in4_ = mxWrapGetArray_int(prhs[4], &mw_err_txt_);
+        in4_ = mxWrapGetArray_int64_t(prhs[4], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in4_ = NULL;
 
     if (mxGetM(prhs[5])*mxGetN(prhs[5]) != 0) {
-        in5_ = mxWrapGetArray_int(prhs[5], &mw_err_txt_);
+        in5_ = mxWrapGetArray_int64_t(prhs[5], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in5_ = NULL;
 
     if (mxGetM(prhs[6])*mxGetN(prhs[6]) != 0) {
-        in6_ = mxWrapGetArray_int(prhs[6], &mw_err_txt_);
+        in6_ = mxWrapGetArray_int64_t(prhs[6], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
         in6_ = NULL;
 
     if (mxGetM(prhs[7])*mxGetN(prhs[7]) != 0) {
-        in7_ = mxWrapGetArray_int(prhs[7], &mw_err_txt_);
+        in7_ = mxWrapGetArray_int64_t(prhs[7], &mw_err_txt_);
         if (mw_err_txt_)
             goto mw_err_label;
     } else
@@ -3967,11 +3974,11 @@ void mexStub13(int nlhs, mxArray* plhs[],
         mexprofrecord_[13]++;
     MWF77_rsc_to_csc(in0_, in1_, in2_, in3_, in4_, in5_, in6_, in7_);
     plhs[0] = mxCreateDoubleMatrix(dim13_, 1, mxREAL);
-    mxWrapCopy_int(plhs[0], in5_, dim13_);
+    mxWrapCopy_int64_t(plhs[0], in5_, dim13_);
     plhs[1] = mxCreateDoubleMatrix(dim14_, 1, mxREAL);
-    mxWrapCopy_int(plhs[1], in6_, dim14_);
+    mxWrapCopy_int64_t(plhs[1], in6_, dim14_);
     plhs[2] = mxCreateDoubleMatrix(dim15_, 1, mxREAL);
-    mxWrapCopy_int(plhs[2], in7_, dim15_);
+    mxWrapCopy_int64_t(plhs[2], in7_, dim15_);
 
 mw_err_label:
     if (in0_)  mxFree(in0_);
@@ -4040,18 +4047,18 @@ void mexFunction(int nlhs, mxArray* plhs[],
     } else if (strcmp(id, "*profile report*") == 0) {
         if (!mexprofrecord_)
             mexPrintf("Profiler inactive\n");
-        mexPrintf("%d calls to gradcurlS0.mw:68\n", mexprofrecord_[1]);
-        mexPrintf("%d calls to gradcurlS0.mw:123\n", mexprofrecord_[2]);
-        mexPrintf("%d calls to gradcurlS0.mw:200 (gradcurlS0.mw:328)\n", mexprofrecord_[3]);
-        mexPrintf("%d calls to gradcurlS0.mw:255\n", mexprofrecord_[4]);
-        mexPrintf("%d calls to gradcurlS0.mw:384\n", mexprofrecord_[6]);
-        mexPrintf("%d calls to gradcurlS0.mw:496\n", mexprofrecord_[7]);
-        mexPrintf("%d calls to gradcurlS0.mw:501\n", mexprofrecord_[8]);
-        mexPrintf("%d calls to gradcurlS0.mw:505\n", mexprofrecord_[9]);
-        mexPrintf("%d calls to gradcurlS0.mw:511\n", mexprofrecord_[10]);
-        mexPrintf("%d calls to gradcurlS0.mw:514\n", mexprofrecord_[11]);
-        mexPrintf("%d calls to gradcurlS0.mw:528\n", mexprofrecord_[12]);
-        mexPrintf("%d calls to gradcurlS0.mw:549\n", mexprofrecord_[13]);
+        mexPrintf("%d calls to gradcurlS0.mw:69\n", mexprofrecord_[1]);
+        mexPrintf("%d calls to gradcurlS0.mw:124\n", mexprofrecord_[2]);
+        mexPrintf("%d calls to gradcurlS0.mw:201 (gradcurlS0.mw:329)\n", mexprofrecord_[3]);
+        mexPrintf("%d calls to gradcurlS0.mw:256\n", mexprofrecord_[4]);
+        mexPrintf("%d calls to gradcurlS0.mw:385\n", mexprofrecord_[6]);
+        mexPrintf("%d calls to gradcurlS0.mw:497\n", mexprofrecord_[7]);
+        mexPrintf("%d calls to gradcurlS0.mw:502\n", mexprofrecord_[8]);
+        mexPrintf("%d calls to gradcurlS0.mw:506\n", mexprofrecord_[9]);
+        mexPrintf("%d calls to gradcurlS0.mw:512\n", mexprofrecord_[10]);
+        mexPrintf("%d calls to gradcurlS0.mw:515\n", mexprofrecord_[11]);
+        mexPrintf("%d calls to gradcurlS0.mw:529\n", mexprofrecord_[12]);
+        mexPrintf("%d calls to gradcurlS0.mw:550\n", mexprofrecord_[13]);
     } else if (strcmp(id, "*profile log*") == 0) {
         FILE* logfp;
         if (nrhs != 2 || mxGetString(prhs[1], id, sizeof(id)) != 0)
@@ -4061,18 +4068,18 @@ void mexFunction(int nlhs, mxArray* plhs[],
             mexErrMsgTxt("Cannot open log for output");
         if (!mexprofrecord_)
             fprintf(logfp, "Profiler inactive\n");
-        fprintf(logfp, "%d calls to gradcurlS0.mw:68\n", mexprofrecord_[1]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:123\n", mexprofrecord_[2]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:200 (gradcurlS0.mw:328)\n", mexprofrecord_[3]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:255\n", mexprofrecord_[4]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:384\n", mexprofrecord_[6]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:496\n", mexprofrecord_[7]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:501\n", mexprofrecord_[8]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:505\n", mexprofrecord_[9]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:511\n", mexprofrecord_[10]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:514\n", mexprofrecord_[11]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:528\n", mexprofrecord_[12]);
-        fprintf(logfp, "%d calls to gradcurlS0.mw:549\n", mexprofrecord_[13]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:69\n", mexprofrecord_[1]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:124\n", mexprofrecord_[2]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:201 (gradcurlS0.mw:329)\n", mexprofrecord_[3]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:256\n", mexprofrecord_[4]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:385\n", mexprofrecord_[6]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:497\n", mexprofrecord_[7]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:502\n", mexprofrecord_[8]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:506\n", mexprofrecord_[9]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:512\n", mexprofrecord_[10]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:515\n", mexprofrecord_[11]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:529\n", mexprofrecord_[12]);
+        fprintf(logfp, "%d calls to gradcurlS0.mw:550\n", mexprofrecord_[13]);
         fclose(logfp);
     } else
         mexErrMsgTxt("Unknown identifier");
