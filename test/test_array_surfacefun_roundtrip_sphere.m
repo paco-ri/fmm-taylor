@@ -31,6 +31,7 @@ ylabel('Error');
 title('Convergence vs nsph');
 legend('Location', 'best');
 grid on;
+saveas(gcf, 'roundtrip_sphere.png')
 
 % plot u and S_u_fun for the last case
 figure(2)
@@ -38,10 +39,12 @@ plot(u)
 hold on
 plot(dom)
 colorbar
+surfacemesh_to_vtk(dom, "roundtrip_sphere_u.vtk", u)
 
 figure(3)
 plot(S_u_fun)
 colorbar
+surfacemesh_to_vtk(dom, "roundtrip_sphere_S_u.vtk", S_u_fun)
 
 % For error isolation, create a surfacefun just involving S_u_fun.vals{1} defined on dom{1}
 p = 1;

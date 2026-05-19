@@ -4,7 +4,7 @@ MWRAP_INSTALL = ${HOME}/mwrap/mwrap
 ###########################################
 # you should not have to edit anything else
 ###########################################
-FMM3DBIE_STATIC_INSTALL = /home/fpr2017/fmm3dbie/lib-static/libfmm3dbie_matlab.a
+FMM3DBIE_STATIC_INSTALL = ${HOME}/fmm3dbie/lib-static/libfmm3dbie_matlab.a
 MAGNETOSTATICS = fortran/magneto-static-routs.o
 MAGNETODYNAMICS = fortran/magneto-dynamic-routs.o
 HELPER = fortran/fmm-helper-routs.o
@@ -13,7 +13,7 @@ install:
 	$(FC) -c $(FFLAGS) fortran/magneto-static-routs.f90 -o fortran/magneto-static-routs.o
 	$(FC) -c $(FFLAGS) fortran/magneto-dynamic-routs.f90 -o fortran/magneto-dynamic-routs.o
 	$(FC) -c $(FFLAGS) fortran/fmm-helper-routs.f90 -o fortran/fmm-helper-routs.o
-	# $(FC) -c $(FFLAGS) fortran/surf_routs.f90 -o fortran/surf_routs.o
+	$(FC) -c $(FFLAGS) fortran/surf_routs.f90 -o fortran/surf_routs.o
 	mkdir -p lib
 	mkdir -p lib-static
 	cd lib && rm -rf *

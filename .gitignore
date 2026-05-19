@@ -17,6 +17,7 @@ fort.13
 *.vtk
 *.bak
 *.png
+*.sh
 
 saved_data
 old_routs
