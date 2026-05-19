@@ -1305,14 +1305,53 @@
       enddo
 !$OMP END PARALLEL DO      
 
+      open(unit=99, file='lpcomp_curllap_addsub.log', access='append')
+      write(99, '(A,3ES25.16E3)') "CURLLAP: charges0r = ", charges0r(1,1)
+      close(99)
+
       allocate(pot_aux(nd,ntarg),grad_auxr(nd,3,ntarg),grad_auxi(nd,3,ntarg))
 
 !      print *, "before fmm"
 
+      open(unit=99, file='lpcomp_curllap_addsub.log', access='append')
+      write(99,*) 'LFMM3D_T_C_G_VEC REAL INPUTS:'
+      write(99,*) '  nd=', nd, ' eps=', eps, ' ns=', ns, ' ntarg=', ntarg
+      write(99,*) '  sources(1,1)=', sources(1,1)
+      write(99,*) '  sources(2,1)=', sources(2,1)
+      write(99,*) '  sources(3,1)=', sources(3,1)
+      write(99,*) '  charges0r(1,1)=', charges0r(1,1)
+      write(99,*) '  charges0r(2,1)=', charges0r(2,1)
+      write(99,*) '  charges0r(3,1)=', charges0r(3,1)
+      write(99,*) '  targtmp(1,1)=', targtmp(1,1)
+      write(99,*) '  targtmp(2,1)=', targtmp(2,1)
+      write(99,*) '  targtmp(3,1)=', targtmp(3,1)
+      close(99)
+
       call lfmm3d_t_c_g_vec(nd,eps,ns,sources,charges0r,ntarg,targtmp, &
            pot_aux,grad_auxr,ier)
+
+      open(unit=99, file='lpcomp_curllap_addsub.log', access='append')
+      write(99,*) 'LFMM3D_T_C_G_VEC IMAG INPUTS:'
+      write(99,*) '  nd=', nd, ' eps=', eps, ' ns=', ns, ' ntarg=', ntarg
+      write(99,*) '  sources(1,1)=', sources(1,1)
+      write(99,*) '  sources(2,1)=', sources(2,1)
+      write(99,*) '  sources(3,1)=', sources(3,1)
+      write(99,*) '  charges0i(1,1)=', charges0i(1,1)
+      write(99,*) '  charges0i(2,1)=', charges0i(2,1)
+      write(99,*) '  charges0i(3,1)=', charges0i(3,1)
+      write(99,*) '  targtmp(1,1)=', targtmp(1,1)
+      write(99,*) '  targtmp(2,1)=', targtmp(2,1)
+      write(99,*) '  targtmp(3,1)=', targtmp(3,1)
+      close(99)
+
       call lfmm3d_t_c_g_vec(nd,eps,ns,sources,charges0i,ntarg,targtmp, &
            pot_aux,grad_auxi,ier)
+      
+      open(unit=99, file='lpcomp_curllap_addsub.log', access='append')
+      write(99, '(A,3ES25.16E3)') "CURLLAP: pot_aux = ", pot_aux(1,1)
+      write(99, '(A,3ES25.16E3)') "CURLLAP: grad_auxr = ", grad_auxr(1,1,1)
+      write(99, '(A,I0)') "CURLLAP: ier = ", ier
+      close(99)
 
 !$OMP PARALLEL DO DEFAULT(SHARED)         
       do i=1,ntarg
@@ -1325,7 +1364,11 @@
       enddo
 !$OMP END PARALLEL DO      
 
-!      print *, "after fmm"
+      open(unit=99, file='lpcomp_curllap_addsub.log', access='append')
+      write(99, '(A)') "CURLLAP: after fmm"
+      write(99, '(A,3ES25.16E3)') "CURLLAP: curlj real = ", real(curlj(1,1)), real(curlj(2,1)), real(curlj(3,1))
+      write(99, '(A,3ES25.16E3)') "CURLLAP: curlj imag = ", aimag(curlj(1,1)), aimag(curlj(2,1)), aimag(curlj(3,1))
+      close(99)
 
 !
 !  Add near quadrature correction

@@ -16,6 +16,7 @@ fort.13
 *.html
 *.vtk
 *.bak
+*.png
 
 saved_data
 old_routs

@@ -1,12 +1,12 @@
 % --- Tolerances ---
-tol = 1e-4;
+tol = 1e-8;
 
 % --- Beltrami parameter ---
 zk = 0;
 
 % --- Geometry parameters ---
-ns = [5 7];% 9 11]; % polynomial order + 1
-nvs = [6 8];% 10 12]; % number of patches in poloidal direction
+ns = [9 11]; % polynomial order + 1
+nvs = [6 8 10 12]; % number of patches in poloidal direction
 
 lerr = zeros(4,size(ns,2)*size(nvs,2));
 lind = 1;
@@ -68,7 +68,8 @@ for n = ns
     end
     tol = tol*1e-2;
 end
-save("save_convoop_lerr.mat", "lerr")
+save('B.mat', 'B')
+save('save_convoop_lerr_tol_1e-8_local.mat', 'lerr', 'ns', 'nvs')
 
 loglog(sqrt(lerr(1,1:size(nvs,2)).^2.*lerr(2,1:size(nvs,2)).* ...
     lerr(3,1:size(nvs,2))), lerr(4,1:size(nvs,2)), 'o-')
