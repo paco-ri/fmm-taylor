@@ -223,15 +223,15 @@
 !        otherwise not used
 !    - eps: real *8
 !        precision requested
-!    - rjvec: real *8(3,npts)
+!    - rjvec: complex *16 (3,npts)
 !        The current density j
-!    - rho: real *8 (npts)
+!    - rho: complex *16 (npts)
 !        The charge density rho
 !
 !  Output arguments:
-!    - curlj: real *8 (3,npts)
+!    - curlj: complex *16 (3,npts)
 !         returns the potential curl S_{0}[j]
-!    - gradrho: real *8 (3,npts)
+!    - gradrho: complex *16 (3,npts)
 !         returns the potential grad S_{0}[\rho]
 !
 !
@@ -246,8 +246,8 @@
       integer *8, intent(in) :: ipatch_id(ntarg)
       real *8, intent(in) :: uvs_targ(2,ntarg)
       real *8, intent(in) :: eps
-      real *8, intent(in) :: rjvec(3,npts),rho(npts)
-      real *8, intent(out) :: curlj(3,ntarg),gradrho(3,ntarg)
+      complex *16, intent(in) :: rjvec(3,npts),rho(npts)
+      complex *16, intent(out) :: curlj(3,ntarg),gradrho(3,ntarg)
 
       integer *8 nptso,nnz,nquad
       integer *8 nover,npolso,npols,norder
@@ -431,9 +431,9 @@
 !          * the first kernel is \nabla_{x} S_{0}
 !          * the second kernel is \nabla_{y} S_{0}
 !          * the third kernel is \nabla_{z} S_{0}
-!    - rjvec: real *8(3,npts)
+!    - rjvec: complex *16(3,npts)
 !        The current density j
-!    - rho: real *8 (npts)
+!    - rho: complex *16 (npts)
 !        The charge density rho
 !    - novers: integer(npatches)
 !        order of discretization for oversampled sources and
@@ -449,9 +449,9 @@
 !        smooth quadrature weights at oversampled nodes
 !
 !  Output arguments:
-!    - curlj: real *8 (3,ntarg)
+!    - curlj: complex *16 (3,ntarg)
 !         returns the potential curl S_{0}[j]
-!    - gradrho: real *8 (3,ntarg)
+!    - gradrho: complex *16 (3,ntarg)
 !         returns the potential grad S_{0}[\rho]
 !
 
@@ -503,7 +503,6 @@
       real *8, allocatable :: ctmp0r(:,:),ctmp0i(:,:)
       real *8 thresh,ra,erra
       real *8 rr,rmin
-      real *8 over4pi
       real *8 rbl(3),rbm(3)
       integer *8 nss,ii,l,npover
       complex *16 ima,ztmp
@@ -513,15 +512,13 @@
 
       integer *8 int8_12
 
-      real *8 ttot,done,pi
+      real *8 ttot,done
       data ima/(0.0d0,1.0d0)/
-      data over4pi/0.07957747154594767d0/
 
       parameter (ntarg0=1)
 
       ns = nptso
       done = 1
-      pi = atan(done)*4
       int8_12 = 12
 
       ifpgh = 0
@@ -589,8 +586,8 @@
 !
 !$OMP PARALLEL DO DEFAULT(SHARED) 
       do i=1,ns
-         charges0r(1:4,i) = sigmaoverr(1:4,i)*whtsover(i)*over4pi
-         charges0i(1:4,i) = sigmaoveri(1:4,i)*whtsover(i)*over4pi
+         charges0r(1:4,i) = sigmaoverr(1:4,i)*whtsover(i)
+         charges0i(1:4,i) = sigmaoveri(1:4,i)*whtsover(i)
       enddo
 !$OMP END PARALLEL DO      
 
@@ -889,7 +886,6 @@
            real *8, allocatable :: ctmp0r(:), ctmp0i(:)
            real *8 thresh,ra,erra
            real *8 rr,rmin
-           real *8 over4pi
            real *8 rbl(3),rbm(3)
            integer *8 nss,ii,l,npover,m
            complex *16 ima,ztmp
@@ -898,15 +894,13 @@
            integer *8 ndd,ndz,ndi,ier
            integer *8 int8_12
 
-           real *8 ttot,done,pi
+           real *8 ttot,done
            data ima/(0.0d0,1.0d0)/
-           data over4pi/0.07957747154594767d0/
 
            parameter (ntarg0=1)
 
            ns = nptso
            done = 1
-           pi = atan(done)*4
            int8_12 = 12
 
            ifpgh = 0
@@ -960,8 +954,8 @@
      !
      !$OMP PARALLEL DO DEFAULT(SHARED) 
            do i=1,ns
-             charges0r(i) = sigmaoverr(i)*whtsover(i)*over4pi
-             charges0i(i) = sigmaoveri(i)*whtsover(i)*over4pi
+             charges0r(i) = sigmaoverr(i)*whtsover(i)
+             charges0i(i) = sigmaoveri(i)*whtsover(i)
            enddo
      !$OMP END PARALLEL DO      
 
@@ -1229,7 +1223,6 @@
       real *8, allocatable :: ctmp0r(:,:),ctmp0i(:,:)
       real *8 thresh,ra,erra
       real *8 rr,rmin
-      real *8 over4pi
       real *8 rbl(3),rbm(3)
       integer *8 nss,ii,l,npover
       complex *16 ima,ztmp
@@ -1238,15 +1231,13 @@
       integer *8 ndd,ndz,ndi,ier
       integer *8 int8_12
 
-      real *8 ttot,done,pi
+      real *8 ttot,done
       data ima/(0.0d0,1.0d0)/
-      data over4pi/0.07957747154594767d0/
 
       parameter (ntarg0=1)
 
       ns = nptso
       done = 1
-      pi = atan(done)*4
       int8_12 = 12
 
       ifpgh = 0
@@ -1300,8 +1291,8 @@
 !
 !$OMP PARALLEL DO DEFAULT(SHARED) 
       do i=1,ns
-         charges0r(1:3,i) = sigmaoverr(1:3,i)*whtsover(i)*over4pi
-         charges0i(1:3,i) = sigmaoveri(1:3,i)*whtsover(i)*over4pi
+         charges0r(1:3,i) = sigmaoverr(1:3,i)*whtsover(i)
+         charges0i(1:3,i) = sigmaoveri(1:3,i)*whtsover(i)
       enddo
 !$OMP END PARALLEL DO      
 
@@ -1328,12 +1319,6 @@
               + ima*(grad_auxi(2,1,i) - grad_auxi(1,2,i))
       enddo
 !$OMP END PARALLEL DO      
-
-      open(unit=99, file='lpcomp_curllap_addsub.log', access='append')
-      write(99, '(A)') "CURLLAP: after fmm"
-      write(99, '(A,3ES25.16E3)') "CURLLAP: curlj real = ", real(curlj(1,1)), real(curlj(2,1)), real(curlj(3,1))
-      write(99, '(A,3ES25.16E3)') "CURLLAP: curlj imag = ", aimag(curlj(1,1)), aimag(curlj(2,1)), aimag(curlj(3,1))
-      close(99)
 
 
 !

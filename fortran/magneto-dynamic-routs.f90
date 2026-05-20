@@ -106,11 +106,6 @@ subroutine lpcomp_gradcurlhelm(npatches,norders,ixyzs,iptype,npts,srccoefs,&
   ! Additional/changed input arguments:
   !
   !   zk [complex *16]: wavenumber k in Helmholtz kernel
-  !   rho [complex *16 (npts)]: COMPLEX charge density
-  ! 
-  ! Changed output argument:
-  !
-  !   gradrho [complex *16 (3,ntarg)]: COMPLEX grad S_k[rho]
   ! 
 
   implicit none
@@ -345,7 +340,6 @@ subroutine lpcomp_gradcurlhelm_addsub(npatches,norders,ixyzs,&
   complex *16, allocatable :: ctmp0(:,:)
   real *8 thresh,ra,erra
   real *8 rr,rmin
-  real *8 over4pi
   real *8 rbl(3),rbm(3)
   integer *8 nss,ii,l,npover
   complex *16 ima,ztmp
@@ -355,15 +349,13 @@ subroutine lpcomp_gradcurlhelm_addsub(npatches,norders,ixyzs,&
 
   integer *8 int8_12
 
-  real *8 ttot,done,pi
+  real *8 ttot,done
   data ima/(0.0d0,1.0d0)/
-  data over4pi/0.07957747154594767d0/
 
   parameter (ntarg0=1)
 
   ns = nptso
   done = 1
-  pi = atan(done)*4
   
   int8_12 = 12
 
@@ -412,7 +404,7 @@ subroutine lpcomp_gradcurlhelm_addsub(npatches,norders,ixyzs,&
         
   !$OMP PARALLEL DO DEFAULT(SHARED) 
   do i=1,ns
-     charges0(1:4,i) = sigmaover(1:4,i)*whtsover(i)*over4pi
+     charges0(1:4,i) = sigmaover(1:4,i)*whtsover(i)
   enddo
   !$OMP END PARALLEL DO      
 
@@ -666,7 +658,6 @@ subroutine lpcomp_gradhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   complex *16, allocatable :: ctmp0(:)
   real *8 thresh,ra,erra
   real *8 rr,rmin
-  real *8 over4pi
   real *8 rbl(3),rbm(3)
   integer *8 nss,ii,l,npover
   complex *16 ima,ztmp
@@ -676,15 +667,13 @@ subroutine lpcomp_gradhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
 
   integer *8 int8_12
 
-  real *8 ttot,done,pi
+  real *8 ttot,done
   data ima/(0.0d0,1.0d0)/
-  data over4pi/0.07957747154594767d0/
 
   parameter (ntarg0=1)
 
   ns = nptso
   done = 1
-  pi = atan(done)*4
 
   int8_12 = 12
 
@@ -721,10 +710,7 @@ subroutine lpcomp_gradhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   
   !$OMP PARALLEL DO DEFAULT(SHARED) 
   do i=1,ns
-     charges0(i) = sigmaover(i)*whtsover(i)*over4pi
-     ! if (abs(sigmaover(i)).lt.1e-16) then
-     !    print *,i
-     ! endif
+     charges0(i) = sigmaover(i)*whtsover(i)
   enddo
   !$OMP END PARALLEL DO
   
@@ -887,15 +873,10 @@ subroutine lpcomp_curlhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   ! used to accelerate computing the far-field interactions, and
   ! precomputed quadrature is used for computing the near-field ones.
   !
-  ! Additional input argument:
+  ! Additional input arguments:
   !
   !   zk [complex *16]: wavenumber k in Helmholtz kernel
   !   wnear [complex *16 (nquad,3)]: COMPLEX near-field quadrature correction
-  !   rjvec [complex *16 (3,npts)]: COMPLEX current density
-  !
-  ! Changed output argument:
-  !
-  !   curlj [complex *16 (3,ntarg)]: COMPLEX grad S_k[rho]
   !
 
   implicit none
@@ -943,7 +924,6 @@ subroutine lpcomp_curlhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   complex *16, allocatable :: ctmp0(:,:)
   real *8 thresh,ra,erra
   real *8 rr,rmin
-  real *8 over4pi
   real *8 rbl(3),rbm(3)
   integer *8 nss,ii,l,npover
   complex *16 ima,ztmp
@@ -952,15 +932,13 @@ subroutine lpcomp_curlhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
   integer *8 ndd,ndz,ndi,ier
   integer *8 int8_12
   
-  real *8 ttot,done,pi
+  real *8 ttot,done
   data ima/(0.0d0,1.0d0)/
-  data over4pi/0.07957747154594767d0/
 
   parameter (ntarg0=1)
 
   ns = nptso
   done = 1
-  pi = atan(done)*4
   int8_12 = 12
 
   ifpgh = 0
@@ -999,7 +977,7 @@ subroutine lpcomp_curlhelm_addsub(npatches,norders,ixyzs,iptype,npts,&
    
   !$OMP PARALLEL DO DEFAULT(SHARED) 
   do i=1,ns
-     charges0(1:3,i) = sigmaover(1:3,i)*whtsover(i)*over4pi
+     charges0(1:3,i) = sigmaover(1:3,i)*whtsover(i)
   enddo
   !$OMP END PARALLEL DO      
 
