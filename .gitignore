@@ -25,3 +25,5 @@ old_lap
 
 docs/build/*
 *.bat
+
+test/README.md
