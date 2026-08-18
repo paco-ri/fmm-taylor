@@ -42,24 +42,36 @@ classdef RefTaylorState < TaylorState
             %     B0 [surfacefunv] solution to curl B = k B
             %     xs_nodes [double(3,x)] quad. nodes for XS
             %     xs_weights [double(x)] quad. weights for XS
-            %     tols [double or double(3)] quad. and GMRES tolerances
-            [tolsr, tolsc] = size(tols);
+            %     tols [double, double(3), or double(5)] tolerances, as
+            %       1: all five tolerances take this value
+            %       3: [eps_gmres, eps_taylor, eps_laphelm], with the
+            %          cross-section tolerances inheriting eps_taylor and
+            %          eps_laphelm respectively
+            %       5: [eps_gmres, eps_taylor, eps_laphelm,
+            %           eps_xs_taylor, eps_xs_laphelm]
+            if ~isnumeric(tols)
+                error(['Invalid call to RefTaylorState constructor. ' ...
+                    'Eighth argument should be 1, 3, or 5 tolerance(s). '])
+            end
+            ntols = numel(tols);
             if isscalar(tols)
                 supertols = tols;
-            elseif tolsr == 5 && tolsc == 1 || tolsr == 1 && tolsc == 5
+                xstols = [tols tols];
+            elseif ntols == 3 && isvector(tols)
+                supertols = tols;
+                % Cross-section quadrature inherits the main tolerances,
+                % matching the behaviour before eps_xs_* was wired up.
+                xstols = [tols(2) tols(3)];
+            elseif ntols == 5 && isvector(tols)
                 supertols = tols(1:3);
+                xstols = [tols(4) tols(5)];
             else
                 error(['Invalid call to RefTaylorState constructor. ' ...
-                    'Seventh argument should be 1 or 5 tolerance(s). '])
+                    'Eighth argument should be 1, 3, or 5 tolerance(s). '])
             end
             obj@TaylorState(domain,domparams,zk,flux,supertols);
-            if isscalar(tols)
-                obj.eps_xs_taylor = tols;
-                obj.eps_xs_laphelm = tols;
-            else
-                obj.eps_xs_taylor = tols(4);
-                obj.eps_xs_laphelm = tols(5);
-            end
+            obj.eps_xs_taylor = xstols(1);
+            obj.eps_xs_laphelm = xstols(2);
             
             nsurf = obj.domain.nsurfaces;
             if nsurf == 1 && isa(B0{1}, 'surfacefunv')
@@ -132,10 +144,10 @@ classdef RefTaylorState < TaylorState
                 for j = 1:nsurf
                     if abs(obj.zk) < eps
                         Q = taylor.static.get_quadrature_correction(obj.domain.surf{j}, ...
-                            obj.eps_taylor,targinfo,opts);
+                            obj.eps_xs_taylor,targinfo,opts);
                     else
                         Q = taylor.dynamic.get_quadrature_correction(obj.domain.surf{j}, ...
-                            obj.zk,obj.eps_taylor,targinfo,opts);
+                            obj.zk,obj.eps_xs_taylor,targinfo,opts);
                     end
                     obj.quad_opts_xs_taylor{i,j} = [];
                     obj.quad_opts_xs_taylor{i,j}.format = format;
@@ -174,10 +186,10 @@ classdef RefTaylorState < TaylorState
                 for j = 1:nsurf
                     if abs(obj.zk) < eps
                         Q = lap3d.dirichlet.get_quadrature_correction(obj.domain.surf{j}, ...
-                            obj.eps_laphelm,[1.0,0],targinfo,opts);
+                            obj.eps_xs_laphelm,[1.0,0],targinfo,opts);
                     else
                         Q = helm3d.dirichlet.get_quadrature_correction(obj.domain.surf{j}, ...
-                            obj.eps_laphelm,obj.zk,[1.0,0],targinfo,opts);
+                            obj.eps_xs_laphelm,obj.zk,[1.0,0],targinfo,opts);
                     end
                     obj.quad_opts_xs_laphelm{i,j} = [];
                     obj.quad_opts_xs_laphelm{i,j}.format = format;
@@ -241,17 +253,23 @@ classdef RefTaylorState < TaylorState
 
             nsurf = obj.domain.nsurfaces;
             if nsurf == 1
+                qopts_xs_taylor = obj.quad_opts_xs_taylor{1,1};
+                qopts_xs_laphelm = obj.quad_opts_xs_laphelm{1,1};
                 fluxsigmaD = TaylorState.mtxfluxsigmanontaylor(obj.domain, ...
                     obj.xs_nodes{1},obj.xs_weights{1},dfunc{1},obj.zk, ...
-                    obj.eps_taylor,obj.eps_laphelm);
+                    obj.eps_xs_taylor,obj.eps_xs_laphelm, ...
+                    qopts_xs_taylor,qopts_xs_laphelm);
                 fluxsigmaW = TaylorState.mtxfluxsigmanontaylor(obj.domain, ...
                     obj.xs_nodes{1},obj.xs_weights{1},wfunc{1},obj.zk, ...
-                    obj.eps_taylor,obj.eps_laphelm);
+                    obj.eps_xs_taylor,obj.eps_xs_laphelm, ...
+                    qopts_xs_taylor,qopts_xs_laphelm);
                 fluxalpha = TaylorState.mtxfluxalphanontaylor(...
                     obj.domain,obj.xs_nodes{1},...
-                    obj.xs_weights{1},obj.domain.mH{1},obj.zk,obj.eps_taylor,...
-                    obj.eps_laphelm);
+                    obj.xs_weights{1},obj.domain.mH{1},obj.zk, ...
+                    obj.eps_xs_taylor,obj.eps_xs_laphelm, ...
+                    qopts_xs_taylor,qopts_xs_laphelm);
             else
+                % NOTE: the two-surface branch still takes the 7-arg path.
                 fluxsigmaD = TaylorState.mtxfluxsigmanontaylor(...
                     obj.domain,obj.xs_nodes, ...
                     obj.xs_weights,dfunc,obj.zk,obj.eps_taylor, ...
