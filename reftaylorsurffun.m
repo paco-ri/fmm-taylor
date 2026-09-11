@@ -1,12 +1,15 @@
-function B0 = reftaylorsurffun(dom,n,nu,nv,ntheta,rmin,rmaj,jmag,lambda)
+function B0 = reftaylorsurffun(dom,n,ntheta,rmin,rmaj,jmag,lambda)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
 B0 = surfacefunv(dom);
-B0x = cell(nu*nv,1);
-B0y = cell(nu*nv,1);
-B0z = cell(nu*nv,1);
-for i = 1:nu*nv
+% Take the patch count from the mesh rather than nu*nv, so that this also
+% works on adaptively refined meshes.
+npat = length(dom.x);
+B0x = cell(npat,1);
+B0y = cell(npat,1);
+B0z = cell(npat,1);
+for i = 1:npat
     B0x{i} = zeros(n);
     B0y{i} = zeros(n);
     B0z{i} = zeros(n);
