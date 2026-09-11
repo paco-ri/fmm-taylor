@@ -166,11 +166,13 @@ else
         end
     end
 
-    % split sigmavals into halves. top half is on outer surface, etc.
-    npts = length(sigmavals)/2;
+    % split sigmavals per surface. top block is on outer surface, etc.
+    % The two blocks need not be the same size: adaptive refinement can
+    % leave the surfaces with different patch counts.
+    off = domain.blockoffsets();
     sigvalcell = cell(1,2);
-    sigvalcell{1} = sigmavals(1:npts);
-    sigvalcell{2} = sigmavals(npts+1:end);
+    sigvalcell{1} = sigmavals(off(1)+1:off(2));
+    sigvalcell{2} = sigmavals(off(2)+1:off(3));
 
     % evaluate layer potential
     ngradSsigma = cell(2);

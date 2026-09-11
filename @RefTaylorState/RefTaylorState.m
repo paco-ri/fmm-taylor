@@ -211,12 +211,13 @@ classdef RefTaylorState < TaylorState
 
             nsurf = obj.domain.nsurfaces;
             wfunc = cell(nsurf,1);
-            b = zeros(obj.domain.nptspersurf,nsurf);
+            off = obj.domain.blockoffsets();
+            b = zeros(off(end),1);
             for i = 1:nsurf
                 nB0 = dot(obj.domain.vn{i},obj.B0{i});
-                b(:,i) = surfacefun_to_array(nB0,obj.domain.dom{i},obj.domain.surf{i});
+                b(off(i)+1:off(i+1)) = surfacefun_to_array(nB0, ...
+                    obj.domain.dom{i},obj.domain.surf{i});
             end
-            b = reshape(b,obj.domain.nptspersurf*nsurf,1);
             if time
                 t1 = tic;
             end
@@ -231,7 +232,7 @@ classdef RefTaylorState < TaylorState
                     t2, iter(2), t2/iter(2))
             end
             for i = 1:nsurf
-                inds = obj.domain.nptspersurf*(i-1)+1:obj.domain.nptspersurf*i;
+                inds = off(i)+1:off(i+1);
                 wfunc{i} = array_to_surfacefun(W(inds),obj.domain.dom{i}, ...
                     obj.domain.surf{i});
             end

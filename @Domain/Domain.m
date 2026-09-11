@@ -71,9 +71,11 @@ classdef Domain
 
             if isnumeric(domparams)
                 obj.domparams = domparams;
-                % obj.nptspersurf = obj.domparams(1)^2*obj.domparams(2)...
-                % *obj.domparams(3);
-                obj.nptspersurf = obj.domparams(1)^2*length(obj.dom{1}.x);
+                obj.nptspersurf = zeros(1,obj.nsurfaces);
+                for i = 1:obj.nsurfaces
+                    obj.nptspersurf(i) = obj.domparams(1)^2 ...
+                        *length(obj.dom{i}.x);
+                end
             else
                 error(['Invalid call to TaylorState constructor. ' ...
                     'Second argument should be an array of three ' ...
@@ -114,6 +116,15 @@ classdef Domain
                 end
             end
            
+        end
+
+        function off = blockoffsets(obj)
+            %BLOCKOFFSETS Offsets into a vector stacking all surfaces
+            %   Returns a vector of length nsurfaces+1 such that the block
+            %   representing a function on surface i occupies indices 
+            %   off(i)+1:off(i+1) (necessary because the surfaces may have
+            %   different numbers of patches).
+            off = [0 cumsum(obj.nptspersurf(:).')];
         end
 
         function obj = compute_mH(obj)

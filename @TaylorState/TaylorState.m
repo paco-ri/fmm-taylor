@@ -172,10 +172,11 @@ classdef TaylorState
             Balpha = TaylorState.mtxBalpha(obj.domain,obj.zk, ...
                 obj.eps_taylor,obj.eps_laphelm,obj.domain.surf, ...
                 obj.quad_opts_taylor,obj.quad_opts_laphelm);
-            b = zeros(nsurf*obj.domain.nptspersurf,nsurf);
+            off = obj.domain.blockoffsets();
+            b = zeros(off(end),nsurf);
             for i = 1:nsurf
                 for j = 1:nsurf
-                    inds = obj.domain.nptspersurf*(i-1)+1:obj.domain.nptspersurf*i;
+                    inds = off(i)+1:off(i+1);
                     b(inds,j) = surfacefun_to_array(Balpha{i,j},...
                         obj.domain.dom{i},obj.domain.surf{i});
                 end
@@ -183,7 +184,7 @@ classdef TaylorState
             if time
                 t1 = tic;
             end
-            D = zeros(nsurf*obj.domain.nptspersurf,nsurf);
+            D = zeros(off(end),nsurf);
             totiter = 0;
             for i = 1:nsurf
                 [D(:,i),~,~,iter,resvec] = gmres(@(s) TaylorState.gmresA(s, ...
@@ -201,7 +202,7 @@ classdef TaylorState
 
             dfunc = cell(nsurf);
             for i = 1:nsurf
-                inds = obj.domain.nptspersurf*(i-1)+1:obj.domain.nptspersurf*i;
+                inds = off(i)+1:off(i+1);
                 for j = 1:nsurf
                     dfunc{i,j} = array_to_surfacefun(D(inds,j),obj.domain.dom{i},obj.domain.surf{i});
                 end
