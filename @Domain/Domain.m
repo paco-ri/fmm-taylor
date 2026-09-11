@@ -25,17 +25,27 @@ classdef Domain
         %   poloidal direction
         domparams
 
-        nptspersurf % number of points on each surface
-        vn % outward unit normal vector on surface 
-        mH % surface harmonic vector field on surface 
+        nptspersurf % number of points on each surface (vector, one per surface)
+        vn % outward unit normal vector on surface
+        mH % surface harmonic vector field on surface
         L % surfaceop for Laplace-Beltrami operator on surf
         aquad % A-cycle quadrature
         bquad % B-cycle quadrature
+
+        % Quadforest and patch-to-quadforest map for adaptively refined
+        % meshes, one cell entry per surface. Empty (or all-zero Morton
+        % codes) means the mesh is a uniform nu-by-nv grid.
+        qf
+        p2q
     end
 
     methods
-        function obj = Domain(domain,domparams)
+        function obj = Domain(domain,domparams,varargin)
             % Construct an instance of a Domain (see parameters above)
+            if isa(domain, 'Domain')
+                obj = domain;
+                return
+            end
             if isa(domain, 'surfacemesh')
                 obj.nsurfaces = 1;
                 obj.dom = {domain};
@@ -82,6 +92,34 @@ classdef Domain
                     'integers.'])
             end
 
+            % Optional quadforest / patch-to-quadforest map for adaptive
+            % meshes: Domain(domain,domparams,qf,p2q).
+            obj.qf = cell(1,obj.nsurfaces);
+            obj.p2q = cell(1,obj.nsurfaces);
+            if numel(varargin) >= 2 && ~isempty(varargin{1})
+                qf_in = varargin{1};
+                p2q_in = varargin{2};
+                if ~iscell(qf_in), qf_in = {qf_in}; end
+                if ~iscell(p2q_in), p2q_in = {p2q_in}; end
+                if length(qf_in) ~= obj.nsurfaces ...
+                        || length(p2q_in) ~= obj.nsurfaces
+                    error(['Invalid call to Domain constructor. There ' ...
+                        'should be as many quadforests and patch maps ' ...
+                        'as there are surfaces.'])
+                end
+                for i = 1:obj.nsurfaces
+                    if ~isempty(p2q_in{i}) ...
+                            && size(p2q_in{i},1) ~= length(obj.dom{i}.x)
+                        error(['Invalid call to Domain constructor. ' ...
+                            'p2q for surface %d has %d rows but the ' ...
+                            'mesh has %d patches.'], i, ...
+                            size(p2q_in{i},1), length(obj.dom{i}.x))
+                    end
+                end
+                obj.qf = qf_in;
+                obj.p2q = p2q_in;
+            end
+
             obj.L = cell(1,obj.nsurfaces);
             pdo = [];
             pdo.lap = 1;
@@ -93,22 +131,20 @@ classdef Domain
 
             obj = obj.compute_mH();
             
+            % Compute A- and B-cycle quadrature for uniform surface meshes
             obj.aquad = cell(1,obj.nsurfaces);
-            if obj.nsurfaces == 1
-                [x,xv,w] = Domain.acycquad(obj.dom{1},domparams);
-                obj.aquad{1} = [];
-                obj.aquad{1}.x = x;
-                obj.aquad{1}.xv = xv;
-                obj.aquad{1}.w = w;
-            else
-                obj.bquad = cell(1,2);
-                for i = 1:2
-                    [x,xv,w] = Domain.acycquad(domain{i},domparams);
-                    obj.aquad{i} = [];
-                    obj.aquad{i}.x = x;
-                    obj.aquad{i}.xv = xv;
-                    obj.aquad{i}.w = w;
-                    [x,xu,w] = Domain.bcycquad(domain{i},domparams);
+            obj.bquad = cell(1,obj.nsurfaces);
+            for i = 1:obj.nsurfaces
+                if obj.is_adaptive(i)
+                    continue
+                end
+                [x,xv,w] = Domain.acycquad(obj.dom{i},domparams);
+                obj.aquad{i} = [];
+                obj.aquad{i}.x = x;
+                obj.aquad{i}.xv = xv;
+                obj.aquad{i}.w = w;
+                if obj.nsurfaces > 1
+                    [x,xu,w] = Domain.bcycquad(obj.dom{i},domparams);
                     obj.bquad{i} = [];
                     obj.bquad{i}.x = x;
                     obj.bquad{i}.xu = xu;
@@ -116,6 +152,29 @@ classdef Domain
                 end
             end
            
+        end
+
+        function tf = is_adaptive(obj,varargin)
+            %IS_ADAPTIVE True if a surface carries a nontrivial quadforest
+            %   tf = obj.is_adaptive()  -> true if ANY surface is adaptive
+            %   tf = obj.is_adaptive(i) -> true if surface i is adaptive
+            %
+            %   A p2q whose Morton codes are all zero describes an
+            %   unrefined mesh.
+            if nargin > 1
+                inds = varargin{1};
+            else
+                inds = 1:obj.nsurfaces;
+            end
+            tf = false;
+            for i = inds
+                if ~isempty(obj.p2q) && numel(obj.p2q) >= i ...
+                        && ~isempty(obj.p2q{i}) ...
+                        && any(obj.p2q{i}(:,3) ~= 0)
+                    tf = true;
+                    return
+                end
+            end
         end
 
         function off = blockoffsets(obj)
