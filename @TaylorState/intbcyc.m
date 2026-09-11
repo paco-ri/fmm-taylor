@@ -2,7 +2,7 @@ function [integralb, quadpts, quadwts] = intbcyc(f, n, nu, nv, varargin)
 %INTACYC integrate a function along an B-cycle
 %   Detailed explanation goes here
 
-if (nargin > 4)
+if (nargin > 5)
     qf = varargin{1};
     p2q = varargin{2};
     adap_dom = true;

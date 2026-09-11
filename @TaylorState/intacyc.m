@@ -12,13 +12,22 @@ end
 
 dom = f.domain;
 
+% On an adaptive mesh the rows below are indexed by global patch number,
+% which runs up to length(dom); rows for patches that are not on the cycle
+% keep zero weights and so contribute nothing.
+if adap_dom
+    nalloc = n*length(dom);
+else
+    nalloc = n*nv;
+end
+
 % Initialize arrays for coordinates and values on the A-cycle
-xv = zeros(n*nv, 3); % xv on A-cycle (derivatives or field)
-x = zeros(n*nv, 3);  % x on A-cycle (coordinates)
-avals = zeros(n*nv, 3); % function values on A-cycle
+xv = zeros(nalloc, 3); % xv on A-cycle (derivatives or field)
+x = zeros(nalloc, 3);  % x on A-cycle (coordinates)
+avals = zeros(nalloc, 3); % function values on A-cycle
 
 % Get A-cycle quadrature weights
-awts = zeros(n*nv, 1);
+awts = zeros(nalloc, 1);
 
 acyc_p2q = nan(length(dom), 3);
 if adap_dom
@@ -36,7 +45,8 @@ if adap_dom
         for level = 1:length(morton)
             for code = morton{level}
                 [x_code, ~] = qf.deinterleave(code, level);
-                if x_code == 2^(level-1)
+                % take the children on the u = -1 edge of the base patch
+                if x_code == 0
                     acyc_p2q(k, :) = [idx, level, code];
                     k = k + 1;
                 end
