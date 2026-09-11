@@ -574,6 +574,8 @@ classdef TaylorState
         m0 = debyem0(sigma,lambda,L,vn)
         [integrala, quadpts, quadwts] = intacyc(f,n,nu,nv,varargin)
         [integralb, quadpts, quadwts] = intbcyc(f,n,nu,nv,varargin)
+        [integrala, quadpts, quadwts] = intacyc_dom(domain,k,f)
+        [integralb, quadpts, quadwts] = intbcyc_dom(domain,k,f)
         [u, v, w, curlfree, divfree] = hodge_inward(f)
         [qnodes, qweights] = toroidalfluxquadaxi(nr,nt,ro,ao,ri,ai)
         [qnodes, qweights] = poloidalfluxquadaxi(nr,np,ro,ao,ri,ai)

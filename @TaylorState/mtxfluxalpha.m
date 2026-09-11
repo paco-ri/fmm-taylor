@@ -119,7 +119,7 @@ if isa(dom,'surfacemesh')
         S0nx = [S0nx1 S0nx2 S0nx3];
         S0nx = array_to_surfacefun(S0nx,dom,S);
     
-        fluxalpha = 1i*TaylorState.intacyc(S0nx,n,nu,nv);
+        fluxalpha = 1i*TaylorState.intacyc_dom(domain,1,S0nx);
     else
         % Sk[mH]
         SkmH1 = helm3d.dirichlet.eval(S,mHvals(1,:),targinfo,epslh,zk, ...
@@ -142,7 +142,7 @@ if isa(dom,'surfacemesh')
     
         % A/B-cycle integral
         integrand = 1i.*( SkmH + (curlSkmH - curlS0mH)./zk );
-        fluxalpha = TaylorState.intacyc(integrand,n,nu,nv);
+        fluxalpha = TaylorState.intacyc_dom(domain,1,integrand);
     end
 
 % toroidal shell case
@@ -250,9 +250,9 @@ else
             for j = 1:2
                 for k = 1:2
                     fluxalpha(1,i) = fluxalpha(1,i) ...
-                        + (-1)^(k-1)*1i.*TaylorState.intacyc(S0nx{i,j,k},n,nu,nv);
+                        + (-1)^(k-1)*1i.*TaylorState.intacyc_dom(domain,k,S0nx{i,j,k});
                     fluxalpha(2,i) = fluxalpha(2,i) ...
-                        + (-1)^(k-1)*1i.*TaylorState.intbcyc(S0nx{i,j,k},n,nu,nv);
+                        + (-1)^(k-1)*1i.*TaylorState.intbcyc_dom(domain,k,S0nx{i,j,k});
                 end
             end
         end
@@ -284,11 +284,11 @@ else
         for i = 1:2
             for j = 1:2
                 fluxalpha(1,i) = fluxalpha(1,i) ...
-                    + (-1)^(j).*TaylorState.intacyc( ...
-                    1i.*(SkmH{i,j} + (curlSkmH{i,j}-curlS0mH{i,j})./zk), n, nu, nv);
+                    + (-1)^(j).*TaylorState.intacyc_dom(domain,j, ...
+                    1i.*(SkmH{i,j} + (curlSkmH{i,j}-curlS0mH{i,j})./zk));
                 fluxalpha(2,i) = fluxalpha(2,i) ...
-                    + (-1)^(j).*TaylorState.intbcyc( ...
-                    1i.*(SkmH{i,j} + (curlSkmH{i,j}-curlS0mH{i,j})./zk), n, nu, nv);
+                    + (-1)^(j).*TaylorState.intbcyc_dom(domain,j, ...
+                    1i.*(SkmH{i,j} + (curlSkmH{i,j}-curlS0mH{i,j})./zk));
             end
         end
     end    
