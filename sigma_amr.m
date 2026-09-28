@@ -46,6 +46,13 @@ function out = sigma_amr(dom0, domparams, zk, flux, tol, rmax, varargin)
 %                             When given, RefTaylorState is used and the
 %                             true error against B0 is reported per level.
 %     vtkbase   ''            if nonempty, write <base>_lev<k>_sigma.vtk
+%     savebase  [false]       false, or a path prefix. When a prefix is
+%                             given, B is evaluated on the surface at every
+%                             level and saved, with the mesh nodes and the
+%                             patch depths, to <base>_lev<k>.mat (one
+%                             surface) or <base>_lev<k>_surf<s>.mat (two),
+%                             in the layout examples/make_amr_vtk.py reads.
+%                             Costs one extra surface_B per level.
 %     verbose   [true]        print progress
 %
 %   Arguments DOM0 (a surfacemesh or a cell of one or two), DOMPARAMS, ZK,
@@ -78,6 +85,7 @@ theta     = getopt(opts, 'theta', 0.5);
 p2q0      = getopt(opts, 'p2q0', []);
 refstate  = getopt(opts, 'refstate', []);
 vtkbase   = getopt(opts, 'vtkbase', '');
+savebase  = getopt(opts, 'savebase', false);
 verbose   = getopt(opts, 'verbose', true);
 
 if ~isposint(rmax)
@@ -93,6 +101,12 @@ end
 if ~ismember(marking, {'threshold','dorfler'})
     error('SIGMA_AMR:marking', ...
         'opts.marking must be ''threshold'' or ''dorfler''.');
+end
+
+if ~(isequal(savebase, false) || ...
+        ((ischar(savebase) || isstring(savebase)) && strlength(savebase) > 0))
+    error('SIGMA_AMR:savebase', ...
+        'opts.savebase must be false or a nonempty path prefix.');
 end
 
 if ~isempty(refstate) && ~(isfield(refstate, 'B0fun') && ...
@@ -176,6 +190,9 @@ history(1) = record(0, domk, tsk, [], [], tk, refstate, sigmak);
 if ~isempty(vtkbase)
     writevtk(vtkbase, 0, domk, sigmak);
 end
+if ~isequal(savebase, false)
+    savelevel(savebase, 0, domk, tsk, p2qk);
+end
 
 % First pass refines everything, so that every patch gets compared once.
 marked = cell(1, ns);
@@ -257,6 +274,9 @@ for lev = 1:maxlevels
         refstate, sigmaf); %#ok<AGROW>
     if ~isempty(vtkbase)
         writevtk(vtkbase, lev, domf, sigmaf);
+    end
+    if ~isequal(savebase, false)
+        savelevel(savebase, lev, domf, tsf, p2qf);
     end
     if verbose
         if isnan(history(end).err_vs_B0)
@@ -398,5 +418,39 @@ for s = 1:numel(dom)
     end
     surfacemesh_to_vtk(dom{s}, fname, real(sigma{s}), ...
         'Title', sprintf('sigma (real part), level %d', lev));
+end
+end
+
+function savelevel(base, lev, dom, ts, p2q)
+%SAVELEVEL Save B, the mesh nodes and the patch depths for make_amr_vtk.py.
+B = ts.surface_B();
+for s = 1:numel(dom)
+    if isscalar(dom)
+        fname = sprintf('%s_lev%d.mat', base, lev);
+    else
+        fname = sprintf('%s_lev%d_surf%d.mat', base, lev, s);
+    end
+    d = dom{s};
+    n = size(d.x{1}, 1);
+    npatch = length(d.x);
+    xx = zeros(n, n, npatch); yy = xx; zz = xx;
+    for i = 1:npatch
+        xx(:,:,i) = d.x{i}; yy(:,:,i) = d.y{i}; zz(:,:,i) = d.z{i};
+    end
+    % surfacefun overloads subsref, so cat(3, f.vals{:}) would silently
+    % return only the first patch. Index one patch at a time.
+    Bv = zeros(n, n, npatch, 3);
+    for c = 1:3
+        comp = B{s}.components{c};
+        for i = 1:npatch
+            Bv(:,:,i,c) = comp.vals{i};
+        end
+    end
+    Bre = real(Bv);
+    Bim = imag(Bv);
+    depth = double(p2q{s}(:, 2));
+    level = lev;
+    save(fname, 'xx', 'yy', 'zz', 'Bre', 'Bim', 'depth', 'n', 'npatch', ...
+        'level', '-v7.3');
 end
 end
