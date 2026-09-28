@@ -69,7 +69,7 @@ nv = 4*m;
 dom = my_square_torus(n, nu, nv);
 domparams = [n, nu, nv];
 
-B0 = reftaylorsurffun(dom, n, nu, nv, ntheta, rmin, rmaj, jmag, zk);
+B0 = reftaylorsurffun(dom, n, ntheta, rmin, rmaj, jmag, zk);
 
 [qnodes, qweights] = square_flux_quad(nt);
 flux = 0;

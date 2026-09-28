@@ -40,8 +40,8 @@ for n = ns
         % --- Compute B0 ---
         ntheta = 1e3;
         jmag = 1.0;
-        B0o = reftaylorsurffun(domo,n,nu,nv,ntheta,rref,rref,jmag,zk);
-        B0i = reftaylorsurffun(domi,n,nu,nv,ntheta,rref,rref,jmag,zk);
+        B0o = reftaylorsurffun(domo,n,ntheta,rref,rref,jmag,zk);
+        B0i = reftaylorsurffun(domi,n,ntheta,rref,rref,jmag,zk);
         
         
         flux = zeros(1,2);

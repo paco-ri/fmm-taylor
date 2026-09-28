@@ -1,7 +1,7 @@
 %% Reference field B0 tangency check on my_square_torus
 %
 % conv_square_torus.m builds the reference field B0 via
-% reftaylorsurffun(dom,n,nu,nv,ntheta,rmin,rmaj,jmag,zk), with rmin=rmaj=1.0
+% reftaylorsurffun(dom,n,ntheta,rmin,rmaj,jmag,zk), with rmin=rmaj=1.0
 % -- the field of a planar current ring of radius rmin centered a distance
 % rmaj away. For zk=0, B0 is curl-free/div-free everywhere off the ring, and
 % is the *exact* harmonic field for any torus that happens to be one of its
@@ -35,7 +35,7 @@ rmin = 1.0;
 rmaj = 1.0;
 dom = my_square_torus(n, nu, nv);
 domain = Domain(dom, [n, nu, nv]);
-B0 = reftaylorsurffun(dom, n, nu, nv, ntheta, rmin, rmaj, jmag, zk);
+B0 = reftaylorsurffun(dom, n, ntheta, rmin, rmaj, jmag, zk);
 
 B0dotvn = B0.components{1}.*domain.vn{1}.components{1} ...
         + B0.components{2}.*domain.vn{1}.components{2} ...
@@ -58,7 +58,7 @@ circ_nv = 8;
 circdom = prepare_torus(n, circ_nu, circ_nv, 12, 100);
 circdom = circdom{1}; % prepare_torus always returns a cell of surfacemeshes
 circdomain = Domain(circdom, [n, circ_nu, circ_nv]);
-B0c = reftaylorsurffun(circdom, n, circ_nu, circ_nv, ntheta, circ_rmin, circ_rmaj, jmag, zk);
+B0c = reftaylorsurffun(circdom, n, ntheta, circ_rmin, circ_rmaj, jmag, zk);
 
 B0cdotvn = B0c.components{1}.*circdomain.vn{1}.components{1} ...
          + B0c.components{2}.*circdomain.vn{1}.components{2} ...

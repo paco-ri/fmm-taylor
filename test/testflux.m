@@ -17,7 +17,7 @@ if docirctorus
     rmin = 3.0; % radius of current ring
     ntheta = 1e2;
     jmag = 1.0;
-    B0 = reftaylorsurffun(dom,n,nu,nv,ntheta,rmin,rmaj,jmag,lambda);
+    B0 = reftaylorsurffun(dom,n,ntheta,rmin,rmaj,jmag,lambda);
     
     % integrate on a disc
     nr = 4*6; % number of disc pts in radial dir
@@ -56,7 +56,7 @@ end
 % rmin = 2.0; % radius of current ring
 % ntheta = 1e2;
 % jmag = 1.0;
-% B0 = reftaylorsurffun(dom,n,nu,nv,ntheta,rmin,rmaj,jmag,lambda);
+% B0 = reftaylorsurffun(dom,n,ntheta,rmin,rmaj,jmag,lambda);
 % 
 % % integrate on a disc
 % nr = 6; % number of disc pts in radial dir

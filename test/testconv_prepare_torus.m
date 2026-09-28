@@ -49,7 +49,7 @@ for i_n = 1:numel(ns)
         qnodes = qnodes{1};
         qweights = qweights{1};
 
-        B0 = reftaylorsurffun(dom, n, nu, nv, ntheta, rmin, rmaj, jmag, zk);
+        B0 = reftaylorsurffun(dom, n, ntheta, rmin, rmaj, jmag, zk);
 
         flux = 0;
         for j = 1:nr*nt

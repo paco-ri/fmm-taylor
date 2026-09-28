@@ -53,8 +53,8 @@ for n = ns
         rmin = 2.0;
         rmaj = 2.0;
         jmag = 1.0;
-        B0o = reftaylorsurffun(domo,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
-        B0i = reftaylorsurffun(domi,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
+        B0o = reftaylorsurffun(domo,n,ntheta,rmin,rmaj,jmag,zk);
+        B0i = reftaylorsurffun(domi,n,ntheta,rmin,rmaj,jmag,zk);
         
         if axisym
             torflux = 0;

@@ -23,7 +23,7 @@ for n = ns
         jmag = 1.0;
         rmin = 1.0;
         rmaj = 1.0;
-        B0 = reftaylorsurffun(dom,n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
+        B0 = reftaylorsurffun(dom,n,ntheta,rmin,rmaj,jmag,zk);
 
         % --- Compute XS quad. and flux ---
         nt = 12;

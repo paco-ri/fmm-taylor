@@ -33,8 +33,8 @@ for n = ns
     rmin = 2.0;
     rmaj = 2.0;
     jmag = 1.0;
-    B0o = reftaylorsurffun(dom{1},n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
-    B0i = reftaylorsurffun(dom{2},n,nu,nv,ntheta,rmin,rmaj,jmag,zk);
+    B0o = reftaylorsurffun(dom{1},n,ntheta,rmin,rmaj,jmag,zk);
+    B0i = reftaylorsurffun(dom{2},n,ntheta,rmin,rmaj,jmag,zk);
         
     flux = zeros(1,2);
     for i = 1:nr*nt
