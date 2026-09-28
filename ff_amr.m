@@ -1,26 +1,19 @@
 function out = ff_amr(dom0, domparams, zk, flux, tol, rmax, varargin)
-%FF_AMR Iteratively refine a surface mesh until the geometry is resolved.
-%   OUT = FF_AMR(DOM0, DOMPARAMS, ZK, FLUX, TOL, RMAX) solves the Taylor
-%   state problem on a sequence of meshes, using the fundamental-form error
-%   of SURFACEMESH/FF_INDICATOR as the per-patch refinement indicator: a
-%   patch is refined when interpolating its first fundamental form onto its
-%   four children differs from recomputing the form there.
+%FF_AMR Solve the Taylor state on each mesh of a fundamental-form refinement.
+%   OUT = FF_AMR(DOM0, DOMPARAMS, ZK, FLUX, TOL, RMAX) refines each surface
+%   of DOM0 with SURFACEMESH/ADAP_REF, which marks patches by the
+%   fundamental-form error of SURFACEMESH/FF_INDICATOR, and solves the
+%   Taylor state problem on every intermediate mesh. The refinement uses
+%   only the geometry; the solves are for reporting.
 %
-%   Unlike SIGMA_AMR the indicator needs no previous-level solve, so it is
-%   available on the starting mesh and every level is marked from its own
-%   geometry. The solve at each level is for reporting only.
-%
-%   RMAX is the maximum quadtree depth. It is required, and there is no
-%   sensible default: it is the compute budget for the whole run, since a
-%   mesh may grow by up to 4^RMAX patches, and it also sizes the quadforest
-%   handed to TAYLORSTATE.INTACYC / INTBCYC.
+%   RMAX is the maximum quadtree depth and the number of refinement passes.
+%   It is required, and there is no sensible default: it is the compute
+%   budget for the whole run, since a mesh may grow by up to 4^RMAX
+%   patches, and it also sizes the quadforest handed to
+%   TAYLORSTATE.INTACYC / INTBCYC.
 %
 %   OUT = FF_AMR(..., OPTS) accepts a struct with fields:
 %
-%     maxlevels [RMAX]        maximum number of solve-estimate-mark-refine
-%                             cycles. Distinct from RMAX: a patch left
-%                             unmarked for several levels can still be
-%                             eligible to refine when the budget runs out.
 %     marking   ['threshold'] 'threshold' or 'dorfler'
 %     amr_tol   [1e-3]        threshold on the per-patch indicator. Unlike
 %                             SIGMA_AMR's EPS_SIGMA this is an absolute
@@ -29,7 +22,6 @@ function out = ff_amr(dom0, domparams, zk, flux, tol, rmax, varargin)
 %                             choosing it.
 %     theta     [0.5]         Dorfler bulk-marking fraction
 %     mode      [1]           1 or 2, selecting the fundamental form
-%     p2q0      []            starting leaf set (cell, one per surface)
 %     refstate  []            as for SIGMA_AMR: a struct with xs_nodes,
 %                             xs_weights and B0fun. When given,
 %                             RefTaylorState is used and the true error
@@ -44,17 +36,19 @@ function out = ff_amr(dom0, domparams, zk, flux, tol, rmax, varargin)
 %                             Costs one extra surface_B per level.
 %     verbose   [true]        print progress
 %
+%   Marking is per surface.
+%
 %   OUT is a struct with the final DOM, QF, P2Q, SIGMA and ALPHA, plus a
 %   HISTORY struct array carrying, for each level, the patch counts, the
 %   indicator statistics, the number of patches marked, and the timings.
 %   MAX_ETA and L2_ETA hold the fundamental-form error, not a sigma
-%   difference. OUT.REASON says why the loop stopped:
+%   difference. OUT.REASON says why refinement stopped:
 %
 %     'resolved'  the indicator marked nothing
 %     'depth'     everything still marked is already at depth RMAX
-%     'maxlevels' the cycle budget ran out with patches still eligible
+%     'maxlevels' RMAX passes ran with patches still eligible
 %
-%   See also SIGMA_AMR, SURFACEMESH/FF_INDICATOR, SURFACEMESH/REFINE_LEAVES.
+%   See also SIGMA_AMR, SURFACEMESH/ADAP_REF, SURFACEMESH/FF_INDICATOR.
 
 % -- options ---------------------------------------------------------------
 opts = [];
@@ -64,35 +58,14 @@ if isstruct(opts) && isfield(opts, 'eps_sigma')
         ['FF_AMR thresholds an absolute fundamental-form error, not a ' ...
          'relative sigma indicator. Use opts.amr_tol, not opts.eps_sigma.']);
 end
-maxlevels = getopt(opts, 'maxlevels', []);
 marking   = getopt(opts, 'marking', 'threshold');
 amr_tol   = getopt(opts, 'amr_tol', 1e-3);
 theta     = getopt(opts, 'theta', 0.5);
 mode      = getopt(opts, 'mode', 1);
-p2q0      = getopt(opts, 'p2q0', []);
 refstate  = getopt(opts, 'refstate', []);
 vtkbase   = getopt(opts, 'vtkbase', '');
 savebase  = getopt(opts, 'savebase', false);
 verbose   = getopt(opts, 'verbose', true);
-
-if ~isposint(rmax)
-    error('FF_AMR:rmax', 'RMAX must be a positive integer scalar.');
-end
-if isempty(maxlevels)
-    maxlevels = rmax;
-elseif ~isposint(maxlevels)
-    error('FF_AMR:maxlevels', ...
-        'opts.maxlevels must be a positive integer scalar.');
-end
-
-if ~ismember(marking, {'threshold','dorfler'})
-    error('FF_AMR:marking', ...
-        'opts.marking must be ''threshold'' or ''dorfler''.');
-end
-
-if ~ismember(mode, [1 2])
-    error('FF_AMR:mode', 'opts.mode must be 1 or 2.');
-end
 
 if ~(isequal(savebase, false) || ...
         ((ischar(savebase) || isstring(savebase)) && strlength(savebase) > 0))
@@ -116,148 +89,64 @@ else
 end
 ns = numel(base);
 
-% -- starting leaf sets ----------------------------------------------------
-p2q = cell(1, ns);
+% -- refine -----------------------------------------------------------------
+hist = cell(1, ns);
 for s = 1:ns
-    if isempty(p2q0)
-        np = length(base{s}.x);
-        p2q{s} = [(1:np).', zeros(np, 2)];
-    else
-        p2q{s} = p2q0{s};
-        if max(p2q{s}(:, 2)) > rmax
-            error('FF_AMR:rmax', ...
-                ['opts.p2q0 for surface %d reaches depth %d, deeper than ' ...
-                 'RMAX = %d.'], s, max(p2q{s}(:, 2)), rmax);
-        end
-    end
+    [~, ~, ~, hist{s}] = surfacemesh.adap_ref(base{s}, amr_tol, rmax, ...
+        mode, marking=marking, theta=theta);
 end
+nlev = max(cellfun(@numel, hist));
 
-% -- level 0 ----------------------------------------------------------------
-domk = cell(1, ns); qfk = cell(1, ns); p2qk = cell(1, ns);
-for s = 1:ns
-    [domk{s}, qfk{s}, p2qk{s}] = surfacemesh.refine_leaves( ...
-        base{s}, p2q{s}, [], rmax);
-end
-if verbose
-    fprintf('[ff_amr] level 0: %s patches\n', patchstr(domk));
-end
-B00 = getopt(refstate, 'B0', []);
-if ~isempty(B00)
-    if numel(B00) ~= ns
-        error('FF_AMR:refstate', ...
-            'opts.refstate.B0 has %d entries but there are %d surfaces.', ...
-            numel(B00), ns);
-    end
-    for s = 1:ns
-        npB = numel(B00{s}.components{1}.vals);
-        if npB ~= length(domk{s}.x)
-            error('FF_AMR:refstate', ...
-                ['opts.refstate.B0{%d} covers %d patches but the starting ' ...
-                 'mesh has %d. Omit B0 to have it built by B0fun.'], ...
-                s, npB, length(domk{s}.x));
-        end
-    end
-end
-
-t0 = tic;
-[tsk, sigmak] = solve_level(domk, qfk, p2qk, domparams, zk, flux, tol, ...
-    refstate, B00);
-tk = toc(t0);
-
-% The indicator is geometric, so it is available on this mesh already.
-etak = get_eta(domk, p2qk, mode);
-marked = mark(etak, marking, amr_tol, theta);
-
+% -- solve on every level ---------------------------------------------------
 history = struct('level', {}, 'npatches', {}, 'npts', {}, 'nmarked', {}, ...
     'max_eta', {}, 'l2_eta', {}, 'alpha', {}, 'time_s', {}, 'err_vs_B0', {});
-history(1) = record(0, domk, tsk, etak, marked, tk, refstate);
-
-if ~isempty(vtkbase)
-    writevtk(vtkbase, 0, domk, sigmak);
-end
-if ~isequal(savebase, false)
-    savelevel(savebase, 0, domk, tsk, p2qk);
-end
-if verbose
-    fprintf('    max eta = %.3e, marked %d for next level%s\n', ...
-        history(end).max_eta, history(end).nmarked, errstr(history(end)));
-end
-
-% -- refinement loop --------------------------------------------------------
-reason = 'maxlevels';
-if sum(cellfun(@numel, marked)) == 0
-    reason = 'resolved';
-    if verbose
-        fprintf('[ff_amr] geometry resolved everywhere; stopping.\n');
-    end
-end
-
-if ~strcmp(reason, 'resolved')
-for lev = 1:maxlevels
-    [marked, nmark] = eligible(marked, p2qk, rmax);
-    if nmark == 0
-        reason = 'depth';
-        if verbose
-            fprintf('[ff_amr] nothing left to refine; stopping.\n');
-        end
-        break
-    end
-
-    domf = cell(1, ns); qff = cell(1, ns); p2qf = cell(1, ns);
+domk = cell(1, ns); qfk = cell(1, ns); p2qk = cell(1, ns);
+eta = cell(1, ns); marked = cell(1, ns);
+for lev = 0:nlev-1
+    % A surface whose refinement stopped early keeps its last mesh.
     for s = 1:ns
-        [domf{s}, qff{s}, p2qf{s}] = surfacemesh.refine_leaves( ...
-            base{s}, p2qk{s}, marked{s}, rmax);
+        h = hist{s}(min(lev+1, end));
+        [domk{s}, qfk{s}, p2qk{s}] = surfacemesh.refine_leaves( ...
+            base{s}, h.p2q, [], rmax);
+        eta{s} = h.eta;
+        marked{s} = h.marked;
     end
     if verbose
-        fprintf('[ff_amr] level %d: %s patches (marked %d)\n', ...
-            lev, patchstr(domf), nmark);
+        fprintf('[ff_amr] level %d: %s patches\n', lev, patchstr(domk));
     end
 
     t0 = tic;
-    [tsf, sigmaf] = solve_level(domf, qff, p2qf, domparams, zk, flux, ...
-        tol, refstate, []);
-    tf = toc(t0);
+    [tsk, sigmak] = solve_level(domk, qfk, p2qk, domparams, zk, flux, ...
+        tol, refstate);
+    tk = toc(t0);
 
-    etaf = get_eta(domf, p2qf, mode);
-    newmarked = mark(etaf, marking, amr_tol, theta);
-
-    history(end+1) = record(lev, domf, tsf, etaf, newmarked, tf, ...
+    history(end+1) = record(lev, domk, tsk, eta, marked, tk, ...
         refstate); %#ok<AGROW>
     if ~isempty(vtkbase)
-        writevtk(vtkbase, lev, domf, sigmaf);
+        writevtk(vtkbase, lev, domk, sigmak);
     end
     if ~isequal(savebase, false)
-        savelevel(savebase, lev, domf, tsf, p2qf);
+        savelevel(savebase, lev, domk, tsk, p2qk);
     end
     if verbose
         fprintf('    max eta = %.3e, marked %d for next level%s\n', ...
             history(end).max_eta, history(end).nmarked, errstr(history(end)));
     end
-
-    domk = domf; qfk = qff; p2qk = p2qf; sigmak = sigmaf; tsk = tsf;
-    marked = newmarked;
-
-    if sum(cellfun(@numel, marked)) == 0
-        reason = 'resolved';
-        if verbose
-            fprintf('[ff_amr] geometry resolved everywhere; stopping.\n');
-        end
-        break
-    end
-end
 end
 
-if strcmp(reason, 'maxlevels')
-    [~, nleft] = eligible(marked, p2qk, rmax);
-    if nleft == 0
-        reason = 'depth';
-        if verbose
-            fprintf('[ff_amr] nothing left to refine; stopping.\n');
-        end
-    elseif verbose
-        fprintf(['[ff_amr] reached maxlevels = %d with %d patches ' ...
-            'still eligible to refine; stopping.\n'], maxlevels, nleft);
-    end
+nleft = 0;
+for s = 1:ns
+    nleft = nleft + sum(p2qk{s}(marked{s}, 2) < rmax);
+end
+if history(end).nmarked == 0
+    reason = 'resolved';
+elseif nleft == 0
+    reason = 'depth';
+else
+    reason = 'maxlevels';
+end
+if verbose
+    fprintf('[ff_amr] stopped: %s\n', reason);
 end
 
 out = [];
@@ -269,52 +158,12 @@ out.alpha = tsk.alpha;
 out.ts = tsk;
 out.history = history;
 out.reason = reason;
-out.opts = struct('rmax', rmax, 'maxlevels', maxlevels, 'marking', marking, ...
-    'amr_tol', amr_tol, 'theta', theta, 'mode', mode);
+out.opts = struct('rmax', rmax, 'marking', marking, 'amr_tol', amr_tol, ...
+    'theta', theta, 'mode', mode);
 
 end
 
 % ==========================================================================
-
-function tf = isposint(x)
-tf = isnumeric(x) && isscalar(x) && isreal(x) && x >= 1 && x == round(x);
-end
-
-function eta = get_eta(dom, p2q, mode)
-eta = cell(1, numel(dom));
-for s = 1:numel(dom)
-    eta{s} = surfacemesh.ff_indicator(dom{s}, p2q{s}, mode);
-end
-end
-
-function marked = mark(eta, marking, amr_tol, theta)
-marked = cell(1, numel(eta));
-for s = 1:numel(eta)
-    switch marking
-        case 'threshold'
-            idx = find(eta{s} > amr_tol);
-        case 'dorfler'
-            [se, ord] = sort(eta{s}, 'descend');
-            c = cumsum(se.^2);
-            if c(end) == 0
-                idx = [];
-            else
-                k = find(c >= theta*c(end), 1, 'first');
-                idx = ord(1:k);
-            end
-    end
-    marked{s} = idx(:);
-end
-end
-
-function [marked, n] = eligible(marked, p2q, rmax)
-%ELIGIBLE Drop marked leaves that are already at the maximum depth.
-n = 0;
-for s = 1:numel(marked)
-    marked{s} = marked{s}(p2q{s}(marked{s}, 2) < rmax);
-    n = n + numel(marked{s});
-end
-end
 
 function v = getopt(opts, name, default)
 if isstruct(opts) && isfield(opts, name) && ~isempty(opts.(name))
@@ -325,19 +174,16 @@ end
 end
 
 function [ts, sigma] = solve_level(dom, qf, p2q, domparams, zk, flux, ...
-    tol, refstate, B0)
+    tol, refstate)
 %SOLVE_LEVEL Build a Domain carrying the quadforest and solve on it.
-%   B0 may be empty, in which case it is evaluated on DOM through B0FUN.
 D = Domain(dom, domparams, qf, p2q);
 if isempty(refstate)
     ts = TaylorState(D, domparams, zk, flux, tol);
 else
-    if isempty(B0)
-        ns = numel(dom);
-        B0 = cell(1, ns);
-        for s = 1:ns
-            B0{s} = refstate.B0fun(dom{s}, s);
-        end
+    ns = numel(dom);
+    B0 = cell(1, ns);
+    for s = 1:ns
+        B0{s} = refstate.B0fun(dom{s}, s);
     end
     ts = RefTaylorState(D, domparams, zk, flux, B0, ...
         refstate.xs_nodes, refstate.xs_weights, tol);
