@@ -6,7 +6,7 @@ function convoop_sweep(outcsv)
 %     - tolerance is an explicit per-order list, not a *1e-2 ladder: n = 5 runs
 %       at 1e-6 only, n = 7 and n = 9 at both 1e-6 and 1e-8
 %     - ntheta = 200 and nt = 50 (convoop.m still has 1e3 and 100)
-%     - per-run time, GMRES iteration counts and |sigma|_inf are recorded
+%     - per-stage timings, GMRES iteration counts and |sigma|_inf are recorded
 %
 %   Setup: prepare_torus, zk = 0, nu = 3*nv, nr = 12, ntheta = 200,
 %   rmin = rmaj = 2, jmag = 1. Error is relative L^inf of (B - B0) over the
@@ -16,9 +16,19 @@ function convoop_sweep(outcsv)
 %   largest configuration). Rows are appended as they finish, so the run can be
 %   interrupted without losing completed work.
 %
-%   time_s is the solve plus surface_B time, excluding geometry and B0 setup.
-%   The original CSV's definition was not recorded; the full breakdown is
-%   printed per run if the two need reconciling.
+%   TIMING COLUMNS. time_s keeps its original meaning (solve + surface_B); the
+%   original CSV's definition was not recorded, so the breakdown is carried
+%   alongside it. The six solve stages are chained inside RefTaylorState.solve,
+%   so t_solve_sum should match the wall time of the solve -- a NaN there means
+%   a stage line was missed in the log.
+%     t_quad_lh, t_quad_tay          surface quadrature corrections
+%     t_quad_xs_lh, t_quad_xs_tay    cross-section ditto (small, ~nr*nt points)
+%     t_gmres_d, t_gmres_w           the two GMRES solves, pairing with iterD/iterW
+%     t_sigma_alpha                  enclosing stage; minus the two GMRES times
+%                                    it gives the direct (A21*D + A22)^-1 cost
+%     t_m                            compute m (mH only at zk = 0)
+%     t_solve_sum                    sum of the six stages
+%     t_geom, t_b0, t_flux, t_surfb  outside the solve
 
 if nargin < 1
     outcsv = fullfile(fileparts(mfilename('fullpath')), 'convdata_onesurface_rerun.csv');
@@ -37,8 +47,17 @@ nvs    = [6 8 10 12 16];
 runs = { 1e-6, [5 7 9], [1 0 0]
          1e-8, [7 9],   [1 1]   };
 
+stagepats = {'get Laplace/Helmholtz quad\. corr\.'
+             'get \+taylor routine quad\. corr\.'
+             'get XS Laplace/Helmholtz quad\. corr\.'
+             'get XS \+taylor routine quad\. corr\.'
+             'compute sigma and alpha'
+             'compute m'};
+
 fid = fopen(outcsv, 'w');
-fprintf(fid, 'n,p,nv,nu,npts,h,dof,tol,err,sigma_inf,iterD,iterW,time_s,on_plot\n');
+fprintf(fid, ['n,p,nv,nu,npts,h,dof,tol,err,sigma_inf,iterD,iterW,time_s,on_plot,' ...
+    't_quad_lh,t_quad_tay,t_quad_xs_lh,t_quad_xs_tay,t_gmres_d,t_gmres_w,' ...
+    't_sigma_alpha,t_m,t_solve_sum,t_geom,t_b0,t_flux,t_surfb\n']);
 fclose(fid);
 fprintf('=== convoop_sweep start %s\n  -> %s\n', datestr(now), outcsv);
 
@@ -59,42 +78,62 @@ for k = 1:size(runs,1)
 
             t0 = tic;
             B0 = reftaylorsurffun(dom, n, ntheta, rmin, rmaj, jmag, zk);
+            t_b0 = toc(t0);
+
+            t0 = tic;
             flux = 0;
             for i = 1:nr*nt
                 B0eval = reftaylor(ntheta, rmin, rmaj, jmag, zk, qnodes(:,i));
                 flux = flux + B0eval(2)*qweights(i);
             end
-            t_ref = toc(t0);
+            t_flux = toc(t0);
 
             ts = RefTaylorState({dom}, domparams, zk, flux, {B0}, ...
                 {qnodes}, {qweights}, tol);
 
-            % solve(true) prints the GMRES iteration counts but does not store
-            % them, so capture stdout and read them back out.
+            % solve(true) prints its stage timings and GMRES iteration counts
+            % but does not store them, so capture stdout and read them back out.
             t0 = tic;
             solvelog = evalc('ts = ts.solve(true);');
-            B = ts.surface_B();
             t_solve = toc(t0);
+            t0 = tic;
+            B = ts.surface_B();
+            t_surfb = toc(t0);
             fprintf('%s', solvelog);
 
-            iterD = regexp(solvelog, 'A11\*D = A12.*?/\s*(\d+)\s*iter', 'tokens', 'once');
-            iterW = regexp(solvelog, 'A11\*W = A12.*?/\s*(\d+)\s*iter', 'tokens', 'once');
-            iterD = str2double([iterD{:}]);
-            iterW = str2double([iterW{:}]);
+            tstage = nan(1,6);
+            for ip = 1:6
+                tok = regexp(solvelog, ['^' stagepats{ip} ': *([\d.eE+-]+) s'], ...
+                    'tokens', 'once', 'lineanchors');
+                if ~isempty(tok); tstage(ip) = str2double(tok{1}); end
+            end
+
+            gd = regexp(solvelog, 'A11\*D = A12[^:]*: *([\d.eE+-]+) s / *(\d+) iter', ...
+                'tokens', 'once');
+            gw = regexp(solvelog, 'A11\*W = A12[^:]*: *([\d.eE+-]+) s / *(\d+) iter', ...
+                'tokens', 'once');
+            if isempty(gd); gd = {'NaN','NaN'}; end
+            if isempty(gw); gw = {'NaN','NaN'}; end
+            t_gmres_d = str2double(gd{1}); iterD = str2double(gd{2});
+            t_gmres_w = str2double(gw{1}); iterW = str2double(gw{2});
 
             err = vecinfnorm(B0 - B{1})/vecinfnorm(B0);
             npts = nu*nv*n*n;
             h = 1/sqrt(nu*nv);
 
             fprintf(['n=%d nv=%d tol=%g  err=%.6e  iter=%d/%d\n' ...
-                     '  geom %.1f s + ref %.1f s + solve %.1f s = %.1f s\n'], ...
-                n, nv, tol, err, iterD, iterW, t_geom, t_ref, t_solve, ...
-                t_geom+t_ref+t_solve);
+                     '  geom %.1f + B0 %.1f + flux %.1f + solve %.1f ' ...
+                     '+ surfB %.1f = %.1f s  (stages sum %.1f s)\n'], ...
+                n, nv, tol, err, iterD, iterW, t_geom, t_b0, t_flux, t_solve, ...
+                t_surfb, t_geom+t_b0+t_flux+t_solve+t_surfb, sum(tstage));
 
             fid = fopen(outcsv, 'a');
-            fprintf(fid, '%d,%d,%d,%d,%d,%.10f,%.4f,%g,%.6e,%.4e,%g,%g,%.0f,%d\n', ...
+            fprintf(fid, ['%d,%d,%d,%d,%d,%.10f,%.4f,%g,%.6e,%.4e,%g,%g,%.0f,%d,' ...
+                '%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n'], ...
                 n, n-1, nv, nu, npts, h, sqrt(npts), tol, err, ...
-                norm(ts.sigma{1}, inf), iterD, iterW, t_solve, on_plot);
+                norm(ts.sigma{1}, inf), iterD, iterW, t_solve+t_surfb, on_plot, ...
+                tstage(1), tstage(2), tstage(3), tstage(4), t_gmres_d, t_gmres_w, ...
+                tstage(5), tstage(6), sum(tstage), t_geom, t_b0, t_flux, t_surfb);
             fclose(fid);
         end
     end
