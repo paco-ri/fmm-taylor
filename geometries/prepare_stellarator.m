@@ -1,7 +1,14 @@
 function [doms, fluxnodes, fluxwts] = prepare_stellarator(n, nu, nv, varargin)
 
-if nargin == 5
+xscenter = [];
+if nargin == 5 || nargin == 6
     scales = 1;
+    if nargin == 6
+        % radius of the fan centre for the one-surface cross-section; the
+        % default, the scale-0 curve (2,0,0), is not star-shaped for the
+        % u = 0 section, so some nodes fall outside the domain
+        xscenter = varargin{3};
+    end
     ns = n;
     nus = nu;
     nvs = nv;
@@ -75,6 +82,10 @@ for i = 1:nr
         [gi1, ~, gi2] = evalStellarator(0,tt,scales(2));
         [dgo1, ~, dgo2] = dvEvalStellarator(0,tt,scales(1));
         [dgi1, ~, dgi2] = dvEvalStellarator(0,tt,scales(2));
+        if ~isempty(xscenter)
+            go1 = xscenter;
+            go2 = 0;
+        end
         fluxnodes{1}(:,ij) = (1-rr)*[gi1; 0; gi2] + rr*[go1; 0; go2];
         fluxwts{1}(1,ij) = (2*pi/nt) ...
             * wr*((-gi1+go1)*((1-rr)*dgi2+rr*dgo2) ...
