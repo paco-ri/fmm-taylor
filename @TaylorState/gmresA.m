@@ -14,4 +14,12 @@ else
     A = [Ao; Ai];
 end
 
+if abs(zk) < eps
+    % At zk = 0 the equilibrium density is a null vector of A11 and produces
+    % no interior field; the rank-one term removes it, fixing int sigma ~ 0
+    w = cellfun(@(Si) Si.wts(:), S, 'UniformOutput', false);
+    w = vertcat(w{:});
+    A = A + (w.'*s)/sum(w);
+end
+
 end
