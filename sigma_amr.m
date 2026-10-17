@@ -62,7 +62,9 @@ function out = sigma_amr(dom0, domparams, zk, flux, tol, rmax, varargin)
 %
 %   OUT is a struct with the final DOM, QF, P2Q, SIGMA and ALPHA, plus a
 %   HISTORY struct array carrying, for each level, the patch counts, the
-%   indicator statistics, the number of patches marked, and the timings.
+%   indicator statistics, the per-patch indicator ETA (a cell, one per
+%   surface, indexed like that level's mesh; empty at level 0), the number
+%   of patches marked, and the timings.
 %   OUT.REASON says why the loop stopped:
 %
 %     'resolved'  the indicator marked nothing, i.e. sigma is resolved
@@ -187,7 +189,8 @@ tk = toc(t0);
 
 % record information about level 0
 history = struct('level', {}, 'npatches', {}, 'npts', {}, 'nmarked', {}, ...
-    'max_eta', {}, 'l2_eta', {}, 'alpha', {}, 'time_s', {}, 'err_vs_B0', {});
+    'max_eta', {}, 'l2_eta', {}, 'eta', {}, 'alpha', {}, 'time_s', {}, ...
+    'err_vs_B0', {});
 history(1) = record(0, domk, tsk, [], [], tk, refstate, sigmak);
 
 if ~isempty(vtkbase)
@@ -387,6 +390,7 @@ else
     h.max_eta = max(cellfun(@max, eta));
     h.l2_eta = sqrt(sum(cellfun(@(e) sum(e.^2), eta)));
 end
+h.eta = eta;
 h.alpha = ts.alpha;
 h.time_s = t;
 h.err_vs_B0 = nan;
