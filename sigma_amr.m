@@ -30,7 +30,9 @@ function out = sigma_amr(dom0, domparams, zk, flux, tol, rmax, varargin)
 %     marking   ['threshold'] 'threshold' or 'dorfler'
 %     eps_sigma [1e-6]        threshold on the relative per-patch indicator
 %     theta     [0.5]         Dorfler bulk-marking fraction
-%     p2q0      []            starting leaf set (cell, one per surface).
+%     ninit     [all]         number of patches INITIAL_MARKING marks for
+%                             the first refinement
+%     p2q0     []            starting leaf set (cell, one per surface).
 %                             Pass the P2Q returned by SURFACEMESH.ADAP_REF
 %                             to start from a geometrically adapted mesh;
 %                             leave empty to start from DOM0 uniformly.
@@ -82,6 +84,7 @@ maxlevels = getopt(opts, 'maxlevels', []);
 marking   = getopt(opts, 'marking', 'threshold');
 eps_sigma = getopt(opts, 'eps_sigma', 1e-6);
 theta     = getopt(opts, 'theta', 0.5);
+ninit     = getopt(opts, 'ninit', inf);
 p2q0      = getopt(opts, 'p2q0', []);
 refstate  = getopt(opts, 'refstate', []);
 vtkbase   = getopt(opts, 'vtkbase', '');
@@ -194,11 +197,7 @@ if ~isequal(savebase, false)
     savelevel(savebase, 0, domk, tsk, p2qk);
 end
 
-% First pass refines everything, so that every patch gets compared once.
-marked = cell(1, ns);
-for s = 1:ns
-    marked{s} = (1:size(p2qk{s}, 1)).';
-end
+marked = initial_marking(domk, ninit);
 
 % -- refinement loop --------------------------------------------------------
 reason = 'maxlevels'; % reason why loop stopped
