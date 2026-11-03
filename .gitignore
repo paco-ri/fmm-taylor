@@ -27,3 +27,7 @@ docs/build/*
 *.bat
 
 test/README.md
+
+*.pdf
+*.csv
+*.py
