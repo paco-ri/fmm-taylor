@@ -14,13 +14,11 @@ function out = ff_amr(dom0, domparams, zk, flux, tol, rmax, varargin)
 %
 %   OUT = FF_AMR(..., OPTS) accepts a struct with fields:
 %
-%     marking   ['threshold'] 'threshold' or 'dorfler'
 %     amr_tol   [1e-3]        threshold on the per-patch indicator. Unlike
-%                             SIGMA_AMR's EPS_SIGMA this is an absolute
+%                             SIGMA_AMR's indicator this is an absolute
 %                             quantity, in the level-0 patch's parameter
 %                             units, so probe FF_INDICATOR on DOM0 before
 %                             choosing it.
-%     theta     [0.5]         Dorfler bulk-marking fraction
 %     mode      [1]           1 or 2, selecting the fundamental form
 %     refstate  []            as for SIGMA_AMR: a struct with xs_nodes,
 %                             xs_weights and B0fun. When given,
@@ -53,14 +51,7 @@ function out = ff_amr(dom0, domparams, zk, flux, tol, rmax, varargin)
 % -- options ---------------------------------------------------------------
 opts = [];
 if ~isempty(varargin), opts = varargin{1}; end
-if isstruct(opts) && isfield(opts, 'eps_sigma')
-    error('FF_AMR:amr_tol', ...
-        ['FF_AMR thresholds an absolute fundamental-form error, not a ' ...
-         'relative sigma indicator. Use opts.amr_tol, not opts.eps_sigma.']);
-end
-marking   = getopt(opts, 'marking', 'threshold');
 amr_tol   = getopt(opts, 'amr_tol', 1e-3);
-theta     = getopt(opts, 'theta', 0.5);
 mode      = getopt(opts, 'mode', 1);
 refstate  = getopt(opts, 'refstate', []);
 vtkbase   = getopt(opts, 'vtkbase', '');
@@ -92,8 +83,7 @@ ns = numel(base);
 % -- refine -----------------------------------------------------------------
 hist = cell(1, ns);
 for s = 1:ns
-    [~, ~, ~, hist{s}] = surfacemesh.adap_ref(base{s}, amr_tol, rmax, ...
-        mode, marking=marking, theta=theta);
+    [~, ~, ~, hist{s}] = surfacemesh.adap_ref(base{s}, amr_tol, rmax, mode);
 end
 nlev = max(cellfun(@numel, hist));
 
@@ -158,8 +148,7 @@ out.alpha = tsk.alpha;
 out.ts = tsk;
 out.history = history;
 out.reason = reason;
-out.opts = struct('rmax', rmax, 'marking', marking, 'amr_tol', amr_tol, ...
-    'theta', theta, 'mode', mode);
+out.opts = struct('rmax', rmax, 'amr_tol', amr_tol, 'mode', mode);
 
 end
 

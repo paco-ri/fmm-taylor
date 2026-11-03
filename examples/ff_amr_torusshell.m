@@ -56,12 +56,8 @@ refstate.B0fun = @(d, s) reftaylorsurffun(d, n, ntheta, rmin, ...
     rmaj, jmag, zk);
 
 % --- refinement controls ---
-% Dorfler marking ignores amr_tol; it is set here for the record and takes
-% effect only under marking = 'threshold'.
 rmax = 2;
 opts = [];
-opts.marking  = 'dorfler';
-opts.theta    = 0.6;
 opts.amr_tol  = 1e-3;
 opts.mode     = 1;
 opts.refstate = refstate;
