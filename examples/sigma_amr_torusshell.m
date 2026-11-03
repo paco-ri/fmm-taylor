@@ -51,9 +51,6 @@ refstate.B0fun = @(d, s) reftaylorsurffun(d, n, ntheta, rmin, ...
 % --- refinement controls ---
 rmax = 2;
 opts = [];
-opts.marking   = 'dorfler';
-opts.theta     = 0.6;
-opts.eps_sigma = 1e-4;
 opts.refstate  = refstate;
 opts.vtkbase   = fullfile(fileparts(mfilename('fullpath')), ...
                           'sigma_amr_torusshell');

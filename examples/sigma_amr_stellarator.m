@@ -1,9 +1,7 @@
 % Sigma-driven iterative mesh refinement on a one-surface stellarator.
 %
-% Solves the Taylor state, refines, solves again, and uses the change in the
-% density sigma between successive discretizations as the per-patch error
-% indicator. Patches where the coarse discretization already resolved sigma
-% are left alone. See sigma_amr.m.
+% Solves the Taylor state and refines the patches where the density sigma
+% has the largest Legendre tails, then repeats. See sigma_amr.m.
 %
 % Correctness check: there is no closed-form reference Taylor state for this
 % surface (the reftaylor current ring links the torus, and a ring radius
@@ -36,9 +34,6 @@ tol  = 1e-6;
 % --- refinement controls ---
 rmax = 3;   % first completed run; raise once it lands
 opts = [];
-opts.marking   = 'dorfler';
-opts.theta     = 0.5;
-opts.eps_sigma = 1e-4;
 opts.vtkbase   = fullfile(fileparts(mfilename('fullpath')), ...
                           'sigma_amr_stellarator');
 opts.verbose   = true;
