@@ -9,8 +9,7 @@
 %                 outer torus at azimuth 90 deg
 %       interior  vertical (normal radial), inside the inner tube at
 %                 azimuth 180 deg
-%     Each ring is placed (exterior) or sized (interior) so that its minimum
-%     distance to the nearer surface is exactly `gap`.
+%     Each ring passes about 0.2 from the nearer surface.
 %   - fluxes are toroidal (surface 1 cross-section) and poloidal (surface 2)
 %
 % Variables read if set before running:
@@ -18,16 +17,22 @@
 %   nv         [3]          base-mesh patches poloidally (nu = 3*nv)
 %   rmax       [3]          maximum refinement depth
 %   frac       [0.3]        opts.frac of sigma_amr
+%   figext     ['pdf']      format of the figures, 'pdf' or 'png'
 %
 % With BASE = sigma_amr_shellrings_fraction, suffixed _nv<nv> for a
-% non-default nv and _frac<100*frac> for a non-default frac, writes BASE_setup.{png,fig} (the geometry check plot), BASE.csv, per-level sigma VTK, per-level
-% BASE_lev<k>_surf<s>.mat, and per-level BASE_lev<k>_matlab.png showing |B|
-% and the patch mesh on both surfaces.
+% non-default nv and _frac<100*frac> for a non-default frac, writes
+% BASE_setup.{<figext>,fig} (the geometry check plot), BASE_{outer,inner}_geometry.<figext>
+% (surfaces and rings only, oriented as the |B| figures), BASE.csv, per-level sigma VTK, per-level BASE_lev<k>_surf<s>.mat, and
+% BASE_{outer,inner}_levels_matlab.<figext> and
+% BASE_{outer,inner}_errmap_levels_matlab.<figext> showing |B| and the error
+% |B - B0| with the patch mesh on that surface at every level, and
+% BASE_conv.<figext> with the L^inf and L^2 relative errors per level.
 
 if ~exist('setup_only', 'var'); setup_only = false; end
 if ~exist('nv', 'var'); nv = 3; end
 if ~exist('rmax', 'var'); rmax = 3; end
 if ~exist('frac', 'var'); frac = 0.3; end
+if ~exist('figext', 'var'); figext = 'pdf'; end
 here = fileparts(mfilename('fullpath'));
 base = fullfile(here, 'sigma_amr_shellrings_fraction');
 if nv ~= 3; base = sprintf('%s_nv%d', base, nv); end
@@ -35,7 +40,7 @@ if frac ~= 0.3; base = sprintf('%s_frac%g', base, 100*frac); end
 fprintf('=== sigma_amr_shellrings start %s\n', datestr(now));
 
 % --- geometry (sigma_amr_torusshell.m; outer surface is dom0{1}) ---
-n  = 5;
+n  = 8;
 nu = 3*nv;
 ao = 1.0;
 ai = 0.6;
@@ -49,10 +54,8 @@ fprintf('base meshes: %d + %d patches, n = %d\n', ...
 % --- current rings ---
 % In a ring's own frame p' = Q.'*(p - c), the ring is the circle of radius a
 % about the p'_1 axis, so the distance from p to it is
-% sqrt(p'_1^2 + (rho - a)^2) with rho = hypot(p'_2, p'_3). Surfaces are
-% sampled on a fine mesh; its node spacing (~0.03) bounds how far the sampled
-% minimum can overshoot the true one, to O(spacing^2).
-gap  = 0.2;
+% sqrt(p'_1^2 + (rho - a)^2) with rho = hypot(p'_2, p'_3). The closest
+% surface point is found on a fine sampling of the surfaces.
 rmaj = 2.0;
 jmag = 1.0;
 zk   = 0.5;
@@ -83,28 +86,28 @@ end
 % Q maps reftaylor's frame (ring normal e_x) to the ring's. rings(k) is
 % closest to surface k, and neither ring links the tori.
 %   rings(1), exterior: horizontal (normal e_z), radius ae, centred at
-%     (0, Re, 0) beside the outboard side of the outer torus; Re sets the gap.
+%     (0, Re, 0) beside the outboard side of the outer torus.
 %   rings(2), interior: vertical (normal e_x, radial at azimuth 180 deg),
-%     centred mid-tube in the inner u = pi cross-section; its radius sets
-%     the gap.
+%     radius ai_ring, centred mid-tube in the inner u = pi cross-section at
+%     (-xi, 0, 0).
 ringdist = @(Q, c, a, X) sqrt((Q(:,1).'*(X - c)).^2 + ...
     (vecnorm(Q(:,2:3).'*(X - c)) - a).^2);
 Qe = [0 1 0; 0 0 1; 1 0 0];
-ae = 0.5;
-Re = fzero(@(R) min(ringdist(Qe, [0; R; 0], ae, P{1})) - gap, ...
-    max(sl90{1}(1,:)) + ae + [0 1]);
+ae = 0.50;
+Re = 3.59;
 Qi = eye(3);
-ci = [-(min(sl180{2}(1,:)) + max(sl180{2}(1,:)))/2; 0; 0];
-ai_ring = fzero(@(a) min(ringdist(Qi, ci, a, P{2})) - gap, ...
-    [0.05, max(sl180{2}(2,:))]);
+xi = 1.96;
+ci = [-xi; 0; 0];
+ai_ring = 0.54;
 rings = struct('c', {[0; Re; 0], ci}, 'Q', {Qe, Qi}, 'a', {ae, ai_ring}, ...
                'ntheta', {0, 0}, 'jmag', {jmag, jmag}, 'pclose', {[], []});
 for k = 1:2
     [dk, ik] = min(ringdist(rings(k).Q, rings(k).c, rings(k).a, P{k}));
     rings(k).pclose = P{k}(:, ik);
-    % The trapezoidal rule along the ring has error ~exp(-2*pi*gap/h) at
-    % distance gap, h the ring point spacing; h <= gap/4 puts it below 1e-10.
-    rings(k).ntheta = max(200, ceil(8*pi*rings(k).a/gap));
+    % The trapezoidal rule along the ring has error ~exp(-2*pi*d/h) at
+    % distance d, h the ring point spacing; h <= dk/4 puts it below 1e-10 on
+    % the surface.
+    rings(k).ntheta = max(200, ceil(8*pi*rings(k).a/dk));
     fprintf(['ring %d: a = %.6f, ntheta = %d, min distance to surface %d = ' ...
         '%.6f at (%.4f, %.4f, %.4f)\n'], k, rings(k).a, rings(k).ntheta, ...
         k, dk, rings(k).pclose);
@@ -171,9 +174,48 @@ legend({'outer surface', 'inner surface', 'interior ring crossings', ...
     'closest inner point (rotated into plane)'}, 'Location', 'southoutside');
 title(sprintf('plane y = 0, x < 0 (u = \\pi): interior ring a = %.4f', ai_ring));
 
-exportgraphics(fig, [base '_setup.png'], 'Resolution', 150);
+exportgraphics(fig, [base '_setup.' figext], 'Resolution', 150);
 savefig(fig, [base '_setup.fig']);
-fprintf('SAVED %s_setup.png / .fig\n', base);
+fprintf('SAVED %s_setup.%s / .fig\n', base, figext);
+
+% --- surfaces and rings only, in each orientation of the |B| figures ---
+% The outer surface is see-through so the inner one and its ring show.
+% Figure t turns everything about z so that ring t's closest approach faces
+% the camera (azimuth -45 deg), as the |B| figures for surface t do.
+for t = 1:2
+    ang = -45 - atan2d(rings(t).pclose(2), rings(t).pclose(1));
+    Rz = [cosd(ang) -sind(ang); sind(ang) cosd(ang)];
+    fig = figure('Visible', 'off', 'Units', 'inches', 'Position', [0 0 3.25 2.4]);
+    theme(fig, 'light');
+    axes(fig, 'Position', [0 0 1 1]); hold on
+    for s = 1:2
+        for i = 1:length(domf{s}.x)
+            XY = Rz*[domf{s}.x{i}(:).'; domf{s}.y{i}(:).'];
+            surf(reshape(XY(1,:), size(domf{s}.x{i})), ...
+                reshape(XY(2,:), size(domf{s}.x{i})), domf{s}.z{i}, ...
+                'FaceColor', csurf(s,:), 'FaceAlpha', salpha(s), ...
+                'EdgeColor', 'none', 'FaceLighting', 'gouraud', ...
+                'AmbientStrength', 0.4, 'SpecularStrength', 0.2);
+        end
+    end
+    for k = 1:2
+        XY = Rz*rpts{k}(1:2,:);
+        plot3(XY(1,:), XY(2,:), rpts{k}(3,:), 'Color', cring(k,:), 'LineWidth', 1.5);
+    end
+    axis equal off
+    view(15, 30);   % the |B| figures' view(45, 21.3) sees the rings edge-on
+    camzoom(1.75);   % the default view angle leaves wide margins
+    camlight headlight
+    figfile = sprintf('%s_%s_geometry.%s', base, sname{t}, figext);
+    if strcmp(figext, 'pdf')
+        % vector output would drop the gouraud shading
+        exportgraphics(fig, figfile, 'ContentType', 'image', 'Resolution', 600);
+    else
+        exportgraphics(fig, figfile, 'Resolution', 200);
+    end
+    close(fig);
+    fprintf('SAVED %s\n', figfile);
+end
 
 if setup_only
     fprintf('DONE_SENTINEL %s\n', datestr(now));
@@ -235,7 +277,7 @@ fprintf('\nfinal mesh %d patches; uniform refinement to level %d would be %d\n',
 
 fprintf('stopped on: %s\n', out.reason);
 
-% --- |B| and patch mesh at every level ---
+% --- |B|, error vs B0 and patch mesh at every level, per surface ---
 % Patches are resampled from their n x n Chebyshev grid to M x M points so
 % coarse patches do not render as facets. Each surface is turned about z so
 % that its ring's closest approach faces the camera (azimuth -45 deg).
@@ -244,62 +286,130 @@ Im = barymat(linspace(-1, 1, M).', chebpts(n), chebtech2.barywts(n));
 edges = {{1,':'}, {M,':'}, {':',1}, {':',M}};
 lift = 0.004;   % patch lines sit just off the surface so it cannot hide them
 
-Bmax = [0 0];
+% dB = B - B0 at the saved nodes
+Ls = cell(lev+1, 2);
 for k = 0:lev
     for s = 1:2
         L = load(sprintf('%s_lev%d_surf%d.mat', base, k, s));
-        Bmax(s) = max(Bmax(s), max(sqrt(sum(L.Bre.^2 + L.Bim.^2, 4)), [], 'all'));
+        L.B = complex(L.Bre, L.Bim);
+        L.dB = L.B - reshape(ringfield(rings, zk, ...
+            [L.xx(:).'; L.yy(:).'; L.zz(:).']).', size(L.B));
+        Ls{k+1, s} = L;
+    end
+end
+emax = max(cellfun(@(L) max(vecnorm(L.dB, 2, 4), [], 'all'), Ls), [], 'all');
+eclim = ceil(log10(emax)) + [-6 0];
+
+% Axes are placed by hand with fixed inner positions, so every torus gets
+% the same plot box; TILEDLAYOUT resized tiles unevenly. Sizes are in inches
+% for a 6.5 in text width, so fonts print at their nominal size.
+ncol = ceil(sqrt(lev+1));
+nrow = ceil((lev+1)/ncol);
+tilew = 2.85; tileh = 2.0; cbw = 0.8;
+figname = {'levels', 'errmap_levels'};
+for s = 1:2
+    ang = -45 - atan2d(rings(s).pclose(2), rings(s).pclose(1));
+    Rz = [cosd(ang) -sind(ang); sind(ang) cosd(ang)];
+    Bmax = max(cellfun(@(L) max(vecnorm(L.B, 2, 4), [], 'all'), Ls(:, s)));
+    for q = 1:2   % 1: |B|, 2: log10 |B - B0|
+        fig = figure('Visible', 'off', 'Units', 'inches', ...
+            'Position', [0 0 ncol*tilew + cbw, nrow*tileh]);
+        theme(fig, 'light');
+        ax = gobjects(lev+1, 1);
+        for k = 0:lev
+            L = Ls{k+1, s};
+            r = floor(k/ncol); c = mod(k, ncol);
+            ax(k+1) = axes(fig, 'Units', 'inches', 'Clipping', 'off', ...
+                'PositionConstraint', 'innerposition', ...
+                'InnerPosition', [c*tilew, (nrow-r-1)*tileh, tilew, tileh - 0.2]);
+            hold on
+            for i = 1:L.npatch
+                X = Im*L.xx(:,:,i)*Im.'; Y = Im*L.yy(:,:,i)*Im.'; Z = Im*L.zz(:,:,i)*Im.';
+                if q == 1, F = L.B; else, F = L.dB; end
+                C = zeros(M);
+                for j = 1:3
+                    C = C + abs(Im*F(:,:,i,j)*Im.').^2;
+                end
+                C = sqrt(C);
+                if q == 2, C = log10(max(C, 10^eclim(1))); end
+                XY = Rz*[X(:).'; Y(:).'];
+                X = reshape(XY(1,:), M, M); Y = reshape(XY(2,:), M, M);
+                surf(X, Y, Z, C, 'EdgeColor', 'none', 'FaceColor', 'interp', ...
+                    'FaceLighting', 'gouraud', 'AmbientStrength', 0.5, ...
+                    'SpecularStrength', 0.1);
+                % outward from the magnetic axis (the circle R = rmaj, z = 0)
+                R = hypot(X, Y);
+                nx = X - rmaj*X./R; ny = Y - rmaj*Y./R;
+                nn = sqrt(nx.^2 + ny.^2 + Z.^2);
+                for e = edges
+                    ix = e{1};
+                    plot3(X(ix{:}) + lift*nx(ix{:})./nn(ix{:}), ...
+                          Y(ix{:}) + lift*ny(ix{:})./nn(ix{:}), ...
+                          Z(ix{:}) + lift*Z(ix{:})./nn(ix{:}), ...
+                          'Color', [0.1 0.1 0.12], 'LineWidth', 0.5);
+                end
+            end
+            axis equal off
+            view(45, 21.3);
+            camzoom(ax(k+1), 2.2);   % the default view angle leaves wide margins
+            camlight headlight
+            colormap(parula);
+            if q == 1, clim([0 Bmax]); else, clim(eclim); end
+            % TITLE would sit above the zoomed plot box, off the tile
+            annotation(fig, 'textbox', 'Units', 'inches', ...
+                'Position', [c*tilew, (nrow-r)*tileh - 0.2, tilew, 0.2], ...
+                'String', sprintf('level %d', k), 'FontSize', 10, 'EdgeColor', 'none', ...
+                'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
+        end
+        set(ax, 'XLim', ax(1).XLim, 'YLim', ax(1).YLim, 'ZLim', ax(1).ZLim);
+        cb = colorbar(ax(end), 'Units', 'inches', 'FontSize', 9, ...
+            'Position', [ncol*tilew + 0.1, 0.3, 0.12, nrow*tileh - 0.8]);
+        if q == 1
+            cb.Title.String = '|B|';
+            cb.Title.FontSize = 10;
+            cb.Title.FontWeight = 'normal';
+        else
+            cb.Ticks = eclim(1):eclim(2);
+            cb.TickLabels = compose('10^{%d}', cb.Ticks);
+            cb.Label.String = '|B - B_0|';
+            cb.Label.FontSize = 10;
+        end
+        figfile = sprintf('%s_%s_%s_matlab.%s', base, sname{s}, figname{q}, figext);
+        if strcmp(figext, 'pdf')
+            % vector output would drop the gouraud shading
+            exportgraphics(fig, figfile, 'ContentType', 'image', 'Resolution', 600);
+        else
+            exportgraphics(fig, figfile, 'Resolution', 200);
+        end
+        close(fig);
+        fprintf('SAVED %s\n', figfile);
     end
 end
 
-for k = 0:lev
-    fig = figure('Visible', 'off', 'Position', [0 0 2200 1000]);
-    theme(fig, 'light');
-    tiledlayout(fig, 1, 2, 'TileSpacing', 'compact');
-    for s = 1:2
-        L = load(sprintf('%s_lev%d_surf%d.mat', base, k, s));
-        ang = -45 - atan2d(rings(s).pclose(2), rings(s).pclose(1));
-        Rz = [cosd(ang) -sind(ang); sind(ang) cosd(ang)];
-        nexttile; hold on
-        for i = 1:L.npatch
-            X = Im*L.xx(:,:,i)*Im.'; Y = Im*L.yy(:,:,i)*Im.'; Z = Im*L.zz(:,:,i)*Im.';
-            Bmag = zeros(M);
-            for c = 1:3
-                Bmag = Bmag + abs(Im*complex(L.Bre(:,:,i,c), L.Bim(:,:,i,c))*Im.').^2;
-            end
-            XY = Rz*[X(:).'; Y(:).'];
-            X = reshape(XY(1,:), M, M); Y = reshape(XY(2,:), M, M);
-            surf(X, Y, Z, sqrt(Bmag), 'EdgeColor', 'none', 'FaceColor', 'interp', ...
-                'FaceLighting', 'gouraud', 'AmbientStrength', 0.5, ...
-                'SpecularStrength', 0.1);
-            % outward from the magnetic axis (the circle R = rmaj, z = 0)
-            R = hypot(X, Y);
-            nx = X - rmaj*X./R; ny = Y - rmaj*Y./R;
-            nn = sqrt(nx.^2 + ny.^2 + Z.^2);
-            for e = edges
-                ix = e{1};
-                plot3(X(ix{:}) + lift*nx(ix{:})./nn(ix{:}), ...
-                      Y(ix{:}) + lift*ny(ix{:})./nn(ix{:}), ...
-                      Z(ix{:}) + lift*Z(ix{:})./nn(ix{:}), ...
-                      'Color', [0.1 0.1 0.12], 'LineWidth', 0.7);
-            end
-        end
-        axis equal off
-        view(45, 21.3);
-        camlight headlight
-        colormap(gca, parula);
-        clim([0 Bmax(s)]);
-        cb = colorbar;
-        cb.Label.String = '|B|';
-        cb.Label.FontSize = 16;
-        title(sprintf('%s surface: %d patches', sname{s}, L.npatch), 'FontSize', 16);
-    end
-    sgtitle(sprintf('frac = %g, level %d: error vs B_0 = %.3e', frac, ...
-        k, out.history(k+1).err_vs_B0), 'FontSize', 18);
-    png = sprintf('%s_lev%d_matlab.png', base, k);
-    exportgraphics(fig, png, 'Resolution', 120);
-    close(fig);
-    fprintf('SAVED %s\n', png);
+% --- relative error vs B0 against the number of points ---
+npts = arrayfun(@(h) sum(h.npts), out.history);
+fig = figure('Visible', 'off', 'Units', 'inches', 'Position', [0 0 3.25 2.4]);
+theme(fig, 'light');
+cblue = [0.000 0.447 0.698]; cverm = [0.835 0.369 0.000];   % Okabe-Ito
+loglog(npts, [out.history.err_vs_B0], 'o-', 'Color', cblue, ...
+    'MarkerFaceColor', cblue, 'MarkerSize', 4, 'LineWidth', 1);
+hold on
+loglog(npts, [out.history.l2err_vs_B0], 's-', 'Color', cverm, ...
+    'MarkerFaceColor', cverm, 'MarkerSize', 4, 'LineWidth', 1);
+grid on
+set(gca, 'FontSize', 9, 'XTick', npts, 'XTickLabel', string(npts), ...
+    'XMinorTick', 'off', 'XMinorGrid', 'off');
+xlim(npts([1 end]).*[0.85 1.15]);
+xlabel('number of points');
+ylabel('relative error vs B_0');
+legend({'L^\infty', 'L^2'}, 'Location', 'southwest');
+figfile = sprintf('%s_conv.%s', base, figext);
+if strcmp(figext, 'pdf')
+    exportgraphics(fig, figfile, 'ContentType', 'vector');
+else
+    exportgraphics(fig, figfile, 'Resolution', 200);
 end
+close(fig);
+fprintf('SAVED %s\n', figfile);
 
 fprintf('DONE_SENTINEL %s\n', datestr(now));
