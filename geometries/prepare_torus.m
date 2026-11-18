@@ -94,22 +94,32 @@ for i = 1:nr
 end
 
 if nsurf == 2
+    % Cross-section 2 is the annulus in the plane z = 0 between the tori's
+    % outboard z = 0 crossings. Those lie near v = 0 but not on it: the v = 0
+    % curve sits at z = -0.16*scale*sin(u).
+    pp = 2*pi*(0:np-1)/np;
+    Rx = zeros(2, np);              % row 1 outer, row 2 inner
+    for is = 1:2
+        for j = 1:np
+            v = 0;
+            for it = 1:50
+                [~, ~, zz] = evalTorus(pp(j),v,scales(is),d);
+                [~, ~, dzz] = dvEvalTorus(pp(j),v,scales(is),d);
+                v = v - zz/dzz;
+            end
+            [xx, yy, zz] = evalTorus(pp(j),v,scales(is),d);
+            assert(abs(zz) < 1e-13, 'prepare_torus: z = 0 crossing not found');
+            Rx(is,j) = hypot(xx, yy);
+        end
+    end
     fluxnodes{2} = zeros([3 nr*np]);
     fluxwts{2} = zeros([1 nr*np]);
     for i = 1:nr
-        rr = rnodes(i);
-        wr = rwts(i);
         for j = 1:np
             ij = (i-1)*np+j;
-            pp = 2*pi*(j-1)/np;
-            [go1, go2] = evalTorus(pp,0,scales(1),d);
-            [gi1, gi2] = evalTorus(pp,0,scales(2),d);
-            [dgo1, dgo2] = duEvalTorus(pp,0,scales(1),d);
-            [dgi1, dgi2] = duEvalTorus(pp,0,scales(2),d);
-            fluxnodes{2}(:,ij) = (1-rr)*[gi1; gi2; 0] + rr*[go1; go2; 0];
-            fluxwts{2}(1,ij) = (2*pi/np) ...
-                * wr*((-gi1+go1)*((1-rr)*dgi2+rr*dgo2) ...
-                - (-gi2+go2)*((1-rr)*dgi1+rr*dgo1));
+            R = (1-rnodes(i))*Rx(2,j) + rnodes(i)*Rx(1,j);
+            fluxnodes{2}(:,ij) = [R*cos(pp(j)); R*sin(pp(j)); 0];
+            fluxwts{2}(1,ij) = (2*pi/np)*rwts(i)*R*(Rx(1,j) - Rx(2,j));
         end
     end
 end
@@ -135,27 +145,6 @@ for i = -1:2
     end
 end
  
-end
-
-function [x, y, z] = duEvalTorus(u, v, scale, d)
-
-d = scale.*d;
-d(3,2) = 2.0;
-
-x = zeros(size(u));
-y = zeros(size(u));
-z = zeros(size(u));
-
-for i = -1:2
-    for j = -1:2
-        ii = i+2;
-        jj = j+2;
-        x = x - d(ii,jj)*(sin(u).*cos((1-i)*v+j*u) + j*cos(u).*sin((1-i)*v+j*u));
-        y = y + d(ii,jj)*(cos(u).*cos((1-i)*v+j*u) - j*sin(u).*sin((1-i)*v+j*u));
-        z = z + d(ii,jj)*j*cos((1-i)*v+j*u);
-    end
-end
-
 end
 
 function [x, y, z] = dvEvalTorus(u, v, scale, d)
