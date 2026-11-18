@@ -252,22 +252,23 @@ save([base '_hist.mat'], 'hist');
 csv = [base '.csv'];
 fid = fopen(csv, 'w');
 fprintf(fid, ['level,npat_outer,npat_inner,npts,nmarked,max_eta,l2_eta,' ...
-    'err_vs_B0,time_s\n']);
+    'err_vs_B0,time_s,l2err_vs_B0\n']);
 for k = 1:numel(out.history)
     h = out.history(k);
-    fprintf(fid, '%d,%d,%d,%d,%d,%.6e,%.6e,%.6e,%.3f\n', ...
+    fprintf(fid, '%d,%d,%d,%d,%d,%.6e,%.6e,%.6e,%.3f,%.6e\n', ...
         h.level, h.npatches(1), h.npatches(2), sum(h.npts), h.nmarked, ...
-        h.max_eta, h.l2_eta, h.err_vs_B0, h.time_s);
+        h.max_eta, h.l2_eta, h.err_vs_B0, h.time_s, h.l2err_vs_B0);
 end
 fclose(fid);
 fprintf('SAVED %s\n', csv);
 
-fprintf('\n level    patches      npts   marked      max eta    err vs B0\n');
+fprintf(['\n level    patches      npts   marked      max eta  inf err vs B0' ...
+    '   L2 err vs B0\n']);
 for k = 1:numel(out.history)
     h = out.history(k);
-    fprintf('%6d %5d+%-5d %9d %8d %12.3e %12.3e\n', h.level, ...
+    fprintf('%6d %5d+%-5d %9d %8d %12.3e %14.3e %14.3e\n', h.level, ...
         h.npatches(1), h.npatches(2), sum(h.npts), h.nmarked, ...
-        h.max_eta, h.err_vs_B0);
+        h.max_eta, h.err_vs_B0, h.l2err_vs_B0);
 end
 
 lev = out.history(end).level;
