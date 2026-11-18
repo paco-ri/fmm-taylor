@@ -16,12 +16,12 @@
 %   nv         [3]          base-mesh patches poloidally (nu = 3*nv)
 %   rmax       [3]          maximum refinement depth, and the number of
 %                           refinements
-%   frac       [0.3]        opts.frac of sigma_amr
+%   frac       [0.3]        opts.frac of sigma_amr; 1 refines every patch
 %   figext     ['pdf']      format of the figures, 'pdf' or 'png'
 %
-% With BASE = sigma_amr_torusring_fraction, suffixed _nv<nv> for a
-% non-default nv, _rmax<rmax> for a non-default rmax and _frac<100*frac> for
-% a non-default frac, writes
+% With BASE = sigma_amr_torusring_fraction (sigma_amr_torusring_uniform for
+% frac = 1), suffixed _nv<nv> for a non-default nv, _rmax<rmax> for a
+% non-default rmax and _frac<100*frac> for any other non-default frac, writes
 % BASE_setup.{<figext>,fig} (the geometry check plot), BASE_geometry.<figext>
 % (surface and ring only), BASE.csv, per-level sigma
 % VTK, per-level BASE_lev<k>.mat for make_amr_vtk.py / view_amr_levels.py,
@@ -35,10 +35,14 @@ if ~exist('rmax', 'var'); rmax = 3; end
 if ~exist('frac', 'var'); frac = 0.3; end
 if ~exist('figext', 'var'); figext = 'pdf'; end
 here = fileparts(mfilename('fullpath'));
-base = fullfile(here, 'sigma_amr_torusring_fraction');
+if frac == 1
+    base = fullfile(here, 'sigma_amr_torusring_uniform');
+else
+    base = fullfile(here, 'sigma_amr_torusring_fraction');
+end
 if nv ~= 3; base = sprintf('%s_nv%d', base, nv); end
 if rmax ~= 3; base = sprintf('%s_rmax%d', base, rmax); end
-if frac ~= 0.3; base = sprintf('%s_frac%g', base, 100*frac); end
+if frac ~= 0.3 && frac ~= 1; base = sprintf('%s_frac%g', base, 100*frac); end
 fprintf('=== sigma_amr_torusring start %s\n', datestr(now));
 
 % --- geometry (convoop_sweep.m) ---
