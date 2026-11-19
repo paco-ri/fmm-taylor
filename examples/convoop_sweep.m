@@ -1,20 +1,25 @@
-function convoop_sweep(outcsv)
-%CONVOOP_SWEEP One-surface convergence sweep, reproducing convdata_onesurface.csv.
+function convoop_sweep(outcsv, runs, nvs)
+%CONVOOP_SWEEP One-surface convergence sweep (plot_conv_onesurface.m).
 %
-%   Corrected form of convoop.m. The differences that matter:
-%     - three orders (n = 5, 7, 9), five resolutions (nv = 6, 8, 10, 12, 16)
-%     - tolerance is an explicit per-order list, not a *1e-2 ladder: n = 5 runs
-%       at 1e-6 only, n = 7 and n = 9 at both 1e-6 and 1e-8
-%     - ntheta = 200 and nt = 50 (convoop.m still has 1e3 and 100)
-%     - per-stage timings, GMRES iteration counts and |sigma|_inf are recorded
+%   CONVOOP_SWEEP(OUTCSV, RUNS, NVS). RUNS rows are {tol, orders n, on_plot};
+%   the default is p = 6, 8 at tol = 1e-8 and p = 10, 12 at tol = 1e-10, the
+%   plotted curves. NVS defaults to 6, 8, 10, 12, 16.
 %
-%   Setup: prepare_torus, zk = 0, nu = 3*nv, nr = 12, ntheta = 200,
-%   rmin = rmaj = 2, jmag = 1. Error is relative L^inf of (B - B0) over the
-%   surface, max over components.
+%   Setup: prepare_torus, zk = 0, nu = 3*nv, nr = 12, nt = 50, ntheta = 200,
+%   rmin = rmaj = 2, jmag = 1.
 %
-%   25 solves, about 59 min total at OMP_NUM_THREADS = 4 (4.2 GB peak at the
-%   largest configuration). Rows are appended as they finish, so the run can be
-%   interrupted without losing completed work.
+%   TWO ERRORS, both relative L^inf of B - B0, max over components:
+%     err      on the surface nodes (surface_B). Dominated at fine meshes by
+%              surface_B's reconstruction error at patch edges, which
+%              overstates the error of the solution (see diag_edge.m).
+%     err_int  at 768 interior points: u, v = 0:22.5:337.5 deg on the tori of
+%              scale s = 0.3, 0.6, 0.9 (torus_points.m), normalized by the
+%              largest |B0| among those points. s = 0.9 is the nearest layer
+%              to the wall, at scale distance 0.1, the same as the nearest
+%              layers in convoop2_sweep.m.
+%
+%   Rows are appended as they finish, so the run can be interrupted without
+%   losing completed work.
 %
 %   TIMING COLUMNS. time_s keeps its original meaning (solve + surface_B); the
 %   original CSV's definition was not recorded, so the breakdown is carried
@@ -29,9 +34,17 @@ function convoop_sweep(outcsv)
 %     t_m                            compute m (mH only at zk = 0)
 %     t_solve_sum                    sum of the six stages
 %     t_geom, t_b0, t_flux, t_surfb  outside the solve
+%     t_int                          interior_B at the 768 interior points
 
-if nargin < 1
-    outcsv = fullfile(fileparts(mfilename('fullpath')), 'convdata_onesurface_rerun.csv');
+if nargin < 1 || isempty(outcsv)
+    outcsv = fullfile(fileparts(mfilename('fullpath')), 'convdata_onesurface_interior.csv');
+end
+if nargin < 2 || isempty(runs)
+    runs = { 1e-8,  [7 9],   [1 1]
+             1e-10, [11 13], [1 1] };
+end
+if nargin < 3 || isempty(nvs)
+    nvs = [6 8 10 12 16];
 end
 
 zk     = 0;
@@ -41,11 +54,14 @@ ntheta = 200;
 rmin   = 2.0;
 rmaj   = 2.0;
 jmag   = 1.0;
-nvs    = [6 8 10 12 16];
 
-% tolerance, orders run at it, and whether those curves are the plotted ones
-runs = { 1e-6, [5 7 9], [1 0 0]
-         1e-8, [7 9],   [1 1]   };
+[uu, vv, ss] = ndgrid((0:22.5:337.5)*pi/180, (0:22.5:337.5)*pi/180, [0.3 0.6 0.9]);
+intpts = torus_points(uu, vv, ss);
+B0int = zeros(3, size(intpts,2));
+for i = 1:size(intpts,2)
+    B0int(:,i) = reftaylor(ntheta, rmin, rmaj, jmag, zk, intpts(:,i));
+end
+B0intmax = max(abs(B0int), [], 'all');
 
 stagepats = {'get Laplace/Helmholtz quad\. corr\.'
              'get \+taylor routine quad\. corr\.'
@@ -57,9 +73,10 @@ stagepats = {'get Laplace/Helmholtz quad\. corr\.'
 fid = fopen(outcsv, 'w');
 fprintf(fid, ['n,p,nv,nu,npts,h,dof,tol,err,sigma_inf,iterD,iterW,time_s,on_plot,' ...
     't_quad_lh,t_quad_tay,t_quad_xs_lh,t_quad_xs_tay,t_gmres_d,t_gmres_w,' ...
-    't_sigma_alpha,t_m,t_solve_sum,t_geom,t_b0,t_flux,t_surfb\n']);
+    't_sigma_alpha,t_m,t_solve_sum,t_geom,t_b0,t_flux,t_surfb,err_int,t_int\n']);
 fclose(fid);
 fprintf('=== convoop_sweep start %s\n  -> %s\n', datestr(now), outcsv);
+fprintf('  maxNumCompThreads = %d\n', maxNumCompThreads);
 
 for k = 1:size(runs,1)
     tol = runs{k,1};
@@ -121,19 +138,26 @@ for k = 1:size(runs,1)
             npts = nu*nv*n*n;
             h = 1/sqrt(nu*nv);
 
-            fprintf(['n=%d nv=%d tol=%g  err=%.6e  iter=%d/%d\n' ...
+            t0 = tic;
+            Bint = ts.interior_B(intpts);
+            t_int = toc(t0);
+            err_int = max(abs(Bint - B0int), [], 'all')/B0intmax;
+
+            fprintf(['n=%d nv=%d tol=%g  err=%.6e  err_int=%.6e  iter=%d/%d\n' ...
                      '  geom %.1f + B0 %.1f + flux %.1f + solve %.1f ' ...
-                     '+ surfB %.1f = %.1f s  (stages sum %.1f s)\n'], ...
-                n, nv, tol, err, iterD, iterW, t_geom, t_b0, t_flux, t_solve, ...
-                t_surfb, t_geom+t_b0+t_flux+t_solve+t_surfb, sum(tstage));
+                     '+ surfB %.1f + int %.1f s  (stages sum %.1f s)\n'], ...
+                n, nv, tol, err, err_int, iterD, iterW, t_geom, t_b0, t_flux, ...
+                t_solve, t_surfb, t_int, sum(tstage));
 
             fid = fopen(outcsv, 'a');
             fprintf(fid, ['%d,%d,%d,%d,%d,%.10f,%.4f,%g,%.6e,%.4e,%g,%g,%.0f,%d,' ...
-                '%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f\n'], ...
+                '%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,' ...
+                '%.6e,%.4f\n'], ...
                 n, n-1, nv, nu, npts, h, sqrt(npts), tol, err, ...
                 norm(ts.sigma{1}, inf), iterD, iterW, t_solve+t_surfb, on_plot, ...
                 tstage(1), tstage(2), tstage(3), tstage(4), t_gmres_d, t_gmres_w, ...
-                tstage(5), tstage(6), sum(tstage), t_geom, t_b0, t_flux, t_surfb);
+                tstage(5), tstage(6), sum(tstage), t_geom, t_b0, t_flux, t_surfb, ...
+                err_int, t_int);
             fclose(fid);
         end
     end

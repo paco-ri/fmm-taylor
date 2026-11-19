@@ -20,6 +20,10 @@ function diag_xs2(n, nvs, outmat)
 %
 %   About 1 h per solve at n = 11 on jupiter. Results are saved after every
 %   solve.
+%
+%   RESULT (n = 11, nv = 6): the fix moved the inner error by 0.01%, so the
+%   cross-section is not the cause. prepare_torus now builds the fixed section,
+%   so with the current code 'orig' and 'fixed' are the same.
 
 here = fileparts(mfilename('fullpath'));
 if nargin < 1 || isempty(n),      n = 11;      end

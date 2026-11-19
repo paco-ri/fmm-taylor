@@ -1,21 +1,28 @@
-function convoop2_sweep(outcsv, nthreads)
-%CONVOOP2_SWEEP Two-surface convergence sweep at higher order (p = 10, 12).
+function convoop2_sweep(outcsv, nthreads, runs)
+%CONVOOP2_SWEEP Two-surface convergence sweep (plot_conv_twosurface.m).
 %
-%   Setup as in plot_conv_twosurface.m: prepare_torus(n,nu,nv,n,nu,nv,ao,ai,
-%   nr,nt,np), zk = 0.5, nu = 3*nv, ao = 1.0, ai = 0.6, nt = np = 40,
-%   ntheta = 200, scalar tol. Error is max over both surfaces of the relative
-%   L^inf error in B, as in convdata_twosurface_zk0p5.csv.
+%   Setup: prepare_torus(n,nu,nv,n,nu,nv,ao,ai,nr,nt,np), zk = 0.5,
+%   nu = 3*nv, ao = 1.0, ai = 0.6, nt = np = 40, ntheta = 200, scalar tol.
 %
-%   Each row of RUNS is {tol, n, nvs, nr, on_plot}:
-%     - The first row reruns the published n = 9, nv = 8 point (tol = 1e-6,
-%       nr = 16), which should give 3.848248e-05 with iterD/iterW = 43/28.
-%       Check it before trusting the rest of the sweep.
-%     - The high-order rows use nr = 24, since the nr = 16 cross-section rule
-%       is only accurate to ~2e-8, and tol = 1e-10, so the finest points stay
-%       well above the tolerance.
+%   Each row of RUNS is {tol, n, nvs, nr, on_plot}. The default runs the
+%   plotted curves, p = 12 last so it can be cut short:
+%     p = 6, 8:    tol = 1e-6,  nr = 16  (the published settings; p = 8,
+%                  nv = 8 should give a surface error of ~3.848e-05, 43/28)
+%     p = 10, 12:  tol = 1e-10, nr = 24  (nr = 16's cross-section rule is
+%                  only accurate to ~2e-8)
 %
-%   nthreads (optional) sets maxNumCompThreads. On jupiter the MEX's OpenMP
-%   runs on MATLAB's runtime, so OMP_NUM_THREADS has no effect there.
+%   TWO ERRORS, both relative L^inf of B - B0, max over components:
+%     err      on both surfaces' nodes (surface_B), with err_s1/err_s2 per
+%              surface. Dominated at fine meshes by surface_B's reconstruction
+%              error at patch edges, which overstates the error of the
+%              solution (see diag_edge.m).
+%     err_int  at 768 points in the shell: u, v = 0:22.5:337.5 deg on the
+%              tori of scale s = 0.7, 0.8, 0.9 (torus_points.m), normalized
+%              by the largest |B0| among those points. The outer layers are
+%              at scale distance 0.1 from each wall.
+%
+%   nthreads (optional, [] to skip) sets maxNumCompThreads. On jupiter the
+%   MEX's OpenMP runs on MATLAB's runtime, so OMP_NUM_THREADS has no effect.
 %
 %   Rows are appended as each configuration finishes. A MATLAB error in one
 %   configuration writes a NaN row and the sweep continues; a self-quadrature
@@ -23,10 +30,16 @@ function convoop2_sweep(outcsv, nthreads)
 
 here = fileparts(mfilename('fullpath'));
 if nargin < 1 || isempty(outcsv)
-    outcsv = fullfile(here, 'convdata_twosurface_highp.csv');
+    outcsv = fullfile(here, 'convdata_twosurface_interior.csv');
 end
-if nargin >= 2
+if nargin >= 2 && ~isempty(nthreads)
     maxNumCompThreads(nthreads);
+end
+if nargin < 3 || isempty(runs)
+    runs = { 1e-6,  7,  5:8, 16, 1
+             1e-6,  9,  5:8, 16, 1
+             1e-10, 11, 5:8, 24, 1
+             1e-10, 13, 5:8, 24, 1 };
 end
 
 zk     = 0.5;
@@ -39,9 +52,13 @@ rmin   = 2.0;
 rmaj   = 2.0;
 jmag   = 1.0;
 
-runs = { 1e-6,  9, 8,   16, 0
-         1e-10, 11, 5:8, 24, 1
-         1e-10, 13, 5:8, 24, 1 };
+[uu, vv, ss] = ndgrid((0:22.5:337.5)*pi/180, (0:22.5:337.5)*pi/180, [0.7 0.8 0.9]);
+intpts = torus_points(uu, vv, ss);
+B0int = zeros(3, size(intpts,2));
+for i = 1:size(intpts,2)
+    B0int(:,i) = reftaylor(ntheta, rmin, rmaj, jmag, zk, intpts(:,i));
+end
+B0intmax = max(abs(B0int), [], 'all');
 
 stagepats = {'get Laplace/Helmholtz quad\. corr\.'
              'get \+taylor routine quad\. corr\.'
@@ -54,7 +71,7 @@ fid = fopen(outcsv, 'w');
 fprintf(fid, ['n,p,nv,nu,npts,h,dof,tol,nr,err,err_s1,err_s2,sigma_inf,' ...
     'iterD,iterW,time_s,on_plot,t_quad_lh,t_quad_tay,t_quad_xs_lh,' ...
     't_quad_xs_tay,t_gmres_d,t_gmres_w,t_sigma_alpha,t_m,t_solve_sum,' ...
-    't_geom,t_b0,t_flux,t_surfb\n']);
+    't_geom,t_b0,t_flux,t_surfb,err_int,t_int\n']);
 fclose(fid);
 fprintf('=== convoop2_sweep start %s\n  -> %s\n', datestr(now), outcsv);
 fprintf('  maxNumCompThreads = %d, OMP_NUM_THREADS = %s\n', ...
@@ -118,9 +135,15 @@ for k = 1:size(runs,1)
             B0max = max(vecinfnorm(B0{1}), vecinfnorm(B0{2}));
             err_s = [vecinfnorm(B0{1}-B{1}), vecinfnorm(B0{2}-B{2})]/B0max;
             sigma_inf = max(norm(ts.sigma{1}, inf), norm(ts.sigma{2}, inf));
+
+            t0 = tic;
+            Bint = ts.interior_B(intpts);
+            t_int = toc(t0);
+            err_int = max(abs(Bint - B0int), [], 'all')/B0intmax;
         catch ME
             fprintf('FAILED n=%d nv=%d: %s\n', n, nv, ME.message);
-            [t_geom, t_b0, t_flux, t_solve, t_surfb, sigma_inf] = deal(NaN);
+            [t_geom, t_b0, t_flux, t_solve, t_surfb, sigma_inf, t_int, ...
+                err_int] = deal(NaN);
             tstage = nan(1,6); gd = {'NaN','NaN'}; gw = {'NaN','NaN'};
             err_s = [NaN NaN];
         end
@@ -128,19 +151,20 @@ for k = 1:size(runs,1)
         t_gmres_w = str2double(gw{1}); iterW = str2double(gw{2});
         err = max(err_s);
 
-        fprintf(['n=%d nv=%d tol=%g nr=%d  err=%.6e (%.3e, %.3e)  iter=%d/%d\n' ...
+        fprintf(['n=%d nv=%d tol=%g nr=%d  err=%.6e (%.3e, %.3e)  ' ...
+                 'err_int=%.6e  iter=%d/%d\n' ...
                  '  geom %.1f + B0 %.1f + flux %.1f + solve %.1f ' ...
-                 '+ surfB %.1f s\n'], n, nv, tol, nr, err, err_s, iterD, iterW, ...
-            t_geom, t_b0, t_flux, t_solve, t_surfb);
+                 '+ surfB %.1f + int %.1f s\n'], n, nv, tol, nr, err, err_s, ...
+            err_int, iterD, iterW, t_geom, t_b0, t_flux, t_solve, t_surfb, t_int);
 
         fid = fopen(outcsv, 'a');
         fprintf(fid, ['%d,%d,%d,%d,%d,%.10f,%.4f,%g,%d,%.6e,%.6e,%.6e,%.4e,' ...
             '%g,%g,%.0f,%d,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,%.4f,' ...
-            '%.4f,%.4f,%.4f,%.4f\n'], ...
+            '%.4f,%.4f,%.4f,%.4f,%.6e,%.4f\n'], ...
             n, n-1, nv, nu, npts, 1/sqrt(nu*nv), sqrt(npts), tol, nr, err, ...
             err_s, sigma_inf, iterD, iterW, t_solve+t_surfb, on_plot, ...
             tstage(1:4), t_gmres_d, t_gmres_w, tstage(5:6), sum(tstage), ...
-            t_geom, t_b0, t_flux, t_surfb);
+            t_geom, t_b0, t_flux, t_surfb, err_int, t_int);
         fclose(fid);
     end
 end
